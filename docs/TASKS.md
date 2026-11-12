@@ -7,7 +7,7 @@ part of the change that affects them.
 
 - [ ] Deploy the proxy to Vercel (`docs/DEPLOY.md`); needs a GitHub repository and a
       Vercel account
-- [ ] Create `local.mk`, `make release`, sideload, test on the Forerunner 955
+- [ ] Confirm on the watch that holding UP/DOWN scrolls the letters fast
 - [ ] Measure memory use on the device (peak during the connections response)
 - [ ] Check text fit on the 260x260 round display: long stop names, leg detail lines
 
@@ -34,7 +34,7 @@ part of the change that affects them.
 - [x] Origin by GPS or stop, destination by stop, recent stops, swap
 - [x] Connection list, leg detail with platform, delay and cancellation, later connections
 - [x] English and Czech strings in resources
-- [x] Watch unit tests (16, passing in the simulator): parsing, recent stops, coordinates,
+- [x] Watch unit tests (17, passing in the simulator): parsing, recent stops, coordinates,
       API client, name entry, smoke tests of every screen
 - [x] Own stop name entry (`StopNameEntry`) instead of the native `TextPicker`, which
       crashed the fr955 simulator on input ("Symbol Not Found Error: Failed invoking
@@ -42,5 +42,7 @@ part of the change that affects them.
 - [x] Full flow verified in the simulator: stop search, connections with a transfer
 - [x] Hosted proxy prepared: Vercel entry points (`proxy/api/`), proxy tests (27)
 - [x] Proxy address and key as build settings (`local.mk`, generated `BuildConfig`)
+- [x] Proxy deployed to Vercel; release build sideloaded and working on the Forerunner 955
+- [x] Name entry: holding UP/DOWN keeps moving through the letters
 - [x] Git repository initialized and pushed to GitHub (by the user)
 - [x] Makefile, README, CLAUDE.md, API contract, plan

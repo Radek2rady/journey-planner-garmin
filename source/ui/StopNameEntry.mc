@@ -1,9 +1,12 @@
 import Toybox.Graphics;
 import Toybox.Lang;
+import Toybox.System;
+import Toybox.Timer;
 import Toybox.WatchUi;
 
 //! Entry of a stop name with the buttons or by swiping: UP/DOWN move through
-//! the keys, START types the highlighted one, BACK erases. Replaces the native
+//! the keys (holding the button keeps moving), START types the highlighted one,
+//! BACK erases. Replaces the native
 //! `TextPicker`, which crashes the fr955 simulator on input.
 module StopNameEntry {
 
@@ -106,8 +109,18 @@ class StopNameView extends WatchUi.View {
 
 class StopNameDelegate extends WatchUi.BehaviorDelegate {
 
+    //! Holding UP or DOWN this long starts moving through the keys repeatedly.
+    private const REPEAT_DELAY_MS = 400;
+    private const REPEAT_INTERVAL_MS = 110;
+    //! A page behavior arriving this soon after a hold belongs to that hold.
+    private const RELEASE_GUARD_MS = 300;
+
     private var _input as NameInput;
     private var _chooser as StopChooserDelegate;
+    private var _timer as Timer.Timer?;
+    private var _direction as Number = 0;
+    private var _repeating as Boolean = false;
+    private var _releasedAt as Number?;
 
     function initialize(input as NameInput, chooser as StopChooserDelegate) {
         BehaviorDelegate.initialize();
@@ -115,19 +128,72 @@ class StopNameDelegate extends WatchUi.BehaviorDelegate {
         _chooser = chooser;
     }
 
-    function onNextPage() as Boolean {
-        _input.move(1);
+    function onKeyPressed(event as KeyEvent) as Boolean {
+        var key = event.getKey();
+        if (key == WatchUi.KEY_DOWN) {
+            startHold(1);
+        } else if (key == WatchUi.KEY_UP) {
+            startHold(-1);
+        }
+        return false;
+    }
+
+    function onKeyReleased(event as KeyEvent) as Boolean {
+        endHold();
+        return false;
+    }
+
+    //! A button went down: the single step comes from the page behavior, the
+    //! timer adds further steps while the button stays down.
+    function startHold(direction as Number) as Void {
+        endHold();
+        _releasedAt = null;
+        _direction = direction;
+        var timer = new Timer.Timer();
+        timer.start(method(:onRepeat), REPEAT_DELAY_MS, false);
+        _timer = timer;
+    }
+
+    function endHold() as Void {
+        var timer = _timer;
+        if (timer != null) {
+            timer.stop();
+            _timer = null;
+        }
+        if (_repeating) {
+            _repeating = false;
+            _releasedAt = System.getTimer();
+        }
+    }
+
+    function onRepeat() as Void {
+        var timer = _timer;
+        if (timer == null) {
+            return;
+        }
+        if (!_repeating) {
+            _repeating = true;
+            timer.start(method(:onRepeat), REPEAT_INTERVAL_MS, true);
+        }
+        _input.move(_direction);
         WatchUi.requestUpdate();
-        return true;
+    }
+
+    function onNextPage() as Boolean {
+        return step(1);
     }
 
     function onPreviousPage() as Boolean {
-        _input.move(-1);
-        WatchUi.requestUpdate();
+        return step(-1);
+    }
+
+    //! Holding UP is the system gesture for a menu; here it only scrolls.
+    function onMenu() as Boolean {
         return true;
     }
 
     function onSelect() as Boolean {
+        endHold();
         if (_input.press()) {
             WatchUi.popView(WatchUi.SLIDE_DOWN);
             _chooser.searchByName(_input.text);
@@ -139,10 +205,24 @@ class StopNameDelegate extends WatchUi.BehaviorDelegate {
 
     //! Erases a letter; with nothing typed the system closes the view.
     function onBack() as Boolean {
+        endHold();
         if (!_input.erase()) {
             return false;
         }
         WatchUi.requestUpdate();
+        return true;
+    }
+
+    //! Single step from a button press or a swipe. Skipped when it is the
+    //! tail of a hold that has already moved through the keys.
+    private function step(direction as Number) as Boolean {
+        var releasedAt = _releasedAt;
+        _releasedAt = null;
+        var afterHold = releasedAt != null && System.getTimer() - releasedAt < RELEASE_GUARD_MS;
+        if (!_repeating && !afterHold) {
+            _input.move(direction);
+            WatchUi.requestUpdate();
+        }
         return true;
     }
 }

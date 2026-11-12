@@ -33,7 +33,7 @@ speaks plain HTTP) and set a position with **Settings > Set Position**.
 | Home | START or tap opens the menu |
 | Menu > From | *My location*, *Enter name*, or a recent stop |
 | Menu > To | *Enter name* or a recent stop |
-| Enter name | UP/DOWN or swipe choose a letter, START or tap types it, BACK erases; *Search* (one step above A) finishes |
+| Enter name | UP/DOWN or swipe choose a letter (hold to move fast), START or tap types it, BACK erases; *Search* (one step above A) finishes |
 | Menu > Find connections | Lists connections; select one to see its legs |
 
 ## On the watch

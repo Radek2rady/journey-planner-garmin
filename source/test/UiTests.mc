@@ -128,6 +128,41 @@ function stopNameEntryOpensAndHandlesKeys(logger as Logger) as Boolean {
     return true;
 }
 
+(:test)
+function holdingAButtonRepeatsWithoutAnExtraStep(logger as Logger) as Boolean {
+    var item = new WatchUi.MenuItem("x", null, :name, null);
+    var main = new MainMenuDelegate(item, item);
+    var chooser = new StopChooserDelegate(StopChooser.DESTINATION, [] as Array<Stop>, main.method(:refresh));
+    var input = new NameInput();
+    var delegate = new StopNameDelegate(input, chooser);
+    var start = input.key;
+
+    // A short press: only the page behavior moves.
+    delegate.startHold(1);
+    delegate.onNextPage();
+    delegate.endHold();
+    Test.assertEqual(input.key, start + 1);
+
+    // A hold: every timer tick moves; the behavior that follows is skipped,
+    // whether it arrives before or after the release.
+    delegate.startHold(1);
+    delegate.onRepeat();
+    delegate.onRepeat();
+    delegate.onNextPage();
+    delegate.endHold();
+    delegate.onNextPage();
+    Test.assertEqual(input.key, start + 3);
+
+    // The step after that counts again.
+    delegate.onPreviousPage();
+    Test.assertEqual(input.key, start + 2);
+
+    // A tick after the release does nothing.
+    delegate.onRepeat();
+    Test.assertEqual(input.key, start + 2);
+    return true;
+}
+
 class ApiProbe {
     var stops as Array<Stop>?;
     var page as ConnectionsPage?;
