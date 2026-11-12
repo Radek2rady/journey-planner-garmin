@@ -156,6 +156,7 @@ def compact_connection(itinerary: Json) -> Json:
     return {
         "d": local_hhmm(itinerary["startTime"]),
         "a": local_hhmm(itinerary["endTime"]),
+        "s": int(parse_time(itinerary["startTime"]).timestamp()),
         "m": round(itinerary["duration"] / 60),
         "r": " > ".join(leg["r"] for leg in legs if leg["k"] != WALK),
         "l": legs,

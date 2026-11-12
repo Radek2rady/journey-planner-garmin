@@ -4,30 +4,23 @@ import Toybox.Lang;
 //! without a connection to the phone.
 class SavedSearch {
 
-    //! Names as they were shown when the search ran.
-    var origin as String;
-    var destination as String;
+    var trip as Trip;
     //! Unix time of the search, in seconds.
     var savedAt as Number;
     var page as ConnectionsPage;
 
-    function initialize(origin as String, destination as String, savedAt as Number, page as ConnectionsPage) {
-        self.origin = origin;
-        self.destination = destination;
+    function initialize(trip as Trip, savedAt as Number, page as ConnectionsPage) {
+        self.trip = trip;
         self.savedAt = savedAt;
         self.page = page;
     }
 
-    function isSameTrip(other as SavedSearch) as Boolean {
-        return origin.equals(other.origin) && destination.equals(other.destination);
-    }
-
     static function fromDictionary(data as Dictionary) as SavedSearch {
-        return new SavedSearch(data["o"] as String, data["t"] as String, data["s"] as Number,
+        return new SavedSearch(Trip.fromDictionary(data["r"] as Dictionary), data["s"] as Number,
             ConnectionsPage.fromDictionary(data["p"] as Dictionary));
     }
 
     function toDictionary() as Dictionary {
-        return { "o" => origin, "t" => destination, "s" => savedAt, "p" => page.toDictionary() };
+        return { "r" => trip.toDictionary(), "s" => savedAt, "p" => page.toDictionary() };
     }
 }

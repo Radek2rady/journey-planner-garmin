@@ -5,7 +5,7 @@ import Toybox.Timer;
 import Toybox.WatchUi;
 
 //! Entry of a stop name with the buttons or by swiping: UP/DOWN move through
-//! the keys (holding the button keeps moving), START types the highlighted one,
+//! the keys (holding UP keeps moving), START types the highlighted one,
 //! BACK erases. Replaces the native
 //! `TextPicker`, which crashes the fr955 simulator on input.
 module StopNameEntry {
@@ -109,7 +109,7 @@ class StopNameView extends WatchUi.View {
 
 class StopNameDelegate extends WatchUi.BehaviorDelegate {
 
-    //! Holding UP or DOWN this long starts moving through the keys repeatedly.
+    //! Holding UP this long starts moving through the keys repeatedly.
     private const REPEAT_DELAY_MS = 500;
     private const REPEAT_INTERVAL_MS = 250;
     //! A page behavior arriving this soon after a hold belongs to that hold.
@@ -120,6 +120,7 @@ class StopNameDelegate extends WatchUi.BehaviorDelegate {
     private var _timer as Timer.Timer?;
     private var _direction as Number = 0;
     private var _repeating as Boolean = false;
+    private var _repeats as Number = 0;
     private var _releasedAt as Number?;
 
     function initialize(input as NameInput, chooser as StopChooserDelegate) {
@@ -129,10 +130,9 @@ class StopNameDelegate extends WatchUi.BehaviorDelegate {
     }
 
     function onKeyPressed(event as KeyEvent) as Boolean {
-        var key = event.getKey();
-        if (key == WatchUi.KEY_DOWN) {
-            startHold(1);
-        } else if (key == WatchUi.KEY_UP) {
+        // Only UP repeats: holding DOWN belongs to the watch (music controls
+        // on the fr955) and the app never learns when it ends.
+        if (event.getKey() == WatchUi.KEY_UP) {
             startHold(-1);
         }
         return false;
@@ -149,6 +149,7 @@ class StopNameDelegate extends WatchUi.BehaviorDelegate {
         endHold();
         _releasedAt = null;
         _direction = direction;
+        _repeats = 0;
         var timer = new Timer.Timer();
         timer.start(method(:onRepeat), REPEAT_DELAY_MS, false);
         _timer = timer;
@@ -177,6 +178,11 @@ class StopNameDelegate extends WatchUi.BehaviorDelegate {
         }
         _input.move(_direction);
         WatchUi.requestUpdate();
+        // A release that never arrives must not keep the keys moving.
+        _repeats++;
+        if (_repeats >= NameInput.keyCount()) {
+            endHold();
+        }
     }
 
     function onNextPage() as Boolean {

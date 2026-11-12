@@ -6,7 +6,10 @@ import Toybox.Lang;
 //! size limit of a single stored value.
 class SavedSearches {
 
-    private const KEY_PREFIX = "saved";
+    private const KEY_PREFIX = "search";
+    //! Slots of the first storage format, which kept names only.
+    private const LEGACY_KEY_PREFIX = "saved";
+    private const LEGACY_SLOTS = 10;
 
     //! Most recent first.
     var searches as Array<SavedSearch> = [] as Array<SavedSearch>;
@@ -16,15 +19,13 @@ class SavedSearches {
 
     function load() as Void {
         searches = [] as Array<SavedSearch>;
+        for (var i = 0; i < LEGACY_SLOTS; i++) {
+            Storage.deleteValue(LEGACY_KEY_PREFIX + i);
+        }
         for (var i = 0; i < Config.MAX_SAVED_SEARCHES; i++) {
             var saved = Storage.getValue(KEY_PREFIX + i) as Dictionary?;
             if (saved != null) {
-                try {
-                    searches.add(SavedSearch.fromDictionary(saved));
-                } catch (e) {
-                    // Written by an incompatible version: drop it.
-                    Storage.deleteValue(KEY_PREFIX + i);
-                }
+                searches.add(SavedSearch.fromDictionary(saved));
             }
         }
     }
@@ -49,7 +50,7 @@ class SavedSearches {
     static function withSaved(list as Array<SavedSearch>, search as SavedSearch, limit as Number) as Array<SavedSearch> {
         var result = [search] as Array<SavedSearch>;
         for (var i = 0; i < list.size() && result.size() < limit; i++) {
-            if (!list[i].isSameTrip(search)) {
+            if (!list[i].trip.isSame(search.trip)) {
                 result.add(list[i]);
             }
         }

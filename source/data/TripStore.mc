@@ -45,6 +45,19 @@ class TripStore {
         remember(stop);
     }
 
+    //! The planned trip; null while no destination is set.
+    function currentTrip() as Trip? {
+        var to = destination;
+        return to != null ? new Trip(origin, to) : null;
+    }
+
+    function setTrip(trip as Trip) as Void {
+        origin = trip.origin;
+        destination = trip.destination;
+        saveStop(KEY_ORIGIN, origin);
+        saveStop(KEY_DESTINATION, destination);
+    }
+
     function swap() as Void {
         var previousOrigin = origin;
         origin = destination;

@@ -6,10 +6,21 @@ import Toybox.WatchUi;
 // Smoke tests of the screens: every menu can be built and reacts to a
 // selection without crashing. Run with `make test-watch`.
 
+//! Puts back the planned trip a test has replaced, so that the tests leave
+//! the stored state of the simulator as they found it.
+function restorePlannedTrip(origin as Stop?, destination as Stop?) as Void {
+    var trip = getApp().trip;
+    trip.origin = origin;
+    trip.destination = destination;
+    if (destination != null) {
+        trip.setTrip(new Trip(origin, destination));
+    }
+}
+
 function sampleConnectionsPage() as ConnectionsPage {
     return ConnectionsPage.fromDictionary({
         "c" => [{
-            "d" => "16:16", "a" => "16:57", "m" => 41, "r" => "331 > C",
+            "d" => "16:16", "a" => "16:57", "s" => 1794410160, "m" => 41, "r" => "331 > C",
             "l" => [
                 { "k" => "walk", "m" => 3, "t" => "Vestec,u Klimešů" },
                 { "k" => "bus", "r" => "331", "f" => "Vestec,u Klimešů", "d" => "16:19", "t" => "Opatov", "a" => "16:33", "h" => "Háje", "p" => "B", "z" => 1 },
@@ -24,7 +35,26 @@ function sampleConnectionsPage() as ConnectionsPage {
 function textsDescribeALeg(logger as Logger) as Boolean {
     var connection = sampleConnectionsPage().connections[0];
     Test.assertEqual(Texts.connectionTimes(connection), "16:16 - 16:57");
-    logger.debug(Texts.connectionSummary(connection));
+
+    Test.assertEqual(Texts.shortLine("S21 (Os 15648)"), "S21");
+    Test.assertEqual(Texts.shortLine("Os 20872"), "Os");
+    Test.assertEqual(Texts.shortLine("331"), "331");
+
+    Test.assertEqual(Texts.joinLines(["331", "C"] as Array<String>, 12), "331>C");
+    Test.assertEqual(Texts.joinLines(["674", "538", "S21", "S2"] as Array<String>, 14), "674>538>S21>S2");
+    Test.assertEqual(Texts.joinLines(["674", "538", "S21", "S2"] as Array<String>, 12), "674>538 +2");
+    Test.assertEqual(Texts.joinLines(["Os", "R", "S2"] as Array<String>, 4), "Os +2");
+    Test.assertEqual(Texts.joinLines(["LongLineName"] as Array<String>, 3), "LongLineName");
+    Test.assertEqual(Texts.joinLines([] as Array<String>, 5), "");
+    logger.debug(Texts.duration(41) + " / " + Texts.duration(188) + " / " + Texts.duration(60));
+    // The sample connection leaves at 1794410160.
+    Test.assertEqual(Texts.connectionSummary(connection, 1794410160 - 3 * 3600), "41 min, 331");
+    Test.assert(Texts.countdown(1794410160, 1794410160 - 120 * 60) == null);
+    Test.assert(Texts.countdown(0, 1794410160) == null);
+    logger.debug(Texts.connectionSummary(connection, 1794410160 - 7 * 60 - 30));
+    logger.debug(Texts.connectionSummary(connection, 1794410160 - 59));
+    logger.debug(Texts.connectionSummary(connection, 1794410160 + 1));
+    logger.debug(Texts.countdown(1794410160, 1794410160 - 90 * 60) as String);
     logger.debug(Texts.walk(connection.legs[0]));
     logger.debug(Texts.boardingDetails(connection.legs[1]));
     logger.debug(Texts.placeOrDestination(connection.legs[2].to));
@@ -38,7 +68,7 @@ function textsDescribeALeg(logger as Logger) as Boolean {
 function mainMenuOpensAndHandlesItems(logger as Logger) as Boolean {
     MainMenu.push();
     var item = new WatchUi.MenuItem("x", null, :swap, null);
-    var delegate = new MainMenuDelegate(item, item, item);
+    var delegate = new MainMenuDelegate(item, item, item, item);
     delegate.refresh();
     delegate.onSelect(item);
     delegate.onSelect(new WatchUi.MenuItem("x", null, :search, null));
@@ -50,7 +80,7 @@ function mainMenuOpensAndHandlesItems(logger as Logger) as Boolean {
 (:test)
 function stopChooserOpensAndHandlesItems(logger as Logger) as Boolean {
     var item = new WatchUi.MenuItem("x", null, :name, null);
-    var main = new MainMenuDelegate(item, item, item);
+    var main = new MainMenuDelegate(item, item, item, item);
     StopChooser.push(StopChooser.ORIGIN, main.method(:refresh));
     StopChooser.push(StopChooser.DESTINATION, main.method(:refresh));
 
@@ -71,11 +101,23 @@ function stopChooserOpensAndHandlesItems(logger as Logger) as Boolean {
 (:test)
 function connectionListAndDetailOpen(logger as Logger) as Boolean {
     var page = sampleConnectionsPage();
-    ConnectionList.push(page);
-    var delegate = new ConnectionListDelegate(page);
+    ConnectionList.push(page, null, null);
+    var plannedOrigin = getApp().trip.origin;
+    var plannedDestination = getApp().trip.destination;
+    var listItem = new WatchUi.MenuItem("x", null, 0, null);
+    var delegate = new ConnectionListDelegate(page, [listItem] as Array<MenuItem>, sampleTrip("a", "b"), null);
+    delegate.refreshCountdowns(1794410160 - 600);
+    ConnectionList.onTick();
+    delegate.onSelect(new WatchUi.MenuItem("x", null, :again, null));
+    Test.assert((getApp().trip.currentTrip() as Trip).isSame(sampleTrip("a", "b")));
     delegate.onSelect(new WatchUi.MenuItem("x", null, 0, null));
     delegate.onSelect(new WatchUi.MenuItem("x", null, :later, null));
     delegate.onConnections(null, new ApiError(502, null));
+
+    restorePlannedTrip(plannedOrigin, plannedDestination);
+
+    ConnectionDetail.push(page.connections[0]);
+    new ConnectionDetailDelegate(["16:19 Vestec\nBus 331"] as Array<String>).onSelect(new WatchUi.MenuItem("x", null, 0, null));
     return true;
 }
 
@@ -112,7 +154,7 @@ function nameInputTypesErasesAndFinishes(logger as Logger) as Boolean {
 (:test)
 function stopNameEntryOpensAndHandlesKeys(logger as Logger) as Boolean {
     var item = new WatchUi.MenuItem("x", null, :name, null);
-    var main = new MainMenuDelegate(item, item, item);
+    var main = new MainMenuDelegate(item, item, item, item);
     var chooser = new StopChooserDelegate(StopChooser.DESTINATION, [] as Array<Stop>, main.method(:refresh));
     chooser.onSelect(item);
 
@@ -132,7 +174,7 @@ function stopNameEntryOpensAndHandlesKeys(logger as Logger) as Boolean {
 (:test)
 function holdingAButtonRepeatsWithoutAnExtraStep(logger as Logger) as Boolean {
     var item = new WatchUi.MenuItem("x", null, :name, null);
-    var main = new MainMenuDelegate(item, item, item);
+    var main = new MainMenuDelegate(item, item, item, item);
     var chooser = new StopChooserDelegate(StopChooser.DESTINATION, [] as Array<Stop>, main.method(:refresh));
     var input = new NameInput();
     var delegate = new StopNameDelegate(input, chooser);
@@ -158,6 +200,15 @@ function holdingAButtonRepeatsWithoutAnExtraStep(logger as Logger) as Boolean {
     delegate.onPreviousPage();
     Test.assertEqual(input.key, start + 2);
 
+    // A hold stops by itself after one round through the keys.
+    var before = input.key;
+    delegate.startHold(-1);
+    for (var i = 0; i < NameInput.keyCount() + 5; i++) {
+        delegate.onRepeat();
+    }
+    Test.assertEqual(input.key, before);
+    delegate.endHold();
+
     // A tick after the release does nothing.
     delegate.onRepeat();
     Test.assertEqual(input.key, start + 2);
@@ -166,14 +217,16 @@ function holdingAButtonRepeatsWithoutAnExtraStep(logger as Logger) as Boolean {
 
 (:test)
 function savedListOpensAndShowsASearch(logger as Logger) as Boolean {
-    var search = new SavedSearch("Vestec", "Opatov", 1794500000, sampleConnectionsPage());
-    Test.assertEqual(Texts.savedTrip(search), "Vestec > Opatov");
+    var search = new SavedSearch(sampleTrip("a", "b"), 1794500000, sampleConnectionsPage());
+    Test.assertEqual(Texts.tripName(search.trip), "Stop a > Stop b");
+    logger.debug(Texts.tripName(sampleTrip(null, "b")));
     logger.debug(Texts.savedAt(search));
 
     var item = new WatchUi.MenuItem("x", null, :saved, null);
-    new MainMenuDelegate(item, item, item).onSelect(item);
-    SavedList.push();
-    new SavedListDelegate([search] as Array<SavedSearch>).onSelect(new WatchUi.MenuItem("x", null, 0, null));
+    new MainMenuDelegate(item, item, item, item).onSelect(item);
+    var main = new MainMenuDelegate(item, item, item, item);
+    SavedList.push(main.method(:refresh));
+    new SavedListDelegate([search] as Array<SavedSearch>, main.method(:refresh)).onSelect(new WatchUi.MenuItem("x", null, 0, null));
     return true;
 }
 
@@ -183,7 +236,7 @@ function departureMenuSetsAndClearsTheTime(logger as Logger) as Boolean {
     Test.assertEqual(DepartureMenu.hourStart(100000, 34, 56, 2), 100000 - 34 * 60 - 56 + 7200);
 
     var item = new WatchUi.MenuItem("x", null, :when, null);
-    var main = new MainMenuDelegate(item, item, item);
+    var main = new MainMenuDelegate(item, item, item, item);
     main.onSelect(item);
     DepartureMenu.pushMinutes(1794510000, main.method(:refresh), 2);
 
@@ -212,6 +265,32 @@ function departureMenuSetsAndClearsTheTime(logger as Logger) as Boolean {
     logger.debug(Texts.day(Time.today().value() + 86400 + 60));
     Test.assert(trip.departureTime == null);
     logger.debug(Texts.departure(null));
+    return true;
+}
+
+(:test)
+function favouriteListAddsChoosesAndRemoves(logger as Logger) as Boolean {
+    var app = getApp();
+    var item = new WatchUi.MenuItem("x", null, :favourites, null);
+    var main = new MainMenuDelegate(item, item, item, item);
+    main.onSelect(item);
+
+    var plannedOrigin = app.trip.origin;
+    var plannedDestination = app.trip.destination;
+    app.trip.setTrip(sampleTrip("a", "b"));
+    var list = new FavouriteListDelegate(main.method(:searchChosenTrip));
+    list.onSelect(new WatchUi.MenuItem("x", null, :add, null));
+    Test.assert(app.favourites.trips[0].isSame(sampleTrip("a", "b")));
+
+    app.trip.setTrip(sampleTrip(null, "c"));
+    list.onSelect(new WatchUi.MenuItem("x", null, 0, null));
+    Test.assert((app.trip.currentTrip() as Trip).isSame(sampleTrip("a", "b")));
+
+    var count = app.favourites.trips.size();
+    list.onSelect(new WatchUi.MenuItem("x", null, :remove, null));
+    new FavouriteRemovalDelegate(main.method(:searchChosenTrip)).onSelect(new WatchUi.MenuItem("x", null, 0, null));
+    Test.assertEqual(app.favourites.trips.size(), count - 1);
+    restorePlannedTrip(plannedOrigin, plannedDestination);
     return true;
 }
 

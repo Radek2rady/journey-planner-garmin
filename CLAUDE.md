@@ -18,9 +18,9 @@ The proxy forwards the query and returns a compact JSON (`docs/API.md`, ~2 kB).
 
 | Path | Responsibility |
 | --- | --- |
-| `source/TransitApp.mc` | Lifecycle; owns the services (`api`, `location`, `trip`, `savedSearches`) |
-| `source/model/` | `Stop`, `Leg`, `Connection`, `ConnectionsPage`, `SavedSearch`; parsing of the wire format |
-| `source/data/` | `TransitApi` (HTTP), `LocationProvider` (GPS), `TripStore` and `SavedSearches` (persistence) |
+| `source/TransitApp.mc` | Lifecycle; owns the services (`api`, `location`, `trip`, `favourites`, `savedSearches`) |
+| `source/model/` | `Stop`, `Trip`, `Leg`, `Connection`, `ConnectionsPage`, `SavedSearch`; parsing of the wire format |
+| `source/data/` | `TransitApi` (HTTP), `LocationProvider` (GPS), `TripStore`, `Favourites`, `SavedSearches` (persistence) |
 | `source/ui/` | Views, menus and their delegates; `Texts` turns data into localized text |
 | `source/test/` | Watch unit tests (`(:test)` functions) |
 | `resources/`, `resources-ces/` | Strings: English is the default, Czech the translation |
@@ -78,6 +78,12 @@ command line when the key lives elsewhere.
 - Do not use `WatchUi.TextPicker`: in the fr955 simulator a click on it crashed the app
   with "Failed invoking <symbol>" and an empty stack. Stop names are typed in the own
   `StopNameEntry` view.
+- On the fr955 a long press of DOWN opens the music controls and of UP the menu
+  (`onMenu`); an app cannot use a held DOWN.
+- `Menu2` cuts long labels with "..." and does not scroll them. Keep sub-labels within
+  `Texts.SUMMARY_BUDGET` characters or offer the full text on a separate view.
+- Stored data outlives the code: a changed storage format gets a new key (see
+  `SavedSearches`), because reading the old shape is a fatal error, not an exception.
 - Menu item ids are symbols (`:search`). Do not give a private method the same name, the
   compiler warns about the collision.
 - `Storage.setValue` wants `Storage.KeyType` / `Storage.ValueType`; see `TripStore`.

@@ -20,6 +20,9 @@
     <string id="Saved">Uložené spoje</string>
     <string id="SavedHint">poslední hledání, i bez spojení</string>
     <string id="NothingSaved">Zatím nic uloženo</string>
+    <string id="Favourites">Oblíbené trasy</string>
+    <string id="AddCurrentTrip">Přidat aktuální trasu</string>
+    <string id="RemoveFavourite">Odebrat trasu</string>
 
     <string id="NearestByGps">nejbližší zastávky podle GPS</string>
     <string id="EnterName">Zadat název</string>
@@ -29,12 +32,19 @@
     <string id="SpaceKey">mezera</string>
 
     <string id="LaterConnections">Pozdější spoje</string>
+
+    <string id="SearchAgain">Hledat znovu</string>
+
+    <string id="In">za</string>
+
+    <string id="Departed">odjelo</string>
     <string id="Walk">Pěšky</string>
     <string id="GetOff">výstup</string>
     <string id="Cancelled">ZRUŠENO</string>
     <string id="Platform">nást.</string>
     <string id="Direction">směr</string>
     <string id="Minutes">min</string>
+    <string id="Hours">h</string>
     <string id="Destination">Cíl</string>
 
     <string id="Searching">Hledám...</string>

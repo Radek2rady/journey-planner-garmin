@@ -21,6 +21,9 @@
     <string id="Saved">Saved connections</string>
     <string id="SavedHint">last searches, work offline</string>
     <string id="NothingSaved">Nothing saved yet</string>
+    <string id="Favourites">Favourite trips</string>
+    <string id="AddCurrentTrip">Add current trip</string>
+    <string id="RemoveFavourite">Remove a trip</string>
 
     <!-- Stop chooser -->
     <string id="NearestByGps">nearest stops by GPS</string>
@@ -32,12 +35,16 @@
 
     <!-- Connections -->
     <string id="LaterConnections">Later connections</string>
+    <string id="SearchAgain">Search again</string>
+    <string id="In">in</string>
+    <string id="Departed">departed</string>
     <string id="Walk">Walk</string>
     <string id="GetOff">get off</string>
     <string id="Cancelled">CANCELLED</string>
     <string id="Platform">plat.</string>
     <string id="Direction">to</string>
     <string id="Minutes">min</string>
+    <string id="Hours">h</string>
     <string id="Destination">Destination</string>
 
     <!-- Search progress and errors -->

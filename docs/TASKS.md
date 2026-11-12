@@ -9,15 +9,27 @@ part of the change that affects them.
       phone, departure time
 
 - [ ] Measure memory use on the device (peak during the connections response)
-- [ ] Check text fit on the 260x260 round display: long stop names, leg detail lines
+- [ ] Confirm on the watch: favourite trips, countdown, search again from a saved search
+- [ ] Confirm on the watch: short connection summary fits; full text of a leg line opens
+      with START
 
 ## To do
 
 ### M3: Faster daily use
 
-- [ ] Favourite trips
+- [ ] Arrive-by search ("be there by 8:00")
 - [ ] Departure board of the nearest stop
-- [ ] Countdown to departure
+- [ ] Nearest stops by GPS in the origin chooser
+- [ ] Transfer time between rides in the leg detail
+- [ ] Filters: direct only, maximum transfers, vehicle types
+- [ ] Alert before the departure of a chosen connection
+- [ ] Glance with the next departure of a favourite trip
+
+### Comfort
+
+- [ ] Delete saved searches and recent stops
+- [ ] Wording for numeric errors such as -1001
+- [ ] Name entry by letter groups (no holding of DOWN needed)
 
 ### Housekeeping
 
@@ -32,7 +44,7 @@ part of the change that affects them.
 - [x] Origin by GPS or stop, destination by stop, recent stops, swap
 - [x] Connection list, leg detail with platform, delay and cancellation, later connections
 - [x] English and Czech strings in resources
-- [x] Watch unit tests (22, passing in the simulator): parsing, storage round trips, recent
+- [x] Watch unit tests (26, passing in the simulator): parsing, storage round trips, recent
       stops, coordinates, API client, name entry, smoke tests of every screen
 - [x] Own stop name entry (`StopNameEntry`) instead of the native `TextPicker`, which
       crashed the fr955 simulator on input ("Symbol Not Found Error: Failed invoking
@@ -41,10 +53,17 @@ part of the change that affects them.
 - [x] Hosted proxy prepared: Vercel entry points (`proxy/api/`), proxy tests (27)
 - [x] Proxy address and key as build settings (`local.mk`, generated `BuildConfig`)
 - [x] Proxy deployed to Vercel; release build sideloaded and working on the Forerunner 955
-- [x] Name entry: holding UP/DOWN keeps moving through the letters (4 per second)
+- [x] Name entry: holding UP keeps moving through the letters (4 per second); holding
+      DOWN is reserved by the watch for music controls
 - [x] Direction (headsign) of a ride in the leg detail; wire key `h`
 - [x] Saved connections: results of the last 10 searches (one per trip) readable offline
 - [x] Departure time selection: now, an hour of the next 24, or another day up to 10
       days ahead; quarter-hour steps; wire parameter `t`
+- [x] Connection summary shortened to fit one menu line ("3h08, 674>538 +2"); a leg line
+      opens in full on its own screen
+- [x] Favourite trips: add the planned trip, one press sets it and searches, remove
+- [x] Countdown to departure in the connection list ("in 7 min", "departed"), refreshed
+      every 30 s; wire key `s`
+- [x] Search again from a saved search; saved searches keep the stops, not just names
 - [x] Git repository initialized and pushed to GitHub (by the user)
 - [x] Makefile, README, CLAUDE.md, API contract, plan

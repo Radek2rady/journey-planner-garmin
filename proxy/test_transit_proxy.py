@@ -113,6 +113,7 @@ class CompactConnectionTest(unittest.TestCase):
         connection = proxy.compact_connection(itinerary)
         self.assertEqual(connection["d"], "16:16")
         self.assertEqual(connection["a"], "16:57")
+        self.assertEqual(connection["s"], 1794410160)
         self.assertEqual(connection["m"], 41)
         self.assertEqual(connection["r"], "331 > C")
         self.assertEqual([leg["k"] for leg in connection["l"]], ["walk", "bus", "metro"])

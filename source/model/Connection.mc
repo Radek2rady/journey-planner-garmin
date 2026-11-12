@@ -81,6 +81,8 @@ class Connection {
     var departure as String;
     var arrival as String;
     var durationMinutes as Number;
+    //! Departure in Unix seconds; 0 when unknown (saved by an older version).
+    var departureTime as Number = 0;
     //! Lines in travel order, e.g. "331 > C".
     var lines as String;
     var legs as Array<Leg>;
@@ -99,7 +101,12 @@ class Connection {
         for (var i = 0; i < rawLegs.size(); i++) {
             legs.add(Leg.fromDictionary(rawLegs[i]));
         }
-        return new Connection(data["d"] as String, data["a"] as String, data["m"] as Number, data["r"] as String, legs);
+        var connection = new Connection(data["d"] as String, data["a"] as String, data["m"] as Number, data["r"] as String, legs);
+        var departureTime = data["s"] as Number?;
+        if (departureTime != null) {
+            connection.departureTime = departureTime;
+        }
+        return connection;
     }
 
     function toDictionary() as Dictionary {
@@ -107,7 +114,7 @@ class Connection {
         for (var i = 0; i < legs.size(); i++) {
             rawLegs.add(legs[i].toDictionary());
         }
-        return { "d" => departure, "a" => arrival, "m" => durationMinutes, "r" => lines, "l" => rawLegs };
+        return { "d" => departure, "a" => arrival, "s" => departureTime, "m" => durationMinutes, "r" => lines, "l" => rawLegs };
     }
 }
 

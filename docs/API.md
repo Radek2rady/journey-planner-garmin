@@ -39,7 +39,7 @@ Without `t` and `c` the search starts at the current time.
 ```json
 {
   "c": [{
-    "d": "16:16", "a": "16:57", "m": 41, "r": "331 > C",
+    "d": "16:16", "a": "16:57", "s": 1794410160, "m": 41, "r": "331 > C",
     "l": [
       {"k": "walk", "m": 3, "t": "Vestec,u Klimešů"},
       {"k": "bus", "r": "331", "f": "Vestec,u Klimešů", "d": "16:19",
@@ -57,6 +57,7 @@ Connection:
 | `c` | Connections in departure order, at most 5 |
 | `n` | Cursor for later connections; empty when there are none |
 | `d`, `a` | Departure and arrival, local time `HH:MM` (Europe/Prague) |
+| `s` | Departure as Unix seconds, for counting down to it |
 | `m` | Total duration in minutes |
 | `r` | Lines in travel order |
 | `l` | Legs |

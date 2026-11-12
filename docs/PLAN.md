@@ -35,9 +35,9 @@ Exit criteria: full flow verified in the simulator; all tests green.
 
 - Saved connections: results of the last searches readable without the phone (done)
 - Search for a chosen departure time, not only "now" (done)
-- Favourite trips (one tap from the home screen)
+- Favourite trips: one press sets the trip and searches (done)
 - Departure board of the nearest stop
-- Countdown to departure in the connection list
+- Countdown to departure in the connection list (done)
 
 ### M4: Resilience
 

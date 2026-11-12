@@ -10,6 +10,7 @@ class TransitApp extends Application.AppBase {
     var location as LocationProvider = new LocationProvider();
     var trip as TripStore = new TripStore();
     var savedSearches as SavedSearches = new SavedSearches();
+    var favourites as Favourites = new Favourites();
 
     function initialize() {
         AppBase.initialize();
@@ -18,6 +19,7 @@ class TransitApp extends Application.AppBase {
     function onStart(state as Dictionary?) as Void {
         trip.load();
         savedSearches.load();
+        favourites.load();
         location.start();
     }
 

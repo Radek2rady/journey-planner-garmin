@@ -126,13 +126,42 @@ function connectionsPageSurvivesDictionaryRoundTrip(logger as Logger) as Boolean
     return true;
 }
 
+function sampleTrip(originId as String?, destinationId as String) as Trip {
+    var origin = originId != null ? new Stop(originId, "Stop " + originId, "") : null;
+    return new Trip(origin, new Stop(destinationId, "Stop " + destinationId, "Praha"));
+}
+
+(:test)
+function tripsAreComparedByStopIds(logger as Logger) as Boolean {
+    Test.assert(sampleTrip("a", "b").isSame(sampleTrip("a", "b")));
+    Test.assert(!sampleTrip("a", "b").isSame(sampleTrip("a", "c")));
+    Test.assert(!sampleTrip("a", "b").isSame(sampleTrip("x", "b")));
+    // "Current location" is an origin of its own.
+    Test.assert(sampleTrip(null, "b").isSame(sampleTrip(null, "b")));
+    Test.assert(!sampleTrip(null, "b").isSame(sampleTrip("a", "b")));
+    Test.assert(!sampleTrip("a", "b").isSame(sampleTrip(null, "b")));
+    return true;
+}
+
+(:test)
+function tripSurvivesDictionaryRoundTrip(logger as Logger) as Boolean {
+    var withOrigin = Trip.fromDictionary(sampleTrip("a", "b").toDictionary());
+    Test.assert(withOrigin.isSame(sampleTrip("a", "b")));
+    Test.assertEqual(withOrigin.destination.area, "Praha");
+
+    var fromLocation = Trip.fromDictionary(sampleTrip(null, "b").toDictionary());
+    Test.assert(fromLocation.origin == null);
+    return true;
+}
+
 (:test)
 function savedSearchSurvivesDictionaryRoundTrip(logger as Logger) as Boolean {
-    var original = new SavedSearch("Vestec", "Opatov", 1794500000, sampleConnectionsPage());
+    var original = new SavedSearch(sampleTrip("a", "b"), 1794500000, sampleConnectionsPage());
     var copy = SavedSearch.fromDictionary(original.toDictionary());
-    Test.assert(copy.isSameTrip(original));
+    Test.assert(copy.trip.isSame(original.trip));
     Test.assertEqual(copy.savedAt, 1794500000);
     Test.assertEqual(copy.page.connections.size(), 1);
+    Test.assertEqual(copy.page.connections[0].departureTime, 1794410160);
     return true;
 }
 
@@ -140,16 +169,31 @@ function savedSearchSurvivesDictionaryRoundTrip(logger as Logger) as Boolean {
 function savedSearchesKeepOnePerTripAndAreCapped(logger as Logger) as Boolean {
     var page = sampleConnectionsPage();
     var list = [] as Array<SavedSearch>;
-    list = SavedSearches.withSaved(list, new SavedSearch("A", "B", 1, page), 3);
-    list = SavedSearches.withSaved(list, new SavedSearch("A", "C", 2, page), 3);
-    list = SavedSearches.withSaved(list, new SavedSearch("A", "B", 3, page), 3);
+    list = SavedSearches.withSaved(list, new SavedSearch(sampleTrip("a", "b"), 1, page), 3);
+    list = SavedSearches.withSaved(list, new SavedSearch(sampleTrip("a", "c"), 2, page), 3);
+    list = SavedSearches.withSaved(list, new SavedSearch(sampleTrip("a", "b"), 3, page), 3);
     Test.assertEqual(list.size(), 2);
     Test.assertEqual(list[0].savedAt, 3);
-    Test.assertEqual(list[1].destination, "C");
+    Test.assertEqual(list[1].trip.destination.id, "c");
 
-    list = SavedSearches.withSaved(list, new SavedSearch("D", "E", 4, page), 3);
-    list = SavedSearches.withSaved(list, new SavedSearch("F", "G", 5, page), 3);
+    list = SavedSearches.withSaved(list, new SavedSearch(sampleTrip("d", "e"), 4, page), 3);
+    list = SavedSearches.withSaved(list, new SavedSearch(sampleTrip("f", "g"), 5, page), 3);
     Test.assertEqual(list.size(), 3);
     Test.assertEqual(list[2].savedAt, 3);
+    return true;
+}
+
+(:test)
+function favouritesKeepOneCopyAndAreCapped(logger as Logger) as Boolean {
+    var list = [] as Array<Trip>;
+    list = Favourites.withTrip(list, sampleTrip("a", "b"), 2);
+    list = Favourites.withTrip(list, sampleTrip(null, "b"), 2);
+    list = Favourites.withTrip(list, sampleTrip("a", "b"), 2);
+    Test.assertEqual(list.size(), 2);
+    Test.assert(list[0].isSame(sampleTrip("a", "b")));
+
+    list = Favourites.withTrip(list, sampleTrip("x", "y"), 2);
+    Test.assertEqual(list.size(), 2);
+    Test.assert(list[1].isSame(sampleTrip("a", "b")));
     return true;
 }

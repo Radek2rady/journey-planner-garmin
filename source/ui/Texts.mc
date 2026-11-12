@@ -84,9 +84,15 @@ module Texts {
         return day(time) + " " + clock(time);
     }
 
+    //! Name of the origin stop, or "My location"
+    function tripOrigin(trip as Trip) as String {
+        var origin = trip.origin;
+        return origin != null ? origin.name : get(Rez.Strings.MyLocation);
+    }
+
     //! "Vestec > Opatov"
-    function savedTrip(search as SavedSearch) as String {
-        return search.origin + " > " + search.destination;
+    function tripName(trip as Trip) as String {
+        return tripOrigin(trip) + " > " + trip.destination.name;
     }
 
     //! "12.11. 07:15", in the time zone of the watch
@@ -100,13 +106,82 @@ module Texts {
         return connection.departure + " - " + connection.arrival;
     }
 
-    //! "41 min, 331 > C"
-    function connectionSummary(connection as Connection) as String {
-        var summary = connection.durationMinutes + " " + get(Rez.Strings.Minutes);
-        if (!connection.lines.equals("")) {
-            summary += ", " + connection.lines;
+    //! Characters of a menu sub-label that fit the fr955 display.
+    const SUMMARY_BUDGET = 19;
+
+    //! A departure this many minutes away is counted down to.
+    const COUNTDOWN_MINUTES = 120;
+
+    //! "in 7 min, 331>C", "departed, 331>C" or, for departures further away,
+    //! "3h08, 674>538 +2" with the travel time. Short enough for one menu
+    //! line; the full line names are in the detail of the connection.
+    function connectionSummary(connection as Connection, now as Number) as String {
+        var summary = countdown(connection.departureTime, now);
+        if (summary == null) {
+            summary = duration(connection.durationMinutes);
+        }
+        var names = [] as Array<String>;
+        for (var i = 0; i < connection.legs.size(); i++) {
+            var leg = connection.legs[i];
+            if (!leg.isWalk()) {
+                names.add(shortLine(leg.line));
+            }
+        }
+        if (names.size() > 0) {
+            summary += ", " + joinLines(names, SUMMARY_BUDGET - summary.length() - 2);
         }
         return summary;
+    }
+
+    //! "in 7 min", "now", "departed"; null when the departure is unknown or
+    //! too far away for a countdown.
+    function countdown(departureTime as Number, now as Number) as String? {
+        if (departureTime == 0) {
+            return null;
+        }
+        var seconds = departureTime - now;
+        if (seconds < 0) {
+            return get(Rez.Strings.Departed);
+        }
+        var minutes = seconds / 60;
+        if (minutes >= COUNTDOWN_MINUTES) {
+            return null;
+        }
+        return minutes == 0 ? get(Rez.Strings.Now) : get(Rez.Strings.In) + " " + duration(minutes);
+    }
+
+    //! "41 min" or "3h08"
+    function duration(minutes as Number) as String {
+        if (minutes < 60) {
+            return minutes + " " + get(Rez.Strings.Minutes);
+        }
+        return (minutes / 60) + get(Rez.Strings.Hours) + (minutes % 60).format("%02d");
+    }
+
+    //! First word of a line name: "S21 (Os 15648)" gives "S21", "Os 20872"
+    //! gives "Os", "331" stays.
+    function shortLine(line as String) as String {
+        var space = line.find(" ");
+        if (space == null || space == 0) {
+            return line;
+        }
+        return line.substring(0, space) as String;
+    }
+
+    //! Joins `names` with ">" while they fit `budget` characters and counts
+    //! the rest: "674>538 +2". The first name is always kept.
+    function joinLines(names as Array<String>, budget as Number) as String {
+        var result = "";
+        for (var i = 0; i < names.size(); i++) {
+            var candidate = i == 0 ? names[i] : result + ">" + names[i];
+            var left = names.size() - i - 1;
+            var needed = candidate.length() + (left > 0 ? (" +" + left).length() : 0);
+            if (i > 0 && needed > budget) {
+                return result + " +" + (names.size() - i);
+            }
+            result = candidate;
+        }
+        return result;
     }
 
     //! "Walk 3 min"
