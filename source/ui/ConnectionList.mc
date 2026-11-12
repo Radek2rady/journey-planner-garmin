@@ -51,6 +51,7 @@ class ConnectionListDelegate extends WatchUi.Menu2InputDelegate {
             item.setSubLabel(Rez.Strings.NothingFound);
         } else {
             item.setSubLabel(null);
+            ConnectionSearch.remember(page);
             ConnectionList.push(page);
         }
         WatchUi.requestUpdate();

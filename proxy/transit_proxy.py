@@ -135,6 +135,9 @@ def compact_leg(leg: Json) -> Optional[Json]:
         "t": place_name(leg["to"]),
         "a": local_hhmm(leg["endTime"]),
     }
+    headsign = leg.get("headsign")
+    if headsign and headsign != out["t"]:
+        out["h"] = headsign
     track = leg["from"].get("track")
     if track:
         out["p"] = str(track)
@@ -159,7 +162,9 @@ def compact_connection(itinerary: Json) -> Json:
     }
 
 
-def search_connections(origin: str, destination: str, cursor: Optional[str]) -> Json:
+def search_connections(origin: str, destination: str, cursor: Optional[str],
+                       departure: Optional[int] = None) -> Json:
+    """Connections departing at `departure` (Unix seconds) or now; `cursor` continues a search."""
     params = {
         "fromPlace": origin,
         "toPlace": destination,
@@ -169,7 +174,8 @@ def search_connections(origin: str, destination: str, cursor: Optional[str]) -> 
     if cursor:
         params["pageCursor"] = cursor
     else:
-        params["time"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        start = datetime.fromtimestamp(departure, timezone.utc) if departure else datetime.now(timezone.utc)
+        params["time"] = start.strftime("%Y-%m-%dT%H:%M:%SZ")
     data = call_api("/plan", params)
     itineraries = data.get("itineraries", [])[:MAX_CONNECTIONS]
     return {"c": [compact_connection(it) for it in itineraries], "n": data.get("nextPageCursor", "")}
@@ -189,7 +195,10 @@ def handle(path: str, query: dict[str, str], key: str = "") -> tuple[int, Json]:
             origin, destination = query.get("from", ""), query.get("to", "")
             if not origin or not destination:
                 return 400, {"e": "bad_request"}
-            return 200, search_connections(origin, destination, query.get("c"))
+            departure = query.get("t", "")
+            if departure and not (departure.isdigit() and len(departure) <= 10):
+                return 400, {"e": "bad_request"}
+            return 200, search_connections(origin, destination, query.get("c"), int(departure) if departure else None)
         return 404, {"e": "not_found"}
     except urllib.error.HTTPError as error:
         return 502, {"e": "upstream_%d" % error.code}

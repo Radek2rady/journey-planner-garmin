@@ -76,6 +76,12 @@ class CompactLegTest(unittest.TestCase):
             {"k": "bus", "r": "331", "f": "Vestec,u Klimešů", "d": "16:19", "t": "Opatov", "a": "16:33", "p": "B", "z": 1},
         )
 
+    def test_headsign_is_passed_on(self):
+        self.assertEqual(proxy.compact_leg(transit_leg(headsign="Háje"))["h"], "Háje")
+
+    def test_headsign_equal_to_the_alighting_stop_is_omitted(self):
+        self.assertNotIn("h", proxy.compact_leg(transit_leg(headsign="Opatov")))
+
     def test_on_time_leg_has_no_delay(self):
         leg = proxy.compact_leg(transit_leg(scheduledStartTime="2026-11-11T15:19:00Z"))
         self.assertNotIn("z", leg)
@@ -168,6 +174,23 @@ class HandleTest(unittest.TestCase):
         params = call.call_args[0][1]
         self.assertEqual(params["pageCursor"], "next")
         self.assertNotIn("time", params)
+
+
+class DepartureTimeTest(unittest.TestCase):
+    def test_plan_passes_the_requested_departure_time(self):
+        with mock.patch.object(proxy, "call_api", return_value={"itineraries": []}) as call:
+            status, _ = proxy.handle("/plan", {"from": "a", "to": "b", "t": "1794510000"})
+        self.assertEqual(status, 200)
+        self.assertEqual(call.call_args[0][1]["time"], "2026-11-12T19:00:00Z")
+
+    def test_plan_without_time_starts_now(self):
+        with mock.patch.object(proxy, "call_api", return_value={"itineraries": []}) as call:
+            proxy.handle("/plan", {"from": "a", "to": "b"})
+        self.assertRegex(call.call_args[0][1]["time"], r"^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$")
+
+    def test_plan_rejects_a_malformed_time(self):
+        for value in ("soon", "-5", "17:30", "99999999999"):
+            self.assertEqual(proxy.handle("/plan", {"from": "a", "to": "b", "t": value}), (400, {"e": "bad_request"}))
 
 
 class HostedEntryPointsTest(unittest.TestCase):

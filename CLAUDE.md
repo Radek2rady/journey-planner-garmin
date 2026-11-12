@@ -18,9 +18,9 @@ The proxy forwards the query and returns a compact JSON (`docs/API.md`, ~2 kB).
 
 | Path | Responsibility |
 | --- | --- |
-| `source/TransitApp.mc` | Lifecycle; owns the services (`api`, `location`, `trip`) |
-| `source/model/` | `Stop`, `Leg`, `Connection`, `ConnectionsPage`; parsing of the wire format |
-| `source/data/` | `TransitApi` (HTTP), `LocationProvider` (GPS), `TripStore` (persistence) |
+| `source/TransitApp.mc` | Lifecycle; owns the services (`api`, `location`, `trip`, `savedSearches`) |
+| `source/model/` | `Stop`, `Leg`, `Connection`, `ConnectionsPage`, `SavedSearch`; parsing of the wire format |
+| `source/data/` | `TransitApi` (HTTP), `LocationProvider` (GPS), `TripStore` and `SavedSearches` (persistence) |
 | `source/ui/` | Views, menus and their delegates; `Texts` turns data into localized text |
 | `source/test/` | Watch unit tests (`(:test)` functions) |
 | `resources/`, `resources-ces/` | Strings: English is the default, Czech the translation |

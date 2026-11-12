@@ -9,6 +9,7 @@ class TransitApp extends Application.AppBase {
     var api as TransitApi = new TransitApi();
     var location as LocationProvider = new LocationProvider();
     var trip as TripStore = new TripStore();
+    var savedSearches as SavedSearches = new SavedSearches();
 
     function initialize() {
         AppBase.initialize();
@@ -16,6 +17,7 @@ class TransitApp extends Application.AppBase {
 
     function onStart(state as Dictionary?) as Void {
         trip.load();
+        savedSearches.load();
         location.start();
     }
 

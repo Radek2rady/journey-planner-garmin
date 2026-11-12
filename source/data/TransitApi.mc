@@ -42,10 +42,14 @@ class TransitApi {
 
     //! Finds connections departing now, or the page identified by `cursor`.
     //! `origin` is a stop id or "lat,lon".
-    function searchConnections(origin as String, destinationId as String, cursor as String?, callback as ConnectionsCallback) as Void {
+    //! `departureTime` is in Unix seconds, null means now. A `cursor` continues
+    //! an earlier search and takes precedence over the time.
+    function searchConnections(origin as String, destinationId as String, departureTime as Number?, cursor as String?, callback as ConnectionsCallback) as Void {
         var params = { "from" => origin, "to" => destinationId } as Dictionary<String, String>;
         if (cursor != null) {
             params["c"] = cursor;
+        } else if (departureTime != null) {
+            params["t"] = departureTime.toString();
         }
         _connectionsCallback = callback;
         get("/plan", params, method(:onConnectionsResponse));

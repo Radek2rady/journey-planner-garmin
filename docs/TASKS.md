@@ -5,9 +5,9 @@ part of the change that affects them.
 
 ## In progress (M2: On the wrist)
 
-- [ ] Deploy the proxy to Vercel (`docs/DEPLOY.md`); needs a GitHub repository and a
-      Vercel account
-- [ ] Confirm on the watch that holding UP/DOWN scrolls the letters fast
+- [ ] Confirm on the watch: direction in the leg detail, saved connections without the
+      phone, departure time
+
 - [ ] Measure memory use on the device (peak during the connections response)
 - [ ] Check text fit on the 260x260 round display: long stop names, leg detail lines
 
@@ -17,12 +17,10 @@ part of the change that affects them.
 
 - [ ] Favourite trips
 - [ ] Departure board of the nearest stop
-- [ ] Departure time selection
 - [ ] Countdown to departure
 
 ### Housekeeping
 
-- [ ] Show the direction (headsign) of a ride in the leg detail
 - [ ] Decide whether the project folder should be renamed from `Odjezdy` to `Transit`
 
 ## Done
@@ -34,8 +32,8 @@ part of the change that affects them.
 - [x] Origin by GPS or stop, destination by stop, recent stops, swap
 - [x] Connection list, leg detail with platform, delay and cancellation, later connections
 - [x] English and Czech strings in resources
-- [x] Watch unit tests (17, passing in the simulator): parsing, recent stops, coordinates,
-      API client, name entry, smoke tests of every screen
+- [x] Watch unit tests (22, passing in the simulator): parsing, storage round trips, recent
+      stops, coordinates, API client, name entry, smoke tests of every screen
 - [x] Own stop name entry (`StopNameEntry`) instead of the native `TextPicker`, which
       crashed the fr955 simulator on input ("Symbol Not Found Error: Failed invoking
       <symbol>", empty stack)
@@ -43,6 +41,10 @@ part of the change that affects them.
 - [x] Hosted proxy prepared: Vercel entry points (`proxy/api/`), proxy tests (27)
 - [x] Proxy address and key as build settings (`local.mk`, generated `BuildConfig`)
 - [x] Proxy deployed to Vercel; release build sideloaded and working on the Forerunner 955
-- [x] Name entry: holding UP/DOWN keeps moving through the letters
+- [x] Name entry: holding UP/DOWN keeps moving through the letters (4 per second)
+- [x] Direction (headsign) of a ride in the leg detail; wire key `h`
+- [x] Saved connections: results of the last 10 searches (one per trip) readable offline
+- [x] Departure time selection: now, an hour of the next 24, or another day up to 10
+      days ahead; quarter-hour steps; wire parameter `t`
 - [x] Git repository initialized and pushed to GitHub (by the user)
 - [x] Makefile, README, CLAUDE.md, API contract, plan

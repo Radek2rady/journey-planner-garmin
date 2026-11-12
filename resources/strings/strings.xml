@@ -13,6 +13,14 @@
     <string id="Swap">Swap</string>
     <string id="SwapHint">from and to</string>
     <string id="NeedBothStops">Set both stops first</string>
+    <string id="Departure">Departure</string>
+    <string id="Now">now</string>
+    <string id="Today">today</string>
+    <string id="Tomorrow">tomorrow</string>
+    <string id="OtherDay">Another day</string>
+    <string id="Saved">Saved connections</string>
+    <string id="SavedHint">last searches, work offline</string>
+    <string id="NothingSaved">Nothing saved yet</string>
 
     <!-- Stop chooser -->
     <string id="NearestByGps">nearest stops by GPS</string>
@@ -28,6 +36,7 @@
     <string id="GetOff">get off</string>
     <string id="Cancelled">CANCELLED</string>
     <string id="Platform">plat.</string>
+    <string id="Direction">to</string>
     <string id="Minutes">min</string>
     <string id="Destination">Destination</string>
 

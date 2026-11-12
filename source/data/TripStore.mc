@@ -12,6 +12,9 @@ class TripStore {
     //! null means "current location".
     var origin as Stop?;
     var destination as Stop?;
+    //! Requested departure in Unix seconds; null means now. Not persisted: a
+    //! time chosen in an earlier session would be stale.
+    var departureTime as Number?;
     //! Most recently used first.
     var recent as Array<Stop> = [] as Array<Stop>;
 

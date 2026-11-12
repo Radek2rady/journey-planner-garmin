@@ -1,20 +1,24 @@
 import Toybox.Lang;
+import Toybox.Time;
 import Toybox.WatchUi;
 
-//! Main menu: search, origin, destination, swap.
+//! Main menu: search, origin, destination, departure time, swap, saved connections.
 module MainMenu {
 
     function push() as Void {
         var app = getApp();
         var originItem = new WatchUi.MenuItem(Rez.Strings.From, Texts.originName(app.trip, app.location), :origin, null);
         var destinationItem = new WatchUi.MenuItem(Rez.Strings.To, Texts.destinationName(app.trip), :destination, null);
+        var departureItem = new WatchUi.MenuItem(Rez.Strings.Departure, Texts.departure(app.trip.departureTime), :when, null);
 
         var menu = new WatchUi.Menu2({ :title => Rez.Strings.Connections });
         menu.addItem(new WatchUi.MenuItem(Rez.Strings.FindConnections, null, :search, null));
         menu.addItem(originItem);
         menu.addItem(destinationItem);
+        menu.addItem(departureItem);
         menu.addItem(new WatchUi.MenuItem(Rez.Strings.Swap, Rez.Strings.SwapHint, :swap, null));
-        WatchUi.pushView(menu, new MainMenuDelegate(originItem, destinationItem), WatchUi.SLIDE_UP);
+        menu.addItem(new WatchUi.MenuItem(Rez.Strings.Saved, Rez.Strings.SavedHint, :saved, null));
+        WatchUi.pushView(menu, new MainMenuDelegate(originItem, destinationItem, departureItem), WatchUi.SLIDE_UP);
     }
 }
 
@@ -22,13 +26,15 @@ class MainMenuDelegate extends WatchUi.Menu2InputDelegate {
 
     private var _originItem as MenuItem;
     private var _destinationItem as MenuItem;
+    private var _departureItem as MenuItem;
     //! Item that reports the progress of the running search.
     private var _searchItem as MenuItem?;
 
-    function initialize(originItem as MenuItem, destinationItem as MenuItem) {
+    function initialize(originItem as MenuItem, destinationItem as MenuItem, departureItem as MenuItem) {
         Menu2InputDelegate.initialize();
         _originItem = originItem;
         _destinationItem = destinationItem;
+        _departureItem = departureItem;
         getApp().location.setListener(method(:refresh));
     }
 
@@ -40,8 +46,17 @@ class MainMenuDelegate extends WatchUi.Menu2InputDelegate {
             StopChooser.push(StopChooser.ORIGIN, method(:refresh));
         } else if (id == :destination) {
             StopChooser.push(StopChooser.DESTINATION, method(:refresh));
+        } else if (id == :when) {
+            DepartureMenu.push(method(:refresh));
         } else if (id == :swap) {
             swapStops(item);
+        } else if (id == :saved) {
+            if (getApp().savedSearches.searches.size() == 0) {
+                item.setSubLabel(Rez.Strings.NothingSaved);
+            } else {
+                item.setSubLabel(Rez.Strings.SavedHint);
+                SavedList.push();
+            }
         }
         WatchUi.requestUpdate();
     }
@@ -51,11 +66,12 @@ class MainMenuDelegate extends WatchUi.Menu2InputDelegate {
         WatchUi.popView(WatchUi.SLIDE_DOWN);
     }
 
-    //! Shows the current origin and destination in the menu.
+    //! Shows the current origin, destination and departure time in the menu.
     function refresh() as Void {
         var app = getApp();
         _originItem.setSubLabel(Texts.originName(app.trip, app.location));
         _destinationItem.setSubLabel(Texts.destinationName(app.trip));
+        _departureItem.setSubLabel(Texts.departure(app.trip.departureTime));
         WatchUi.requestUpdate();
     }
 
@@ -70,6 +86,7 @@ class MainMenuDelegate extends WatchUi.Menu2InputDelegate {
             item.setSubLabel(Rez.Strings.NothingFound);
         } else {
             item.setSubLabel(null);
+            ConnectionSearch.remember(page);
             ConnectionList.push(page);
         }
         WatchUi.requestUpdate();
@@ -114,7 +131,19 @@ module ConnectionSearch {
             }
             origin = TransitApi.formatCoordinates(coordinates);
         }
-        app.api.searchConnections(origin, destination.id, cursor, callback);
+        app.api.searchConnections(origin, destination.id, app.trip.departureTime, cursor, callback);
         return null;
+    }
+
+    //! Keeps the results of the current trip for reading without a connection.
+    function remember(page as ConnectionsPage) as Void {
+        var app = getApp();
+        var destination = app.trip.destination;
+        if (destination == null) {
+            return;
+        }
+        // Later pages cannot be loaded offline, so the cursor is not kept.
+        app.savedSearches.save(new SavedSearch(Texts.originName(app.trip, app.location), destination.name,
+            Time.now().value(), new ConnectionsPage(page.connections, null)));
     }
 }

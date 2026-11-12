@@ -3,4 +3,5 @@
 module Config {
     const MAX_RECENT_STOPS = 8;
     const MIN_QUERY_LENGTH = 2;
+    const MAX_SAVED_SEARCHES = 10;
 }

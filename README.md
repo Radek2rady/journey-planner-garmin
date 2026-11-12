@@ -34,6 +34,8 @@ speaks plain HTTP) and set a position with **Settings > Set Position**.
 | Menu > From | *My location*, *Enter name*, or a recent stop |
 | Menu > To | *Enter name* or a recent stop |
 | Enter name | UP/DOWN or swipe choose a letter (hold to move fast), START or tap types it, BACK erases; *Search* (one step above A) finishes |
+| Menu > Departure | *Now*, an hour of the next 24 hours, or *Another day* (up to 10 days ahead); then the minutes |
+| Menu > Saved connections | Results of the last 10 searches, readable without the phone |
 | Menu > Find connections | Lists connections; select one to see its legs |
 
 ## On the watch

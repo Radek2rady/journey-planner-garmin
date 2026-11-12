@@ -33,14 +33,14 @@ Exit criteria: full flow verified in the simulator; all tests green.
 
 ### M3: Faster daily use
 
+- Saved connections: results of the last searches readable without the phone (done)
+- Search for a chosen departure time, not only "now" (done)
 - Favourite trips (one tap from the home screen)
 - Departure board of the nearest stop
-- Search for a chosen departure time, not only "now"
 - Countdown to departure in the connection list
 
 ### M4: Resilience
 
-- Last results kept for offline viewing
 - Glance view with the next departure of the favourite trip
 - More devices than fr955
 
@@ -49,5 +49,5 @@ Exit criteria: full flow verified in the simulator; all tests green.
 | Risk | Mitigation |
 | --- | --- |
 | Transitous is a volunteer service without guarantees | The proxy contract isolates the app; the source can be swapped without touching the watch code. |
-| Request needs the phone nearby | Inherent to the platform (no LTE on fr955); M4 adds offline results. |
+| Request needs the phone nearby | Inherent to the platform (no LTE on fr955); results of the last searches are kept on the watch. Saved delays are those known at search time. |
 | Typing stop names is slow | Recents now, favourites in M3. |

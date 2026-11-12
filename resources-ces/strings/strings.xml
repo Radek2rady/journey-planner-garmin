@@ -12,6 +12,14 @@
     <string id="Swap">Prohodit</string>
     <string id="SwapHint">odkud a kam</string>
     <string id="NeedBothStops">Zadej obě zastávky</string>
+    <string id="Departure">Odjezd</string>
+    <string id="Now">teď</string>
+    <string id="Today">dnes</string>
+    <string id="Tomorrow">zítra</string>
+    <string id="OtherDay">Jiný den</string>
+    <string id="Saved">Uložené spoje</string>
+    <string id="SavedHint">poslední hledání, i bez spojení</string>
+    <string id="NothingSaved">Zatím nic uloženo</string>
 
     <string id="NearestByGps">nejbližší zastávky podle GPS</string>
     <string id="EnterName">Zadat název</string>
@@ -25,6 +33,7 @@
     <string id="GetOff">výstup</string>
     <string id="Cancelled">ZRUŠENO</string>
     <string id="Platform">nást.</string>
+    <string id="Direction">směr</string>
     <string id="Minutes">min</string>
     <string id="Destination">Cíl</string>
 

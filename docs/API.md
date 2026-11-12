@@ -31,9 +31,10 @@ it as `k`.
 | --- | --- | --- |
 | `from` | yes | Stop id, or `lat,lon` in degrees |
 | `to` | yes | Stop id |
-| `c` | no | Cursor from a previous response; returns the following connections |
+| `t` | no | Departure time, Unix seconds; the search starts then instead of now |
+| `c` | no | Cursor from a previous response; returns the following connections. Overrides `t` |
 
-Without `c` the search starts at the current time.
+Without `t` and `c` the search starts at the current time.
 
 ```json
 {
@@ -70,6 +71,7 @@ Leg:
 | `r` | ride | Line or train name |
 | `f` | ride | Boarding stop |
 | `d`, `a` | ride | Departure and arrival, `HH:MM`, including the delay |
+| `h` | optional | Direction (headsign); omitted when unknown or equal to `t` |
 | `p` | optional | Platform or stand |
 | `z` | optional | Delay in minutes (negative = early); only when real-time data says so |
 | `x` | optional | `1` when the ride is cancelled |
@@ -80,7 +82,7 @@ Non-200 responses carry `{"e": "<code>"}`:
 
 | Status | Code | Meaning |
 | --- | --- | --- |
-| 400 | `bad_request` | Missing or too short parameter |
+| 400 | `bad_request` | Missing, too short or malformed parameter |
 | 403 | `bad_key` | Wrong or missing `k` |
 | 404 | `not_found` | Unknown path |
 | 502 | `upstream`, `upstream_<status>` | Transitous failed or timed out |
