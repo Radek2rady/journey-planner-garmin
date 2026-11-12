@@ -110,8 +110,8 @@ class StopNameView extends WatchUi.View {
 class StopNameDelegate extends WatchUi.BehaviorDelegate {
 
     //! Holding UP or DOWN this long starts moving through the keys repeatedly.
-    private const REPEAT_DELAY_MS = 400;
-    private const REPEAT_INTERVAL_MS = 110;
+    private const REPEAT_DELAY_MS = 500;
+    private const REPEAT_INTERVAL_MS = 250;
     //! A page behavior arriving this soon after a hold belongs to that hold.
     private const RELEASE_GUARD_MS = 300;
 
