@@ -22,7 +22,6 @@ part of the change that affects them.
 
 ### Housekeeping
 
-- [ ] Initialize git and make the first commit (done by the user)
 - [ ] Show the direction (headsign) of a ride in the leg detail
 - [ ] Decide whether the project folder should be renamed from `Odjezdy` to `Transit`
 
@@ -43,4 +42,5 @@ part of the change that affects them.
 - [x] Full flow verified in the simulator: stop search, connections with a transfer
 - [x] Hosted proxy prepared: Vercel entry points (`proxy/api/`), proxy tests (27)
 - [x] Proxy address and key as build settings (`local.mk`, generated `BuildConfig`)
+- [x] Git repository initialized and pushed to GitHub (by the user)
 - [x] Makefile, README, CLAUDE.md, API contract, plan
