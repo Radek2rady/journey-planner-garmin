@@ -18,12 +18,25 @@
     <string id="Today">today</string>
     <string id="Tomorrow">tomorrow</string>
     <string id="OtherDay">Another day</string>
+    <string id="Filters">Filters</string>
+    <string id="FiltersOff">off</string>
+    <string id="Transfers">Transfers</string>
+    <string id="Vehicles">Vehicles</string>
+    <string id="FilterAny">any</string>
+    <string id="FilterDirect">direct only</string>
+    <string id="FilterMax">max</string>
+    <string id="FilterAllVehicles">all</string>
+    <string id="FilterTrains">trains only</string>
+    <string id="FilterNoTrains">without trains</string>
     <string id="Saved">Saved connections</string>
     <string id="SavedHint">last searches, work offline</string>
     <string id="NothingSaved">Nothing saved yet</string>
     <string id="Favourites">Favourite trips</string>
     <string id="AddCurrentTrip">Add current trip</string>
     <string id="RemoveFavourite">Remove a trip</string>
+    <string id="Board">Departure board</string>
+    <string id="BoardHint">what leaves from a stop</string>
+    <string id="NearestStop">Nearest stop</string>
 
     <!-- Stop chooser -->
     <string id="NearestByGps">nearest stops by GPS</string>

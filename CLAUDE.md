@@ -19,7 +19,7 @@ The proxy forwards the query and returns a compact JSON (`docs/API.md`, ~2 kB).
 | Path | Responsibility |
 | --- | --- |
 | `source/TransitApp.mc` | Lifecycle; owns the services (`api`, `location`, `trip`, `favourites`, `savedSearches`) |
-| `source/model/` | `Stop`, `Trip`, `Leg`, `Connection`, `ConnectionsPage`, `SavedSearch`; parsing of the wire format |
+| `source/model/` | `Stop`, `Trip`, `SearchFilters`, `Leg`, `Connection`, `ConnectionsPage`, `SavedSearch`, `Departure`, `DepartureBoard`; parsing of the wire format |
 | `source/data/` | `TransitApi` (HTTP), `LocationProvider` (GPS), `TripStore`, `Favourites`, `SavedSearches` (persistence) |
 | `source/ui/` | Views, menus and their delegates; `Texts` turns data into localized text |
 | `source/test/` | Watch unit tests (`(:test)` functions) |
@@ -88,5 +88,9 @@ command line when the key lives elsewhere.
   compiler warns about the collision.
 - `Storage.setValue` wants `Storage.KeyType` / `Storage.ValueType`; see `TripStore`.
 - `monkeydo` does not exit after `make run`; stop it with Ctrl+C.
+- Transitous counts `maxTransfers` one higher than the number of changes; the proxy
+  compensates and enforces the limit on the result (`search_connections`).
+- A new proxy endpoint needs its own function file in `proxy/api/`, otherwise it exists
+  locally but not on Vercel.
 - Transitous is a free community service: keep request volume low and the `User-Agent`
   in the proxy meaningful.

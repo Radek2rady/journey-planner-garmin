@@ -17,12 +17,25 @@
     <string id="Today">dnes</string>
     <string id="Tomorrow">zítra</string>
     <string id="OtherDay">Jiný den</string>
+    <string id="Filters">Filtry</string>
+    <string id="FiltersOff">vypnuto</string>
+    <string id="Transfers">Přestupy</string>
+    <string id="Vehicles">Dopravní prostředky</string>
+    <string id="FilterAny">libovolně</string>
+    <string id="FilterDirect">jen přímé</string>
+    <string id="FilterMax">max.</string>
+    <string id="FilterAllVehicles">vše</string>
+    <string id="FilterTrains">jen vlaky</string>
+    <string id="FilterNoTrains">bez vlaků</string>
     <string id="Saved">Uložené spoje</string>
     <string id="SavedHint">poslední hledání, i bez spojení</string>
     <string id="NothingSaved">Zatím nic uloženo</string>
     <string id="Favourites">Oblíbené trasy</string>
     <string id="AddCurrentTrip">Přidat aktuální trasu</string>
     <string id="RemoveFavourite">Odebrat trasu</string>
+    <string id="Board">Tabule odjezdů</string>
+    <string id="BoardHint">co jede ze zastávky</string>
+    <string id="NearestStop">Nejbližší zastávka</string>
 
     <string id="NearestByGps">nejbližší zastávky podle GPS</string>
     <string id="EnterName">Zadat název</string>

@@ -8,6 +8,7 @@ class TripStore {
     private const KEY_ORIGIN = "origin";
     private const KEY_DESTINATION = "destination";
     private const KEY_RECENT = "recent";
+    private const KEY_FILTERS = "filters";
 
     //! null means "current location".
     var origin as Stop?;
@@ -15,6 +16,7 @@ class TripStore {
     //! Requested departure in Unix seconds; null means now. Not persisted: a
     //! time chosen in an earlier session would be stale.
     var departureTime as Number?;
+    var filters as SearchFilters = new SearchFilters();
     //! Most recently used first.
     var recent as Array<Stop> = [] as Array<Stop>;
 
@@ -24,6 +26,8 @@ class TripStore {
     function load() as Void {
         origin = loadStop(KEY_ORIGIN);
         destination = loadStop(KEY_DESTINATION);
+        var savedFilters = Storage.getValue(KEY_FILTERS) as Dictionary?;
+        filters = savedFilters != null ? SearchFilters.fromDictionary(savedFilters) : new SearchFilters();
         var saved = Storage.getValue(KEY_RECENT) as Array<Dictionary>?;
         recent = [] as Array<Stop>;
         if (saved != null) {
@@ -43,6 +47,11 @@ class TripStore {
         destination = stop;
         saveStop(KEY_DESTINATION, stop);
         remember(stop);
+    }
+
+    //! Call after changing `filters`.
+    function saveFilters() as Void {
+        Storage.setValue(KEY_FILTERS, filters.toDictionary() as Dictionary<Storage.KeyType, Storage.ValueType>);
     }
 
     //! The planned trip; null while no destination is set.

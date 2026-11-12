@@ -68,7 +68,7 @@ function textsDescribeALeg(logger as Logger) as Boolean {
 function mainMenuOpensAndHandlesItems(logger as Logger) as Boolean {
     MainMenu.push();
     var item = new WatchUi.MenuItem("x", null, :swap, null);
-    var delegate = new MainMenuDelegate(item, item, item, item);
+    var delegate = new MainMenuDelegate(item, item, item, item, item);
     delegate.refresh();
     delegate.onSelect(item);
     delegate.onSelect(new WatchUi.MenuItem("x", null, :search, null));
@@ -80,7 +80,7 @@ function mainMenuOpensAndHandlesItems(logger as Logger) as Boolean {
 (:test)
 function stopChooserOpensAndHandlesItems(logger as Logger) as Boolean {
     var item = new WatchUi.MenuItem("x", null, :name, null);
-    var main = new MainMenuDelegate(item, item, item, item);
+    var main = new MainMenuDelegate(item, item, item, item, item);
     StopChooser.push(StopChooser.ORIGIN, main.method(:refresh));
     StopChooser.push(StopChooser.DESTINATION, main.method(:refresh));
 
@@ -107,7 +107,7 @@ function connectionListAndDetailOpen(logger as Logger) as Boolean {
     var listItem = new WatchUi.MenuItem("x", null, 0, null);
     var delegate = new ConnectionListDelegate(page, [listItem] as Array<MenuItem>, sampleTrip("a", "b"), null);
     delegate.refreshCountdowns(1794410160 - 600);
-    ConnectionList.onTick();
+    CountdownTicker.onTick();
     delegate.onSelect(new WatchUi.MenuItem("x", null, :again, null));
     Test.assert((getApp().trip.currentTrip() as Trip).isSame(sampleTrip("a", "b")));
     delegate.onSelect(new WatchUi.MenuItem("x", null, 0, null));
@@ -154,7 +154,7 @@ function nameInputTypesErasesAndFinishes(logger as Logger) as Boolean {
 (:test)
 function stopNameEntryOpensAndHandlesKeys(logger as Logger) as Boolean {
     var item = new WatchUi.MenuItem("x", null, :name, null);
-    var main = new MainMenuDelegate(item, item, item, item);
+    var main = new MainMenuDelegate(item, item, item, item, item);
     var chooser = new StopChooserDelegate(StopChooser.DESTINATION, [] as Array<Stop>, main.method(:refresh));
     chooser.onSelect(item);
 
@@ -174,7 +174,7 @@ function stopNameEntryOpensAndHandlesKeys(logger as Logger) as Boolean {
 (:test)
 function holdingAButtonRepeatsWithoutAnExtraStep(logger as Logger) as Boolean {
     var item = new WatchUi.MenuItem("x", null, :name, null);
-    var main = new MainMenuDelegate(item, item, item, item);
+    var main = new MainMenuDelegate(item, item, item, item, item);
     var chooser = new StopChooserDelegate(StopChooser.DESTINATION, [] as Array<Stop>, main.method(:refresh));
     var input = new NameInput();
     var delegate = new StopNameDelegate(input, chooser);
@@ -223,8 +223,8 @@ function savedListOpensAndShowsASearch(logger as Logger) as Boolean {
     logger.debug(Texts.savedAt(search));
 
     var item = new WatchUi.MenuItem("x", null, :saved, null);
-    new MainMenuDelegate(item, item, item, item).onSelect(item);
-    var main = new MainMenuDelegate(item, item, item, item);
+    new MainMenuDelegate(item, item, item, item, item).onSelect(item);
+    var main = new MainMenuDelegate(item, item, item, item, item);
     SavedList.push(main.method(:refresh));
     new SavedListDelegate([search] as Array<SavedSearch>, main.method(:refresh)).onSelect(new WatchUi.MenuItem("x", null, 0, null));
     return true;
@@ -236,7 +236,7 @@ function departureMenuSetsAndClearsTheTime(logger as Logger) as Boolean {
     Test.assertEqual(DepartureMenu.hourStart(100000, 34, 56, 2), 100000 - 34 * 60 - 56 + 7200);
 
     var item = new WatchUi.MenuItem("x", null, :when, null);
-    var main = new MainMenuDelegate(item, item, item, item);
+    var main = new MainMenuDelegate(item, item, item, item, item);
     main.onSelect(item);
     DepartureMenu.pushMinutes(1794510000, main.method(:refresh), 2);
 
@@ -272,7 +272,7 @@ function departureMenuSetsAndClearsTheTime(logger as Logger) as Boolean {
 function favouriteListAddsChoosesAndRemoves(logger as Logger) as Boolean {
     var app = getApp();
     var item = new WatchUi.MenuItem("x", null, :favourites, null);
-    var main = new MainMenuDelegate(item, item, item, item);
+    var main = new MainMenuDelegate(item, item, item, item, item);
     main.onSelect(item);
 
     var plannedOrigin = app.trip.origin;
@@ -294,7 +294,94 @@ function favouriteListAddsChoosesAndRemoves(logger as Logger) as Boolean {
     return true;
 }
 
+(:test)
+function filterMenuCyclesThroughTheChoices(logger as Logger) as Boolean {
+    var trip = getApp().trip;
+    var before = trip.filters;
+    trip.filters = new SearchFilters();
+
+    var item = new WatchUi.MenuItem("x", null, :filters, null);
+    var main = new MainMenuDelegate(item, item, item, item, item);
+    main.onSelect(item);
+    var menu = new FilterMenuDelegate(main.method(:refresh));
+    logger.debug(Texts.filters(trip.filters));
+
+    menu.onSelect(new WatchUi.MenuItem("x", null, :transfers, null));
+    Test.assertEqual(trip.filters.maxTransfers as Number, 0);
+    menu.onSelect(new WatchUi.MenuItem("x", null, :vehicles, null));
+    Test.assertEqual(trip.filters.vehicles, SearchFilters.TRAINS_ONLY);
+    logger.debug(Texts.filters(trip.filters));
+    menu.onSelect(new WatchUi.MenuItem("x", null, :transfers, null));
+    logger.debug(Texts.transfersFilter(trip.filters) + " / " + Texts.vehiclesFilter(trip.filters));
+
+    trip.filters = before;
+    trip.saveFilters();
+    return true;
+}
+
+function sampleBoard() as DepartureBoard {
+    return DepartureBoard.fromDictionary({
+        "n" => "Vestec,BIOCEV",
+        "d" => [
+            { "k" => "bus", "r" => "326", "h" => "Jesenice,Belnická", "d" => "16:19", "s" => 1794410340, "p" => "A", "z" => 1 },
+            { "k" => "train", "r" => "S21", "h" => "", "d" => "19:40", "s" => 1794422400, "x" => 1 }
+        ]
+    });
+}
+
+(:test)
+function departureBoardIsParsedAndDescribed(logger as Logger) as Boolean {
+    var board = sampleBoard();
+    Test.assertEqual(board.stopName, "Vestec,BIOCEV");
+    Test.assertEqual(board.departures.size(), 2);
+
+    var bus = board.departures[0];
+    Test.assertEqual(bus.platform as String, "A");
+    Test.assertEqual(bus.delayMinutes, 1);
+    Test.assert(!bus.cancelled);
+    Test.assertEqual(Texts.boardDirection(bus), "Jesenice,Belnická");
+    // More than two hours ahead: the time instead of a countdown.
+    Test.assertEqual(Texts.boardLine(bus, 1794410340 - 3 * 3600), "326 16:19");
+    logger.debug(Texts.boardLine(bus, 1794410340 - 4 * 60));
+    logger.debug(Texts.departureDetails(bus));
+
+    var train = board.departures[1];
+    Test.assert(train.cancelled);
+    Test.assert(train.platform == null);
+    logger.debug(Texts.boardDirection(train));
+    logger.debug(Texts.departureDetails(train));
+    return true;
+}
+
+(:test)
+function departureBoardOpensFromTheChooser(logger as Logger) as Boolean {
+    var item = new WatchUi.MenuItem("x", null, :board, null);
+    new MainMenuDelegate(item, item, item, item, item).onSelect(item);
+
+    var stops = [new Stop("cz-1", "Opatov", "Praha")] as Array<Stop>;
+    var chooser = new BoardChooserDelegate(stops);
+    chooser.onSelect(new WatchUi.MenuItem("x", null, :nearest, null));
+    chooser.onSelect(new WatchUi.MenuItem("x", null, 0, null));
+    chooser.onBoard(null, new ApiError(502, "upstream"));
+    chooser.onBoard(new DepartureBoard("", [] as Array<Departure>), null);
+    chooser.onBoard(sampleBoard(), null);
+
+    var board = sampleBoard();
+    var line = new WatchUi.MenuItem("x", null, 0, null);
+    var delegate = new DepartureBoardDelegate(board, [line, line] as Array<MenuItem>);
+    delegate.refreshCountdowns(1794410340 - 600);
+    delegate.onSelect(line);
+    return true;
+}
+
 class ApiProbe {
+    var board as DepartureBoard?;
+
+    function onBoard(board as DepartureBoard?, error as ApiError?) as Void {
+        self.board = board;
+        self.error = error;
+    }
+
     var stops as Array<Stop>?;
     var page as ConnectionsPage?;
     var error as ApiError?;
@@ -337,13 +424,29 @@ function apiDeliversConnectionsAndErrors(logger as Logger) as Boolean {
     var api = new TransitApi();
     var probe = new ApiProbe();
 
-    api.searchConnections("49.98060,14.50500", "cz-1", 1794510000, null, probe.method(:onConnections));
+    api.searchConnections("49.98060,14.50500", "cz-1", 1794510000, new SearchFilters(), null, probe.method(:onConnections));
     api.onConnectionsResponse(200, { "c" => [], "n" => "" });
     Test.assertEqual((probe.page as ConnectionsPage).connections.size(), 0);
 
-    api.searchConnections("cz-2", "cz-1", null, "LATER|1", probe.method(:onConnections));
+    api.searchConnections("cz-2", "cz-1", null, SearchFilters.fromDictionary({ "x" => 0, "v" => "train" }), "LATER|1", probe.method(:onConnections));
     api.onConnectionsResponse(-104, null);
     Test.assert(probe.page == null);
     Test.assertEqual((probe.error as ApiError).code, -104);
+    return true;
+}
+
+(:test)
+function apiDeliversDeparturesAndErrors(logger as Logger) as Boolean {
+    var api = new TransitApi();
+    var probe = new ApiProbe();
+
+    api.searchDepartures("cz-1", null, probe.method(:onBoard));
+    api.onDeparturesResponse(200, { "n" => "Opatov", "d" => [] });
+    Test.assertEqual((probe.board as DepartureBoard).stopName, "Opatov");
+
+    api.searchDepartures(null, [49.9806d, 14.505d], probe.method(:onBoard));
+    api.onDeparturesResponse(400, { "e" => "bad_request" });
+    Test.assert(probe.board == null);
+    Test.assertEqual((probe.error as ApiError).serverCode as String, "bad_request");
     return true;
 }

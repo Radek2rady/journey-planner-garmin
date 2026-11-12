@@ -84,6 +84,38 @@ module Texts {
         return day(time) + " " + clock(time);
     }
 
+    //! "any", "direct only" or "max 1"
+    function transfersFilter(filters as SearchFilters) as String {
+        var limit = filters.maxTransfers;
+        if (limit == null) {
+            return get(Rez.Strings.FilterAny);
+        }
+        return limit == 0 ? get(Rez.Strings.FilterDirect) : get(Rez.Strings.FilterMax) + " " + limit;
+    }
+
+    //! "all", "trains only" or "without trains"
+    function vehiclesFilter(filters as SearchFilters) as String {
+        if (filters.vehicles.equals(SearchFilters.TRAINS_ONLY)) {
+            return get(Rez.Strings.FilterTrains);
+        }
+        return get(filters.vehicles.equals(SearchFilters.NO_TRAINS) ? Rez.Strings.FilterNoTrains : Rez.Strings.FilterAllVehicles);
+    }
+
+    //! The filters in use, "direct only, trains only", or "off"
+    function filters(filters as SearchFilters) as String {
+        var parts = [] as Array<String>;
+        if (filters.maxTransfers != null) {
+            parts.add(transfersFilter(filters));
+        }
+        if (!filters.vehicles.equals(SearchFilters.ALL_VEHICLES)) {
+            parts.add(vehiclesFilter(filters));
+        }
+        if (parts.size() == 0) {
+            return get(Rez.Strings.FiltersOff);
+        }
+        return parts.size() == 1 ? parts[0] : parts[0] + ", " + parts[1];
+    }
+
     //! Name of the origin stop, or "My location"
     function tripOrigin(trip as Trip) as String {
         var origin = trip.origin;
@@ -148,6 +180,38 @@ module Texts {
             return null;
         }
         return minutes == 0 ? get(Rez.Strings.Now) : get(Rez.Strings.In) + " " + duration(minutes);
+    }
+
+    //! "326 in 4 min", or "326 16:19" for a departure too far for a countdown.
+    //! Train names are shortened; the full name is in `departureDetails`.
+    function boardLine(departure as Departure, now as Number) as String {
+        var when = countdown(departure.departureTime, now);
+        return shortLine(departure.line) + " " + (when != null ? when : departure.time);
+    }
+
+    //! The direction, or the kind of vehicle when the direction is unknown
+    function boardDirection(departure as Departure) as String {
+        var direction = departure.headsign.equals("") ? vehicle(departure.vehicle) : departure.headsign;
+        return departure.cancelled ? get(Rez.Strings.Cancelled) + " " + direction : direction;
+    }
+
+    //! All that is known about a departure, one fact per line
+    function departureDetails(departure as Departure) as String {
+        var details = departure.time;
+        if (departure.cancelled) {
+            details += " " + get(Rez.Strings.Cancelled);
+        } else if (departure.delayMinutes != 0) {
+            details += " (" + (departure.delayMinutes > 0 ? "+" : "") + departure.delayMinutes + " " + get(Rez.Strings.Minutes) + ")";
+        }
+        details += "\n" + vehicle(departure.vehicle) + " " + departure.line;
+        if (!departure.headsign.equals("")) {
+            details += "\n" + get(Rez.Strings.Direction) + " " + departure.headsign;
+        }
+        var platform = departure.platform;
+        if (platform != null) {
+            details += "\n" + get(Rez.Strings.Platform) + " " + platform;
+        }
+        return details;
     }
 
     //! "41 min" or "3h08"

@@ -1,18 +1,11 @@
 import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.Time;
-import Toybox.Timer;
 import Toybox.WatchUi;
 
 //! List of found connections; selecting one opens its legs. The countdowns
-//! to departure in the list on top are refreshed by one shared timer.
+//! to departure are kept current by `CountdownTicker`.
 module ConnectionList {
-
-    const REFRESH_MS = 30000;
-
-    //! Delegates of the open lists, the visible one last.
-    var open as Array<ConnectionListDelegate> = [] as Array<ConnectionListDelegate>;
-    var ticker as Timer.Timer?;
 
     //! `savedTrip` is set for results read from storage: the list then offers
     //! to search that trip again, and calls `onTripChanged` when it does.
@@ -33,32 +26,8 @@ module ConnectionList {
             menu.addItem(new WatchUi.MenuItem(Rez.Strings.SearchAgain, null, :again, null));
         }
         var delegate = new ConnectionListDelegate(page, items, savedTrip, onTripChanged);
-        opened(delegate);
+        CountdownTicker.opened(delegate);
         WatchUi.pushView(menu, delegate, WatchUi.SLIDE_LEFT);
-    }
-
-    function opened(delegate as ConnectionListDelegate) as Void {
-        open.add(delegate);
-        if (ticker == null) {
-            var timer = new Timer.Timer();
-            timer.start(new Lang.Method(ConnectionList, :onTick), REFRESH_MS, true);
-            ticker = timer;
-        }
-    }
-
-    function closed(delegate as ConnectionListDelegate) as Void {
-        open.remove(delegate);
-        var timer = ticker;
-        if (open.size() == 0 && timer != null) {
-            timer.stop();
-            ticker = null;
-        }
-    }
-
-    function onTick() as Void {
-        if (open.size() > 0) {
-            open[open.size() - 1].refreshCountdowns(Time.now().value());
-        }
     }
 }
 
@@ -92,7 +61,7 @@ class ConnectionListDelegate extends WatchUi.Menu2InputDelegate {
     }
 
     function onBack() as Void {
-        ConnectionList.closed(self);
+        CountdownTicker.closed(self);
         WatchUi.popView(WatchUi.SLIDE_RIGHT);
     }
 

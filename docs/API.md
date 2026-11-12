@@ -33,6 +33,10 @@ it as `k`.
 | `to` | yes | Stop id |
 | `t` | no | Departure time, Unix seconds; the search starts then instead of now |
 | `c` | no | Cursor from a previous response; returns the following connections. Overrides `t` |
+| `x` | no | Maximum number of transfers, `0` to `5`; `0` means direct connections only |
+| `v` | no | Allowed vehicles: comma-separated vehicle codes (`bus`, `tram`, `metro`, `train`, `ferry`, `cable`, `air`) |
+
+`x` and `v` must be repeated together with `c`.
 
 Without `t` and `c` the search starts at the current time.
 
@@ -76,6 +80,34 @@ Leg:
 | `p` | optional | Platform or stand |
 | `z` | optional | Delay in minutes (negative = early); only when real-time data says so |
 | `x` | optional | `1` when the ride is cancelled |
+
+## GET /departures
+
+Departure board of one stop: what leaves next, in all directions.
+
+| Parameter | Required | Meaning |
+| --- | --- | --- |
+| `stop` | one of | Stop id |
+| `lat`, `lon` | one of | Position in degrees; the nearest stop is used |
+
+```json
+{"n": "Vestec,BIOCEV", "d": [
+  {"k": "bus", "r": "326", "h": "Jesenice,Belnická", "d": "16:19", "s": 1794410340, "p": "A", "z": 1}
+]}
+```
+
+| Key | Present | Meaning |
+| --- | --- | --- |
+| `n` | always | Name of the stop; empty when no stop is near the position |
+| `d` | always | Departures in time order, at most 10 |
+| `k` | always | Vehicle code |
+| `r` | always | Line or train name |
+| `h` | always | Direction (headsign); may be empty |
+| `d` | always | Departure, local time `HH:MM`, including the delay |
+| `s` | always | Departure as Unix seconds |
+| `p` | optional | Platform or stand |
+| `z` | optional | Delay in minutes; only when real-time data says so |
+| `x` | optional | `1` when the departure is cancelled |
 
 ## Errors
 

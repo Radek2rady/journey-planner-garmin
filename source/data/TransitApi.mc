@@ -18,6 +18,7 @@ class ApiError {
 typedef ResponseData as Dictionary or String or PersistedContent.Iterator or Null;
 typedef StopsCallback as Method(stops as Array<Stop>?, error as ApiError?) as Void;
 typedef ConnectionsCallback as Method(page as ConnectionsPage?, error as ApiError?) as Void;
+typedef BoardCallback as Method(board as DepartureBoard?, error as ApiError?) as Void;
 
 //! Client of the proxy (docs/API.md). One request of each kind may be in
 //! flight; a newer request replaces the callback of an older one.
@@ -25,6 +26,7 @@ class TransitApi {
 
     private var _stopsCallback as StopsCallback?;
     private var _connectionsCallback as ConnectionsCallback?;
+    private var _boardCallback as BoardCallback?;
 
     function initialize() {
     }
@@ -44,12 +46,20 @@ class TransitApi {
     //! `origin` is a stop id or "lat,lon".
     //! `departureTime` is in Unix seconds, null means now. A `cursor` continues
     //! an earlier search and takes precedence over the time.
-    function searchConnections(origin as String, destinationId as String, departureTime as Number?, cursor as String?, callback as ConnectionsCallback) as Void {
+    //! The filters are sent with a `cursor` as well.
+    function searchConnections(origin as String, destinationId as String, departureTime as Number?, filters as SearchFilters, cursor as String?, callback as ConnectionsCallback) as Void {
         var params = { "from" => origin, "to" => destinationId } as Dictionary<String, String>;
         if (cursor != null) {
             params["c"] = cursor;
         } else if (departureTime != null) {
             params["t"] = departureTime.toString();
+        }
+        var maxTransfers = filters.maxTransfers;
+        if (maxTransfers != null) {
+            params["x"] = maxTransfers.toString();
+        }
+        if (!filters.vehicles.equals(SearchFilters.ALL_VEHICLES)) {
+            params["v"] = filters.vehicles;
         }
         _connectionsCallback = callback;
         get("/plan", params, method(:onConnectionsResponse));
@@ -57,6 +67,33 @@ class TransitApi {
 
     static function formatCoordinates(coordinates as Coordinates) as String {
         return formatDegrees(coordinates[0]) + "," + formatDegrees(coordinates[1]);
+    }
+
+    //! Departure board of the stop `stopId`, or of the stop nearest to `near`
+    //! when no stop is given.
+    function searchDepartures(stopId as String?, near as Coordinates?, callback as BoardCallback) as Void {
+        var params = {} as Dictionary<String, String>;
+        if (stopId != null) {
+            params["stop"] = stopId;
+        } else if (near != null) {
+            params["lat"] = formatDegrees(near[0]);
+            params["lon"] = formatDegrees(near[1]);
+        }
+        _boardCallback = callback;
+        get("/departures", params, method(:onDeparturesResponse));
+    }
+
+    function onDeparturesResponse(code as Number, data as ResponseData) as Void {
+        var callback = _boardCallback;
+        _boardCallback = null;
+        if (callback == null) {
+            return;
+        }
+        if (code != 200 || !(data instanceof Dictionary)) {
+            callback.invoke(null, toError(code, data));
+            return;
+        }
+        callback.invoke(DepartureBoard.fromDictionary(data), null);
     }
 
     function onStopsResponse(code as Number, data as ResponseData) as Void {

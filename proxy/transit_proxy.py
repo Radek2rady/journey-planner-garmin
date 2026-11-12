@@ -37,6 +37,9 @@ UPSTREAM_TIMEOUT_S = 25
 
 MAX_STOPS = 8
 MAX_CONNECTIONS = 5
+MAX_DEPARTURES = 10
+# Platforms of one stop are separate upstream stops; this radius joins them.
+STOP_RADIUS_M = 200
 WALK = "walk"
 
 # Transitous (MOTIS) mode -> vehicle code understood by the watch app.
@@ -52,6 +55,18 @@ VEHICLES = {
     "CABLE_CAR": "cable",
     "AIRPLANE": "air",
 }
+
+# Vehicle code -> upstream modes, for the vehicle filter of /plan.
+MODES = {
+    "bus": ["BUS", "COACH"],
+    "tram": ["TRAM"],
+    "metro": ["SUBWAY", "METRO"],
+    "train": ["RAIL"],
+    "ferry": ["FERRY"],
+    "cable": ["FUNICULAR", "AERIAL_LIFT", "CABLE_CAR"],
+    "air": ["AIRPLANE"],
+}
+MAX_TRANSFER_LIMIT = 5
 
 Json = dict[str, Any]
 
@@ -163,9 +178,19 @@ def compact_connection(itinerary: Json) -> Json:
     }
 
 
+def transfer_count(itinerary: Json) -> int:
+    rides = sum(1 for leg in itinerary["legs"] if leg["mode"] != "WALK")
+    return max(rides - 1, 0)
+
+
 def search_connections(origin: str, destination: str, cursor: Optional[str],
-                       departure: Optional[int] = None) -> Json:
-    """Connections departing at `departure` (Unix seconds) or now; `cursor` continues a search."""
+                       departure: Optional[int] = None, max_transfers: Optional[int] = None,
+                       vehicles: Optional[list[str]] = None) -> Json:
+    """Connections departing at `departure` (Unix seconds) or now; `cursor` continues a search.
+
+    `max_transfers` and `vehicles` (vehicle codes) narrow the search and apply to
+    continued searches as well.
+    """
     params = {
         "fromPlace": origin,
         "toPlace": destination,
@@ -177,9 +202,72 @@ def search_connections(origin: str, destination: str, cursor: Optional[str],
     else:
         start = datetime.fromtimestamp(departure, timezone.utc) if departure else datetime.now(timezone.utc)
         params["time"] = start.strftime("%Y-%m-%dT%H:%M:%SZ")
+    if max_transfers is not None:
+        # Upstream counts one more than the number of changes: its limit N returns
+        # at most N - 1 transfers. Ask for one more and enforce the limit below,
+        # which stays correct if upstream changes its counting.
+        params["maxTransfers"] = str(max_transfers + 1)
+    if vehicles:
+        params["transitModes"] = ",".join(mode for code in vehicles for mode in MODES[code])
     data = call_api("/plan", params)
-    itineraries = data.get("itineraries", [])[:MAX_CONNECTIONS]
+    itineraries = [it for it in data.get("itineraries", [])
+                   if max_transfers is None or transfer_count(it) <= max_transfers][:MAX_CONNECTIONS]
     return {"c": [compact_connection(it) for it in itineraries], "n": data.get("nextPageCursor", "")}
+
+
+def compact_departure(stop_time: Json) -> Optional[Json]:
+    """One line of a departure board, or None for a vehicle that only arrives."""
+    place = stop_time["place"]
+    if not place.get("departure") or place.get("pickupType") == "NOT_ALLOWED":
+        return None
+    out: Json = {
+        "k": vehicle_code(stop_time["mode"]),
+        "r": stop_time.get("displayName") or stop_time.get("routeShortName") or "",
+        "h": stop_time.get("headsign") or "",
+        "d": local_hhmm(place["departure"]),
+        "s": int(parse_time(place["departure"]).timestamp()),
+    }
+    track = place.get("track")
+    if track:
+        out["p"] = str(track)
+    if stop_time.get("realTime") and place.get("scheduledDeparture"):
+        delay = parse_time(place["departure"]) - parse_time(place["scheduledDeparture"])
+        delay_minutes = round(delay.total_seconds() / 60)
+        if delay_minutes:
+            out["z"] = delay_minutes
+    if stop_time.get("cancelled") or place.get("cancelled"):
+        out["x"] = 1
+    return out
+
+
+def nearest_stop(lat: str, lon: str) -> Optional[Json]:
+    found = call_api("/reverse-geocode", {"place": lat + "," + lon, "type": "STOP"})
+    return next((item for item in found if item.get("type") == "STOP"), None)
+
+
+def search_departures(stop: Optional[str], lat: Optional[str] = None, lon: Optional[str] = None) -> Json:
+    """Next departures from the stop `stop`, or from the stop nearest to the position."""
+    name = None
+    if not stop:
+        nearest = nearest_stop(lat or "", lon or "")
+        if nearest is None:
+            return {"n": "", "d": []}
+        stop, name = nearest["id"], nearest["name"]
+    data = call_api("/stoptimes", {
+        "stopId": stop,
+        "time": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "n": str(MAX_DEPARTURES),
+        "radius": str(STOP_RADIUS_M),
+    })
+    departures = [line for line in map(compact_departure, data.get("stopTimes", [])) if line]
+    return {"n": name or data.get("place", {}).get("name", ""), "d": departures[:MAX_DEPARTURES]}
+
+
+def is_coordinate(text: str, limit: float) -> bool:
+    try:
+        return abs(float(text)) <= limit
+    except ValueError:
+        return False
 
 
 def handle(path: str, query: dict[str, str], key: str = "") -> tuple[int, Json]:
@@ -199,7 +287,19 @@ def handle(path: str, query: dict[str, str], key: str = "") -> tuple[int, Json]:
             departure = query.get("t", "")
             if departure and not (departure.isdigit() and len(departure) <= 10):
                 return 400, {"e": "bad_request"}
-            return 200, search_connections(origin, destination, query.get("c"), int(departure) if departure else None)
+            transfers = query.get("x", "")
+            if transfers and not (transfers.isdigit() and int(transfers) <= MAX_TRANSFER_LIMIT):
+                return 400, {"e": "bad_request"}
+            vehicles = [code for code in query.get("v", "").split(",") if code]
+            if any(code not in MODES for code in vehicles):
+                return 400, {"e": "bad_request"}
+            return 200, search_connections(origin, destination, query.get("c"), int(departure) if departure else None,
+                                           int(transfers) if transfers else None, vehicles)
+        if path == "/departures":
+            stop, lat, lon = query.get("stop", ""), query.get("lat", ""), query.get("lon", "")
+            if not stop and not (is_coordinate(lat, 90) and is_coordinate(lon, 180)):
+                return 400, {"e": "bad_request"}
+            return 200, search_departures(stop, lat, lon)
         return 404, {"e": "not_found"}
     except urllib.error.HTTPError as error:
         return 502, {"e": "upstream_%d" % error.code}

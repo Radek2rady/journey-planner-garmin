@@ -8,7 +8,7 @@ proxy unchanged.
 
 | File | Purpose |
 | --- | --- |
-| `proxy/api/stops.py`, `proxy/api/plan.py` | One Vercel function per endpoint; both reuse `transit_proxy.Handler` |
+| `proxy/api/stops.py`, `plan.py`, `departures.py` | One Vercel function per endpoint; all reuse `transit_proxy.Handler` |
 | `proxy/vercel.json` | Region (`fra1`, Frankfurt) and a 30 s time limit |
 | `proxy/requirements.txt` | `tzdata` for `zoneinfo` |
 

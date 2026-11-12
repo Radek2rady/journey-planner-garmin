@@ -3,7 +3,7 @@ import Toybox.Time;
 import Toybox.WatchUi;
 
 //! Main menu: search, favourite trips, origin, destination, departure time,
-//! swap, saved connections.
+//! filters, swap, saved connections, departure board.
 module MainMenu {
 
     function push() as Void {
@@ -11,6 +11,7 @@ module MainMenu {
         var originItem = new WatchUi.MenuItem(Rez.Strings.From, Texts.originName(app.trip, app.location), :origin, null);
         var destinationItem = new WatchUi.MenuItem(Rez.Strings.To, Texts.destinationName(app.trip), :destination, null);
         var departureItem = new WatchUi.MenuItem(Rez.Strings.Departure, Texts.departure(app.trip.departureTime), :when, null);
+        var filtersItem = new WatchUi.MenuItem(Rez.Strings.Filters, Texts.filters(app.trip.filters), :filters, null);
 
         var menu = new WatchUi.Menu2({ :title => Rez.Strings.Connections });
         var searchItem = new WatchUi.MenuItem(Rez.Strings.FindConnections, null, :search, null);
@@ -19,9 +20,11 @@ module MainMenu {
         menu.addItem(originItem);
         menu.addItem(destinationItem);
         menu.addItem(departureItem);
+        menu.addItem(filtersItem);
         menu.addItem(new WatchUi.MenuItem(Rez.Strings.Swap, Rez.Strings.SwapHint, :swap, null));
         menu.addItem(new WatchUi.MenuItem(Rez.Strings.Saved, Rez.Strings.SavedHint, :saved, null));
-        WatchUi.pushView(menu, new MainMenuDelegate(searchItem, originItem, destinationItem, departureItem), WatchUi.SLIDE_UP);
+        menu.addItem(new WatchUi.MenuItem(Rez.Strings.Board, Rez.Strings.BoardHint, :board, null));
+        WatchUi.pushView(menu, new MainMenuDelegate(searchItem, originItem, destinationItem, departureItem, filtersItem), WatchUi.SLIDE_UP);
     }
 }
 
@@ -32,13 +35,15 @@ class MainMenuDelegate extends WatchUi.Menu2InputDelegate {
     private var _originItem as MenuItem;
     private var _destinationItem as MenuItem;
     private var _departureItem as MenuItem;
+    private var _filtersItem as MenuItem;
 
-    function initialize(searchItem as MenuItem, originItem as MenuItem, destinationItem as MenuItem, departureItem as MenuItem) {
+    function initialize(searchItem as MenuItem, originItem as MenuItem, destinationItem as MenuItem, departureItem as MenuItem, filtersItem as MenuItem) {
         Menu2InputDelegate.initialize();
         _searchItem = searchItem;
         _originItem = originItem;
         _destinationItem = destinationItem;
         _departureItem = departureItem;
+        _filtersItem = filtersItem;
         getApp().location.setListener(method(:refresh));
     }
 
@@ -54,6 +59,10 @@ class MainMenuDelegate extends WatchUi.Menu2InputDelegate {
             StopChooser.push(StopChooser.DESTINATION, method(:refresh));
         } else if (id == :when) {
             DepartureMenu.push(method(:refresh));
+        } else if (id == :board) {
+            BoardChooser.push();
+        } else if (id == :filters) {
+            FilterMenu.push(method(:refresh));
         } else if (id == :swap) {
             swapStops(item);
         } else if (id == :saved) {
@@ -72,12 +81,13 @@ class MainMenuDelegate extends WatchUi.Menu2InputDelegate {
         WatchUi.popView(WatchUi.SLIDE_DOWN);
     }
 
-    //! Shows the current origin, destination and departure time in the menu.
+    //! Shows the current origin, destination, departure time and filters in the menu.
     function refresh() as Void {
         var app = getApp();
         _originItem.setSubLabel(Texts.originName(app.trip, app.location));
         _destinationItem.setSubLabel(Texts.destinationName(app.trip));
         _departureItem.setSubLabel(Texts.departure(app.trip.departureTime));
+        _filtersItem.setSubLabel(Texts.filters(app.trip.filters));
         WatchUi.requestUpdate();
     }
 
@@ -140,7 +150,7 @@ module ConnectionSearch {
             }
             origin = TransitApi.formatCoordinates(coordinates);
         }
-        app.api.searchConnections(origin, destination.id, app.trip.departureTime, cursor, callback);
+        app.api.searchConnections(origin, destination.id, app.trip.departureTime, app.trip.filters, cursor, callback);
         return null;
     }
 

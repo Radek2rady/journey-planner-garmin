@@ -197,3 +197,33 @@ function favouritesKeepOneCopyAndAreCapped(logger as Logger) as Boolean {
     Test.assert(list[1].isSame(sampleTrip("a", "b")));
     return true;
 }
+
+(:test)
+function searchFiltersCycleAndSurviveStorage(logger as Logger) as Boolean {
+    var filters = new SearchFilters();
+    Test.assert(!filters.isActive());
+
+    filters.cycleTransfers();
+    Test.assertEqual(filters.maxTransfers as Number, 0);
+    filters.cycleTransfers();
+    filters.cycleTransfers();
+    Test.assertEqual(filters.maxTransfers as Number, 2);
+    filters.cycleTransfers();
+    Test.assert(filters.maxTransfers == null);
+
+    filters.cycleVehicles();
+    Test.assertEqual(filters.vehicles, SearchFilters.TRAINS_ONLY);
+    Test.assert(filters.isActive());
+    filters.cycleVehicles();
+    Test.assertEqual(filters.vehicles, SearchFilters.NO_TRAINS);
+
+    filters.cycleTransfers();
+    var copy = SearchFilters.fromDictionary(filters.toDictionary());
+    Test.assertEqual(copy.maxTransfers as Number, 0);
+    Test.assertEqual(copy.vehicles, SearchFilters.NO_TRAINS);
+
+    filters.cycleVehicles();
+    Test.assertEqual(filters.vehicles, SearchFilters.ALL_VEHICLES);
+    Test.assert(SearchFilters.fromDictionary(new SearchFilters().toDictionary()).maxTransfers == null);
+    return true;
+}
