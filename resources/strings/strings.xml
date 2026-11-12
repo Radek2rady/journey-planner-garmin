@@ -1,0 +1,53 @@
+<strings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">
+    <string id="AppName">Transit</string>
+
+    <!-- Home screen and main menu -->
+    <string id="Connections">Connections</string>
+    <string id="From">From</string>
+    <string id="To">To</string>
+    <string id="StartHint">START: menu</string>
+    <string id="MyLocation">My location</string>
+    <string id="MyLocationWaiting">My location (waiting for GPS)</string>
+    <string id="NotSet">Not set</string>
+    <string id="FindConnections">Find connections</string>
+    <string id="Swap">Swap</string>
+    <string id="SwapHint">from and to</string>
+    <string id="NeedBothStops">Set both stops first</string>
+
+    <!-- Stop chooser -->
+    <string id="NearestByGps">nearest stops by GPS</string>
+    <string id="EnterName">Enter name</string>
+    <string id="Stops">Stops</string>
+    <string id="MinTwoLetters">At least 2 letters</string>
+    <string id="SearchKey">Search</string>
+    <string id="SpaceKey">space</string>
+
+    <!-- Connections -->
+    <string id="LaterConnections">Later connections</string>
+    <string id="Walk">Walk</string>
+    <string id="GetOff">get off</string>
+    <string id="Cancelled">CANCELLED</string>
+    <string id="Platform">plat.</string>
+    <string id="Minutes">min</string>
+    <string id="Destination">Destination</string>
+
+    <!-- Search progress and errors -->
+    <string id="Searching">Searching...</string>
+    <string id="NothingFound">Nothing found</string>
+    <string id="SetDestinationFirst">Set destination first</string>
+    <string id="WaitingForGps">Waiting for GPS</string>
+    <string id="ErrorPhone">Phone not connected</string>
+    <string id="ErrorTimeout">Request timed out</string>
+    <string id="ErrorServer">Server error</string>
+    <string id="ErrorGeneric">Error</string>
+
+    <!-- Vehicles; keys match the vehicle codes in docs/API.md -->
+    <string id="VehicleBus">Bus</string>
+    <string id="VehicleTram">Tram</string>
+    <string id="VehicleMetro">Metro</string>
+    <string id="VehicleTrain">Train</string>
+    <string id="VehicleFerry">Ferry</string>
+    <string id="VehicleCable">Cable car</string>
+    <string id="VehicleAir">Flight</string>
+    <string id="VehicleOther">Line</string>
+</strings>

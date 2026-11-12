@@ -1,0 +1,17 @@
+# Build output
+bin/
+*.prg
+*.iq
+
+# Signing key: never commit
+developer_key*
+*.der
+*.pem
+
+# Local build settings (proxy address and key) and the file generated from them
+local.mk
+source/BuildConfig.mc
+
+__pycache__/
+.vercel/
+.DS_Store

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<iq:manifest version="3" xmlns:iq="http://www.garmin.com/xml/connectiq">
+    <iq:application id="1e3ab7f6-ee2a-4a3c-942a-1a22e44835a5" type="watch-app" name="@Strings.AppName" entry="TransitApp" launcherIcon="@Drawables.LauncherIcon" minApiLevel="5.2.0">
+        <iq:products>
+            <iq:product id="fr955"/>
+        </iq:products>
+        <iq:permissions>
+            <iq:uses-permission id="Communications"/>
+            <iq:uses-permission id="Positioning"/>
+        </iq:permissions>
+        <iq:languages>
+            <iq:language>eng</iq:language>
+            <iq:language>ces</iq:language>
+        </iq:languages>
+        <iq:barrels/>
+    </iq:application>
+</iq:manifest>

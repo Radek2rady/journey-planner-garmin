@@ -1,0 +1,4 @@
+project.manifest = manifest.xml
+
+# Strict type checking; the build must stay free of warnings.
+project.typecheck = 3

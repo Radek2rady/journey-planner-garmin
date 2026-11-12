@@ -1,0 +1,48 @@
+<strings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">
+    <string id="AppName">Spojení</string>
+
+    <string id="Connections">Spojení</string>
+    <string id="From">Odkud</string>
+    <string id="To">Kam</string>
+    <string id="StartHint">START: menu</string>
+    <string id="MyLocation">Moje poloha</string>
+    <string id="MyLocationWaiting">Moje poloha (hledám GPS)</string>
+    <string id="NotSet">Nezadáno</string>
+    <string id="FindConnections">Hledat spojení</string>
+    <string id="Swap">Prohodit</string>
+    <string id="SwapHint">odkud a kam</string>
+    <string id="NeedBothStops">Zadej obě zastávky</string>
+
+    <string id="NearestByGps">nejbližší zastávky podle GPS</string>
+    <string id="EnterName">Zadat název</string>
+    <string id="Stops">Zastávky</string>
+    <string id="MinTwoLetters">Aspoň 2 písmena</string>
+    <string id="SearchKey">Hledat</string>
+    <string id="SpaceKey">mezera</string>
+
+    <string id="LaterConnections">Pozdější spoje</string>
+    <string id="Walk">Pěšky</string>
+    <string id="GetOff">výstup</string>
+    <string id="Cancelled">ZRUŠENO</string>
+    <string id="Platform">nást.</string>
+    <string id="Minutes">min</string>
+    <string id="Destination">Cíl</string>
+
+    <string id="Searching">Hledám...</string>
+    <string id="NothingFound">Nic nenalezeno</string>
+    <string id="SetDestinationFirst">Nejdřív zadej cíl</string>
+    <string id="WaitingForGps">Čekám na GPS</string>
+    <string id="ErrorPhone">Telefon není připojen</string>
+    <string id="ErrorTimeout">Vypršel čas</string>
+    <string id="ErrorServer">Chyba serveru</string>
+    <string id="ErrorGeneric">Chyba</string>
+
+    <string id="VehicleBus">Bus</string>
+    <string id="VehicleTram">Tram</string>
+    <string id="VehicleMetro">Metro</string>
+    <string id="VehicleTrain">Vlak</string>
+    <string id="VehicleFerry">Přívoz</string>
+    <string id="VehicleCable">Lanovka</string>
+    <string id="VehicleAir">Let</string>
+    <string id="VehicleOther">Spoj</string>
+</strings>
