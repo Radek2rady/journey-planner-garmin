@@ -126,6 +126,48 @@ function connectionsPageSurvivesDictionaryRoundTrip(logger as Logger) as Boolean
     return true;
 }
 
+//! Bus, a 2 min walk and metro leaving 2 min after the bus arrives: a
+//! change with no time to spare.
+function sampleTransferConnection() as Connection {
+    return Connection.fromDictionary({
+        "d" => "16:19", "a" => "16:50", "s" => 1794410340, "m" => 31, "r" => "331 > C",
+        "l" => [
+            { "k" => "bus", "r" => "331", "f" => "Vestec", "d" => "16:19", "t" => "Opatov", "a" => "16:33", "i" => "cz-1", "s" => 1794410340 },
+            { "k" => "walk", "m" => 2, "t" => "Opatov" },
+            { "k" => "metro", "r" => "C", "f" => "Opatov", "d" => "16:35", "t" => "Muzeum", "a" => "16:50", "i" => "cz-2", "s" => 1794411300 }
+        ]
+    });
+}
+
+(:test)
+function transfersBetweenRidesAreFound(logger as Logger) as Boolean {
+    var connection = sampleTransferConnection();
+    var transfers = connection.transfers();
+    Test.assertEqual(transfers.size(), 1);
+    Test.assertEqual(transfers[0].minutes, 2);
+    Test.assertEqual(transfers[0].walkMinutes, 2);
+    Test.assertEqual(transfers[0].spareMinutes(), 0);
+    Test.assert(transfers[0].isTight());
+    Test.assertEqual(transfers[0].ride.line, "C");
+    Test.assertEqual(transfers[0].ride.fromId as String, "cz-2");
+    Test.assertEqual(transfers[0].ride.departureTime, 1794411300);
+    Test.assert(connection.hasTightTransfer());
+    Test.assert(!new Transfer(8, 2, transfers[0].ride).isTight());
+
+    var restored = Connection.fromDictionary(connection.toDictionary());
+    Test.assertEqual(restored.legs[2].fromId as String, "cz-2");
+    Test.assertEqual(restored.legs[2].departureTime, 1794411300);
+    return true;
+}
+
+(:test)
+function minutesBetweenClockTimesCrossMidnight(logger as Logger) as Boolean {
+    Test.assertEqual(Leg.minutesBetween("16:33", "16:35"), 2);
+    Test.assertEqual(Leg.minutesBetween("23:58", "00:03"), 5);
+    Test.assertEqual(Leg.minutesBetween("16:33", "16:33"), 0);
+    return true;
+}
+
 function sampleTrip(originId as String?, destinationId as String) as Trip {
     var origin = originId != null ? new Stop(originId, "Stop " + originId, "") : null;
     return new Trip(origin, new Stop(destinationId, "Stop " + destinationId, "Praha"));

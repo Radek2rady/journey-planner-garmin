@@ -22,6 +22,10 @@ class Leg {
     var delayMinutes as Number = 0;
     var cancelled as Boolean = false;
     var walkMinutes as Number = 0;
+    //! Station of the boarding stop; null for walks and older saved data.
+    var fromId as String?;
+    //! Departure in Unix seconds, including the delay; 0 when unknown.
+    var departureTime as Number = 0;
 
     function initialize(vehicle as String) {
         self.vehicle = vehicle;
@@ -49,6 +53,11 @@ class Leg {
             leg.delayMinutes = delay;
         }
         leg.cancelled = (data["x"] as Number?) != null;
+        leg.fromId = data["i"] as String?;
+        var departureTime = data["s"] as Number?;
+        if (departureTime != null) {
+            leg.departureTime = departureTime;
+        }
         return leg;
     }
 
@@ -71,7 +80,64 @@ class Leg {
         if (cancelled) {
             data["x"] = 1;
         }
+        var station = fromId;
+        if (station != null) {
+            data["i"] = station;
+        }
+        if (departureTime != 0) {
+            data["s"] = departureTime;
+        }
         return data as Dictionary;
+    }
+
+    //! Minutes from `earlier` to `later`, both "HH:MM"; a later time before
+    //! the earlier one is taken as the next day.
+    static function minutesBetween(earlier as String, later as String) as Number {
+        var minutes = clockMinutes(later) - clockMinutes(earlier);
+        return minutes < 0 ? minutes + 24 * 60 : minutes;
+    }
+
+    private static function clockMinutes(time as String) as Number {
+        var colon = time.find(":");
+        if (colon == null) {
+            return 0;
+        }
+        var hours = time.substring(0, colon);
+        var minutes = time.substring(colon + 1, null);
+        if (hours == null || minutes == null) {
+            return 0;
+        }
+        var h = hours.toNumber();
+        var m = minutes.toNumber();
+        return (h != null ? h : 0) * 60 + (m != null ? m : 0);
+    }
+}
+
+//! A change between two rides of a connection.
+class Transfer {
+
+    //! A change with less spare time than this, after walking, is tight.
+    static const TIGHT_SPARE_MINUTES = 3;
+
+    //! From the arrival of the previous ride to the departure of `ride`.
+    var minutes as Number;
+    //! Walking between the two rides.
+    var walkMinutes as Number;
+    //! The ride boarded at this change.
+    var ride as Leg;
+
+    function initialize(minutes as Number, walkMinutes as Number, ride as Leg) {
+        self.minutes = minutes;
+        self.walkMinutes = walkMinutes;
+        self.ride = ride;
+    }
+
+    function spareMinutes() as Number {
+        return minutes - walkMinutes;
+    }
+
+    function isTight() as Boolean {
+        return spareMinutes() < TIGHT_SPARE_MINUTES;
     }
 }
 
@@ -107,6 +173,37 @@ class Connection {
             connection.departureTime = departureTime;
         }
         return connection;
+    }
+
+    //! The changes between rides, in travel order. Cancelled rides count:
+    //! the change is planned around them.
+    function transfers() as Array<Transfer> {
+        var result = [] as Array<Transfer>;
+        var previous = null as Leg?;
+        var walking = 0;
+        for (var i = 0; i < legs.size(); i++) {
+            var leg = legs[i];
+            if (leg.isWalk()) {
+                walking += leg.walkMinutes;
+                continue;
+            }
+            if (previous != null) {
+                result.add(new Transfer(Leg.minutesBetween(previous.arrival, leg.departure), walking, leg));
+            }
+            previous = leg;
+            walking = 0;
+        }
+        return result;
+    }
+
+    function hasTightTransfer() as Boolean {
+        var changes = transfers();
+        for (var i = 0; i < changes.size(); i++) {
+            if (changes[i].isTight()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     function toDictionary() as Dictionary {

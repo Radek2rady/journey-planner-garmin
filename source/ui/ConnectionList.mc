@@ -10,6 +10,17 @@ module ConnectionList {
     //! `savedTrip` is set for results read from storage: the list then offers
     //! to search that trip again, and calls `onTripChanged` when it does.
     function push(page as ConnectionsPage, savedTrip as Trip?, onTripChanged as (Method() as Void)?) as Void {
+        var destination = savedTrip != null ? savedTrip.destination : getServices().trip.destination;
+        show(page, destination != null ? destination.id : null, savedTrip, onTripChanged);
+    }
+
+    //! Connections from a transfer stop of another connection. They do not
+    //! belong to the planned trip, so later ones cannot be loaded.
+    function pushAlternatives(page as ConnectionsPage, destinationId as String) as Void {
+        show(new ConnectionsPage(page.connections, null), destinationId, null, null);
+    }
+
+    function show(page as ConnectionsPage, destinationId as String?, savedTrip as Trip?, onTripChanged as (Method() as Void)?) as Void {
         var now = Time.now().value();
         var menu = new WatchUi.Menu2({ :title => Rez.Strings.Connections });
         var items = [] as Array<MenuItem>;
@@ -25,7 +36,7 @@ module ConnectionList {
         if (savedTrip != null) {
             menu.addItem(new WatchUi.MenuItem(Rez.Strings.SearchAgain, null, :again, null));
         }
-        var delegate = new ConnectionListDelegate(page, items, savedTrip, onTripChanged);
+        var delegate = new ConnectionListDelegate(page, items, destinationId, savedTrip, onTripChanged);
         CountdownTicker.opened(delegate);
         WatchUi.pushView(menu, delegate, WatchUi.SLIDE_LEFT);
     }
@@ -36,15 +47,18 @@ class ConnectionListDelegate extends WatchUi.Menu2InputDelegate {
     private var _page as ConnectionsPage;
     //! Items of the connections, in the order of `_page.connections`.
     private var _items as Array<MenuItem>;
+    //! Destination of the connections; null when not known.
+    private var _destinationId as String?;
     private var _savedTrip as Trip?;
     private var _onTripChanged as (Method() as Void)?;
     //! Item that reports the progress of the running search.
     private var _progressItem as MenuItem?;
 
-    function initialize(page as ConnectionsPage, items as Array<MenuItem>, savedTrip as Trip?, onTripChanged as (Method() as Void)?) {
+    function initialize(page as ConnectionsPage, items as Array<MenuItem>, destinationId as String?, savedTrip as Trip?, onTripChanged as (Method() as Void)?) {
         Menu2InputDelegate.initialize();
         _page = page;
         _items = items;
+        _destinationId = destinationId;
         _savedTrip = savedTrip;
         _onTripChanged = onTripChanged;
     }
@@ -56,7 +70,7 @@ class ConnectionListDelegate extends WatchUi.Menu2InputDelegate {
         } else if (id == :again) {
             searchAgain(item);
         } else if (id instanceof Number) {
-            ConnectionDetail.push(_page.connections[id]);
+            ConnectionDetail.push(_page.connections[id], _destinationId);
         }
     }
 
@@ -114,24 +128,36 @@ class ConnectionListDelegate extends WatchUi.Menu2InputDelegate {
 }
 
 //! Legs of one connection: boarding and alighting of every ride, with the
-//! walks between them. Selecting a line shows it in full on its own screen,
-//! because a menu line cuts long stop names and directions.
+//! walks between them and the time for each change. Selecting a line shows
+//! it in full on its own screen, because a menu line cuts long stop names
+//! and directions. Selecting a change searches what else goes from there,
+//! for when the change is missed.
 module ConnectionDetail {
 
-    function push(connection as Connection) as Void {
+    //! `destinationId` is needed to search from a change; without it the
+    //! changes only show their time.
+    function push(connection as Connection, destinationId as String?) as Void {
         var menu = new WatchUi.Menu2({ :title => Texts.connectionTimes(connection) });
         var lines = [] as Array<String>;
         var legs = connection.legs;
+        var transfers = connection.transfers();
+        var nextTransfer = 0;
         for (var i = 0; i < legs.size(); i++) {
             var leg = legs[i];
             if (leg.isWalk()) {
                 addLine(menu, lines, Texts.walk(leg), Texts.placeOrDestination(leg.to));
-            } else {
-                addLine(menu, lines, Texts.boarding(leg), Texts.boardingDetails(leg));
-                addLine(menu, lines, Texts.alighting(leg), Texts.get(Rez.Strings.GetOff));
+                continue;
             }
+            if (nextTransfer < transfers.size() && transfers[nextTransfer].ride == leg) {
+                var transfer = transfers[nextTransfer];
+                var searchable = destinationId != null && leg.fromId != null;
+                menu.addItem(new WatchUi.MenuItem(Texts.transfer(transfer), searchable ? Texts.get(Rez.Strings.IfMissed) : null, transfer, null));
+                nextTransfer++;
+            }
+            addLine(menu, lines, Texts.boarding(leg), Texts.boardingDetails(leg));
+            addLine(menu, lines, Texts.alighting(leg), Texts.get(Rez.Strings.GetOff));
         }
-        WatchUi.pushView(menu, new ConnectionDetailDelegate(lines), WatchUi.SLIDE_LEFT);
+        WatchUi.pushView(menu, new ConnectionDetailDelegate(lines, destinationId), WatchUi.SLIDE_LEFT);
     }
 
     //! Adds a menu item and remembers its full text; the item id is the
@@ -145,17 +171,57 @@ module ConnectionDetail {
 class ConnectionDetailDelegate extends WatchUi.Menu2InputDelegate {
 
     private var _lines as Array<String>;
+    private var _destinationId as String?;
+    //! Item of the change whose alternatives are being searched.
+    private var _progressItem as MenuItem?;
 
-    function initialize(lines as Array<String>) {
+    function initialize(lines as Array<String>, destinationId as String?) {
         Menu2InputDelegate.initialize();
         _lines = lines;
+        _destinationId = destinationId;
     }
 
     function onSelect(item as MenuItem) as Void {
         var id = item.getId();
         if (id instanceof Number) {
             WatchUi.pushView(new FullTextView(_lines[id]), new WatchUi.BehaviorDelegate(), WatchUi.SLIDE_LEFT);
+        } else if (id instanceof Transfer) {
+            searchFrom(item, id);
         }
+    }
+
+    function onConnections(page as ConnectionsPage?, error as ApiError?) as Void {
+        var item = _progressItem;
+        var destinationId = _destinationId;
+        if (item == null || destinationId == null) {
+            return;
+        }
+        if (page == null) {
+            item.setSubLabel(error != null ? Texts.error(error) : null);
+        } else if (page.connections.size() == 0) {
+            item.setSubLabel(Rez.Strings.NothingFound);
+        } else {
+            item.setSubLabel(Rez.Strings.IfMissed);
+            ConnectionList.pushAlternatives(page, destinationId);
+        }
+        WatchUi.requestUpdate();
+    }
+
+    //! Connections from the station of the change to the destination that
+    //! leave after the planned ride, with the filters of the planned trip.
+    private function searchFrom(item as MenuItem, transfer as Transfer) as Void {
+        var stationId = transfer.ride.fromId;
+        var destinationId = _destinationId;
+        if (stationId == null || destinationId == null) {
+            return;
+        }
+        var ride = transfer.ride;
+        var after = ride.departureTime != 0 ? ride.departureTime + 60 : null;
+        var services = getServices();
+        _progressItem = item;
+        item.setSubLabel(Rez.Strings.Searching);
+        services.api.searchConnections(stationId, destinationId, after, services.trip.filters, null, method(:onConnections));
+        WatchUi.requestUpdate();
     }
 }
 

@@ -38,6 +38,8 @@
     <string id="Board">Departure board</string>
     <string id="BoardHint">what leaves from a stop</string>
     <string id="NearestStop">Nearest stop</string>
+    <string id="Change">Change</string>
+    <string id="IfMissed">If missed: what next</string>
     <string id="LaterDepartures">Later departures</string>
 
     <!-- Stop chooser -->

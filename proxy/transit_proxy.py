@@ -149,7 +149,13 @@ def compact_leg(leg: Json) -> Optional[Json]:
         "d": local_hhmm(leg["startTime"]),
         "t": place_name(leg["to"]),
         "a": local_hhmm(leg["endTime"]),
+        "s": int(parse_time(leg["startTime"]).timestamp()),
     }
+    # The station rather than the platform, so that a search from the
+    # boarding stop finds rides from all its platforms.
+    station = leg["from"].get("parentId") or leg["from"].get("stopId")
+    if station:
+        out["i"] = station
     headsign = leg.get("headsign")
     if headsign and headsign != out["t"]:
         out["h"] = headsign

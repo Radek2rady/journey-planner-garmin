@@ -76,6 +76,8 @@ Leg:
 | `r` | ride | Line or train name |
 | `f` | ride | Boarding stop |
 | `d`, `a` | ride | Departure and arrival, `HH:MM`, including the delay |
+| `s` | ride | Departure as Unix seconds, including the delay |
+| `i` | optional | Station id of the boarding stop (the parent station, not the platform); usable as `from` of `/plan` to search on from a change |
 | `h` | optional | Direction (headsign); omitted when unknown or equal to `t` |
 | `p` | optional | Platform or stand |
 | `z` | optional | Delay in minutes (negative = early); only when real-time data says so |

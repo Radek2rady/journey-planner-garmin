@@ -11,7 +11,7 @@ def transit_leg(**overrides):
     leg = {
         "mode": "BUS",
         "displayName": "331",
-        "from": {"name": "Vestec,u Klimešů", "track": "B"},
+        "from": {"name": "Vestec,u Klimešů", "track": "B", "stopId": "cz-1P", "parentId": "cz-1"},
         "to": {"name": "Opatov"},
         "startTime": "2026-11-11T15:19:00Z",
         "endTime": "2026-11-11T15:33:00Z",
@@ -73,8 +73,16 @@ class CompactLegTest(unittest.TestCase):
     def test_transit_leg(self):
         self.assertEqual(
             proxy.compact_leg(transit_leg()),
-            {"k": "bus", "r": "331", "f": "Vestec,u Klimešů", "d": "16:19", "t": "Opatov", "a": "16:33", "p": "B", "z": 1},
+            {"k": "bus", "r": "331", "f": "Vestec,u Klimešů", "d": "16:19", "t": "Opatov", "a": "16:33",
+             "s": 1794410340, "i": "cz-1", "p": "B", "z": 1},
         )
+
+    def test_boarding_stop_without_a_station_uses_the_stop(self):
+        leg = proxy.compact_leg(transit_leg(**{"from": {"name": "Opatov", "stopId": "cz-2"}}))
+        self.assertEqual(leg["i"], "cz-2")
+
+    def test_boarding_stop_without_an_id_has_none(self):
+        self.assertNotIn("i", proxy.compact_leg(transit_leg(**{"from": {"name": "Opatov"}})))
 
     def test_headsign_is_passed_on(self):
         self.assertEqual(proxy.compact_leg(transit_leg(headsign="Háje"))["h"], "Háje")

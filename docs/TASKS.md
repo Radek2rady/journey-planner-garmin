@@ -13,9 +13,11 @@ part of the change that affects them.
       filters, departure board
 - [ ] Confirm on the watch: short connection summary fits; full text of a leg line opens
       with START
-- [ ] Confirm on the watch: Transit appears in the glance loop and opens from it, also
-      during an activity suspended with Resume Later (the first widget build without a
-      glance view did not appear; the change of app type wiped the stored data)
+- [ ] Confirm on the watch: change time and the "!" of a tight change, "If missed" search
+      from a change (needs the proxy deployed with leg keys `i` and `s`)
+- [ ] Simulator crashes (segfault) when the watch test run ends, since at least 12 Nov;
+      all tests pass before it. Trying: the last test `testRunLeavesNothingRunning`
+      cancels web requests and stops location and the countdown timer. Confirm or drop
 
 ## To do
 
@@ -23,7 +25,6 @@ part of the change that affects them.
 
 - [ ] Arrive-by search ("be there by 8:00")
 - [ ] Nearest stops by GPS in the origin chooser
-- [ ] Transfer time between rides in the leg detail
 - [ ] Alert before the departure of a chosen connection
 - [ ] Glance with the next departure of a favourite trip
 
@@ -46,7 +47,7 @@ part of the change that affects them.
 - [x] Origin by GPS or stop, destination by stop, recent stops, swap
 - [x] Connection list, leg detail with platform, delay and cancellation, later connections
 - [x] English and Czech strings in resources
-- [x] Watch unit tests (32, passing in the simulator): parsing, storage round trips, recent
+- [x] Watch unit tests (36, passing in the simulator): parsing, storage round trips, recent
       stops, coordinates, API client, name entry, smoke tests of every screen
 - [x] Own stop name entry (`StopNameEntry`) instead of the native `TextPicker`, which
       crashed the fr955 simulator on input ("Symbol Not Found Error: Failed invoking
@@ -75,5 +76,11 @@ part of the change that affects them.
 - [x] App type changed from watch-app to widget, so it opens from the glance loop and
       not only from the activity list (which is blocked during an activity); own glance
       view, required for the glance list from API 4.0; services kept out of glance mode
+- [x] Change time between rides in the leg detail; a change with under 3 min to spare
+      after walking is marked "!" there and in the connection summary
+- [x] "If missed": connections from the station of a change to the destination, leaving
+      after the planned ride; wire leg keys `i` and `s`
+- [x] Transit opens from the glance loop, also during an activity suspended with Resume
+      Later (confirmed on the watch)
 - [x] Git repository initialized and pushed to GitHub (by the user)
 - [x] Makefile, README, CLAUDE.md, API contract, plan

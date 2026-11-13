@@ -1,3 +1,4 @@
+import Toybox.Communications;
 import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.Test;
@@ -115,7 +116,7 @@ function connectionListAndDetailOpen(logger as Logger) as Boolean {
     var plannedOrigin = getServices().trip.origin;
     var plannedDestination = getServices().trip.destination;
     var listItem = new WatchUi.MenuItem("x", null, 0, null);
-    var delegate = new ConnectionListDelegate(page, [listItem] as Array<MenuItem>, sampleTrip("a", "b"), null);
+    var delegate = new ConnectionListDelegate(page, [listItem] as Array<MenuItem>, "b", sampleTrip("a", "b"), null);
     delegate.refreshCountdowns(1794410160 - 600);
     CountdownTicker.onTick();
     delegate.onSelect(new WatchUi.MenuItem("x", null, :again, null));
@@ -126,8 +127,26 @@ function connectionListAndDetailOpen(logger as Logger) as Boolean {
 
     restorePlannedTrip(plannedOrigin, plannedDestination);
 
-    ConnectionDetail.push(page.connections[0]);
-    new ConnectionDetailDelegate(["16:19 Vestec\nBus 331"] as Array<String>).onSelect(new WatchUi.MenuItem("x", null, 0, null));
+    ConnectionDetail.push(page.connections[0], null);
+    new ConnectionDetailDelegate(["16:19 Vestec\nBus 331"] as Array<String>, null).onSelect(new WatchUi.MenuItem("x", null, 0, null));
+    return true;
+}
+
+(:test)
+function tightChangeIsMarkedAndSearchedFrom(logger as Logger) as Boolean {
+    var connection = sampleTransferConnection();
+    var transfer = connection.transfers()[0];
+    Test.assertEqual(Texts.transfer(transfer), "! " + Texts.get(Rez.Strings.Change) + " 2 " + Texts.get(Rez.Strings.Minutes));
+    Test.assertEqual(Texts.connectionSummary(connection, 1794410340 + 60).substring(0, 1) as String, "!");
+    logger.debug(Texts.connectionSummary(connection, 1794410340 - 600));
+
+    ConnectionDetail.push(connection, "cz-9");
+    var delegate = new ConnectionDetailDelegate([] as Array<String>, "cz-9");
+    var item = new WatchUi.MenuItem("x", null, transfer, null);
+    delegate.onSelect(item);
+    delegate.onConnections(null, new ApiError(502, null));
+    delegate.onConnections(new ConnectionsPage([] as Array<Connection>, null), null);
+    delegate.onConnections(sampleConnectionsPage(), null);
     return true;
 }
 
@@ -469,4 +488,18 @@ function apiDeliversDeparturesAndErrors(logger as Logger) as Boolean {
     Test.assert(probe.board == null);
     Test.assertEqual((probe.error as ApiError).serverCode as String, "bad_request");
     return true;
+}
+
+//! Must stay the last test (tests run in file order). The tests above leave
+//! web requests, location events and the countdown timer running; the
+//! simulator crashed when the test run ended with them still active.
+(:test)
+function testRunLeavesNothingRunning(logger as Logger) as Boolean {
+    Communications.cancelAllRequests();
+    getServices().location.stop();
+    var lists = CountdownTicker.open.slice(0, null);
+    for (var i = 0; i < lists.size(); i++) {
+        CountdownTicker.closed(lists[i]);
+    }
+    return CountdownTicker.ticker == null;
 }

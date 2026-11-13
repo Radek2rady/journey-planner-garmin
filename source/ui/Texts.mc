@@ -146,11 +146,15 @@ module Texts {
 
     //! "in 7 min, 331>C", "departed, 331>C" or, for departures further away,
     //! "3h08, 674>538 +2" with the travel time. Short enough for one menu
-    //! line; the full line names are in the detail of the connection.
+    //! line; the full line names are in the detail of the connection. A
+    //! leading "!" marks a tight change.
     function connectionSummary(connection as Connection, now as Number) as String {
         var summary = countdown(connection.departureTime, now);
         if (summary == null) {
             summary = duration(connection.durationMinutes);
+        }
+        if (connection.hasTightTransfer()) {
+            summary = "!" + summary;
         }
         var names = [] as Array<String>;
         for (var i = 0; i < connection.legs.size(); i++) {
@@ -246,6 +250,12 @@ module Texts {
             result = candidate;
         }
         return result;
+    }
+
+    //! "Change 4 min", or "! Change 1 min" when there is little time to spare
+    function transfer(change as Transfer) as String {
+        var text = get(Rez.Strings.Change) + " " + change.minutes + " " + get(Rez.Strings.Minutes);
+        return change.isTight() ? "! " + text : text;
     }
 
     //! "Walk 3 min"
