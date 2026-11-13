@@ -37,6 +37,7 @@
     <string id="Board">Departure board</string>
     <string id="BoardHint">what leaves from a stop</string>
     <string id="NearestStop">Nearest stop</string>
+    <string id="LaterDepartures">Later departures</string>
 
     <!-- Stop chooser -->
     <string id="NearestByGps">nearest stops by GPS</string>

@@ -66,7 +66,8 @@ part of the change that affects them.
 - [x] Search again from a saved search; saved searches keep the stops, not just names
 - [x] Filters: transfers (any, direct only, max 1, max 2) and vehicles (all, trains only,
       without trains), remembered across launches; wire parameters `x` and `v`
-- [x] Departure board of the nearest or a recent stop, with countdown, delay, platform;
+- [x] Departure board of the nearest or a recent stop, with countdown, delay, platform,
+      later departures;
       endpoint `/departures`
 - [x] Git repository initialized and pushed to GitHub (by the user)
 - [x] Makefile, README, CLAUDE.md, API contract, plan

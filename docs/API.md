@@ -89,17 +89,20 @@ Departure board of one stop: what leaves next, in all directions.
 | --- | --- | --- |
 | `stop` | one of | Stop id |
 | `lat`, `lon` | one of | Position in degrees; the nearest stop is used |
+| `c` | no | Cursor from a previous response; returns later departures. Needs `stop` |
 
 ```json
-{"n": "Vestec,BIOCEV", "d": [
+{"n": "Vestec,BIOCEV", "i": "cz-PID_U4178Z1", "d": [
   {"k": "bus", "r": "326", "h": "Jesenice,Belnická", "d": "16:19", "s": 1794410340, "p": "A", "z": 1}
-]}
+], "c": "LATER|1794559020"}
 ```
 
 | Key | Present | Meaning |
 | --- | --- | --- |
 | `n` | always | Name of the stop; empty when no stop is near the position |
+| `i` | always | Id of the stop; pass it as `stop` together with `c` |
 | `d` | always | Departures in time order, at most 10 |
+| `c` | always | Cursor for later departures; empty when there are none |
 | `k` | always | Vehicle code |
 | `r` | always | Line or train name |
 | `h` | always | Direction (headsign); may be empty |

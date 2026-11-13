@@ -42,11 +42,16 @@ class DepartureBoard {
 
     //! Empty when no stop was found near the position.
     var stopName as String;
+    var stopId as String;
     var departures as Array<Departure>;
+    //! Opaque cursor for later departures; null when there are none.
+    var nextCursor as String?;
 
-    function initialize(stopName as String, departures as Array<Departure>) {
+    function initialize(stopName as String, stopId as String, departures as Array<Departure>, nextCursor as String?) {
         self.stopName = stopName;
+        self.stopId = stopId;
         self.departures = departures;
+        self.nextCursor = nextCursor;
     }
 
     static function fromDictionary(data as Dictionary) as DepartureBoard {
@@ -55,6 +60,10 @@ class DepartureBoard {
         for (var i = 0; i < raw.size(); i++) {
             departures.add(Departure.fromDictionary(raw[i]));
         }
-        return new DepartureBoard(data["n"] as String, departures);
+        var cursor = data["c"] as String?;
+        if (cursor != null && cursor.equals("")) {
+            cursor = null;
+        }
+        return new DepartureBoard(data["n"] as String, data["i"] as String, departures, cursor);
     }
 }

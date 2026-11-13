@@ -245,22 +245,31 @@ def nearest_stop(lat: str, lon: str) -> Optional[Json]:
     return next((item for item in found if item.get("type") == "STOP"), None)
 
 
-def search_departures(stop: Optional[str], lat: Optional[str] = None, lon: Optional[str] = None) -> Json:
-    """Next departures from the stop `stop`, or from the stop nearest to the position."""
+def search_departures(stop: Optional[str], lat: Optional[str] = None, lon: Optional[str] = None,
+                      cursor: Optional[str] = None) -> Json:
+    """Next departures from the stop `stop`, or from the stop nearest to the position.
+
+    `cursor` continues the board of `stop` with later departures.
+    """
     name = None
     if not stop:
         nearest = nearest_stop(lat or "", lon or "")
         if nearest is None:
-            return {"n": "", "d": []}
+            return {"n": "", "i": "", "d": [], "c": ""}
         stop, name = nearest["id"], nearest["name"]
-    data = call_api("/stoptimes", {
-        "stopId": stop,
-        "time": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "n": str(MAX_DEPARTURES),
-        "radius": str(STOP_RADIUS_M),
-    })
+    params = {"stopId": stop, "n": str(MAX_DEPARTURES), "radius": str(STOP_RADIUS_M)}
+    if cursor:
+        params["pageCursor"] = cursor
+    else:
+        params["time"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    data = call_api("/stoptimes", params)
     departures = [line for line in map(compact_departure, data.get("stopTimes", [])) if line]
-    return {"n": name or data.get("place", {}).get("name", ""), "d": departures[:MAX_DEPARTURES]}
+    return {
+        "n": name or data.get("place", {}).get("name", ""),
+        "i": stop,
+        "d": departures[:MAX_DEPARTURES],
+        "c": data.get("nextPageCursor", ""),
+    }
 
 
 def is_coordinate(text: str, limit: float) -> bool:
@@ -299,7 +308,7 @@ def handle(path: str, query: dict[str, str], key: str = "") -> tuple[int, Json]:
             stop, lat, lon = query.get("stop", ""), query.get("lat", ""), query.get("lon", "")
             if not stop and not (is_coordinate(lat, 90) and is_coordinate(lon, 180)):
                 return 400, {"e": "bad_request"}
-            return 200, search_departures(stop, lat, lon)
+            return 200, search_departures(stop, lat, lon, query.get("c"))
         return 404, {"e": "not_found"}
     except urllib.error.HTTPError as error:
         return 502, {"e": "upstream_%d" % error.code}

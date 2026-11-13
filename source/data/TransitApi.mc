@@ -70,14 +70,17 @@ class TransitApi {
     }
 
     //! Departure board of the stop `stopId`, or of the stop nearest to `near`
-    //! when no stop is given.
-    function searchDepartures(stopId as String?, near as Coordinates?, callback as BoardCallback) as Void {
+    //! when no stop is given. A `cursor` continues the board of `stopId`.
+    function searchDepartures(stopId as String?, near as Coordinates?, cursor as String?, callback as BoardCallback) as Void {
         var params = {} as Dictionary<String, String>;
         if (stopId != null) {
             params["stop"] = stopId;
         } else if (near != null) {
             params["lat"] = formatDegrees(near[0]);
             params["lon"] = formatDegrees(near[1]);
+        }
+        if (cursor != null) {
+            params["c"] = cursor;
         }
         _boardCallback = callback;
         get("/departures", params, method(:onDeparturesResponse));

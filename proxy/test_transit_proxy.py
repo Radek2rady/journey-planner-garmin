@@ -273,7 +273,18 @@ class DeparturesTest(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertEqual(body["n"], "Vestec,BIOCEV")
         self.assertEqual([line["r"] for line in body["d"]], ["326", "331"])
+        self.assertEqual(body["i"], "cz-1")
         self.assertEqual(call.call_args[0][1]["stopId"], "cz-1")
+        self.assertIn("time", call.call_args[0][1])
+
+    def test_later_departures_use_the_cursor_instead_of_time(self):
+        upstream = {"place": {"name": "Vestec"}, "stopTimes": [stop_time()], "nextPageCursor": "LATER|2"}
+        with mock.patch.object(proxy, "call_api", return_value=upstream) as call:
+            status, body = proxy.handle("/departures", {"stop": "cz-1", "c": "LATER|1"})
+        self.assertEqual((status, body["c"]), (200, "LATER|2"))
+        params = call.call_args[0][1]
+        self.assertEqual(params["pageCursor"], "LATER|1")
+        self.assertNotIn("time", params)
 
     def test_board_of_the_nearest_stop(self):
         def upstream(path, params):
@@ -285,11 +296,11 @@ class DeparturesTest(unittest.TestCase):
 
         with mock.patch.object(proxy, "call_api", side_effect=upstream):
             status, body = proxy.handle("/departures", {"lat": "49.98", "lon": "14.49"})
-        self.assertEqual((status, body["n"], len(body["d"])), (200, "Vestec", 1))
+        self.assertEqual((status, body["n"], body["i"], len(body["d"])), (200, "Vestec", "cz-9", 1))
 
     def test_no_stop_nearby(self):
         with mock.patch.object(proxy, "call_api", return_value=[]):
-            self.assertEqual(proxy.handle("/departures", {"lat": "49.98", "lon": "14.49"}), (200, {"n": "", "d": []}))
+            self.assertEqual(proxy.handle("/departures", {"lat": "49.98", "lon": "14.49"}), (200, {"n": "", "i": "", "d": [], "c": ""}))
 
     def test_rejects_missing_or_malformed_place(self):
         for query in ({}, {"lat": "49.98"}, {"lat": "north", "lon": "14"}, {"lat": "95", "lon": "14"}):

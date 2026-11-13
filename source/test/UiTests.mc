@@ -322,6 +322,8 @@ function filterMenuCyclesThroughTheChoices(logger as Logger) as Boolean {
 function sampleBoard() as DepartureBoard {
     return DepartureBoard.fromDictionary({
         "n" => "Vestec,BIOCEV",
+        "i" => "cz-PID_U4178Z1",
+        "c" => "LATER|1794559020",
         "d" => [
             { "k" => "bus", "r" => "326", "h" => "Jesenice,Belnická", "d" => "16:19", "s" => 1794410340, "p" => "A", "z" => 1 },
             { "k" => "train", "r" => "S21", "h" => "", "d" => "19:40", "s" => 1794422400, "x" => 1 }
@@ -333,6 +335,8 @@ function sampleBoard() as DepartureBoard {
 function departureBoardIsParsedAndDescribed(logger as Logger) as Boolean {
     var board = sampleBoard();
     Test.assertEqual(board.stopName, "Vestec,BIOCEV");
+    Test.assertEqual(board.stopId, "cz-PID_U4178Z1");
+    Test.assertEqual(board.nextCursor as String, "LATER|1794559020");
     Test.assertEqual(board.departures.size(), 2);
 
     var bus = board.departures[0];
@@ -363,7 +367,7 @@ function departureBoardOpensFromTheChooser(logger as Logger) as Boolean {
     chooser.onSelect(new WatchUi.MenuItem("x", null, :nearest, null));
     chooser.onSelect(new WatchUi.MenuItem("x", null, 0, null));
     chooser.onBoard(null, new ApiError(502, "upstream"));
-    chooser.onBoard(new DepartureBoard("", [] as Array<Departure>), null);
+    chooser.onBoard(new DepartureBoard("", "", [] as Array<Departure>, null), null);
     chooser.onBoard(sampleBoard(), null);
 
     var board = sampleBoard();
@@ -371,6 +375,11 @@ function departureBoardOpensFromTheChooser(logger as Logger) as Boolean {
     var delegate = new DepartureBoardDelegate(board, [line, line] as Array<MenuItem>);
     delegate.refreshCountdowns(1794410340 - 600);
     delegate.onSelect(line);
+
+    // Later departures: progress and errors on the item, results as a new board.
+    delegate.onSelect(new WatchUi.MenuItem("x", null, :later, null));
+    delegate.onBoard(null, new ApiError(-104, null));
+    delegate.onBoard(sampleBoard(), null);
     return true;
 }
 
@@ -440,11 +449,12 @@ function apiDeliversDeparturesAndErrors(logger as Logger) as Boolean {
     var api = new TransitApi();
     var probe = new ApiProbe();
 
-    api.searchDepartures("cz-1", null, probe.method(:onBoard));
-    api.onDeparturesResponse(200, { "n" => "Opatov", "d" => [] });
+    api.searchDepartures("cz-1", null, "LATER|1", probe.method(:onBoard));
+    api.onDeparturesResponse(200, { "n" => "Opatov", "i" => "cz-1", "d" => [], "c" => "" });
     Test.assertEqual((probe.board as DepartureBoard).stopName, "Opatov");
+    Test.assert((probe.board as DepartureBoard).nextCursor == null);
 
-    api.searchDepartures(null, [49.9806d, 14.505d], probe.method(:onBoard));
+    api.searchDepartures(null, [49.9806d, 14.505d], null, probe.method(:onBoard));
     api.onDeparturesResponse(400, { "e" => "bad_request" });
     Test.assert(probe.board == null);
     Test.assertEqual((probe.error as ApiError).serverCode as String, "bad_request");

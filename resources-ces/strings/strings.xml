@@ -36,6 +36,7 @@
     <string id="Board">Tabule odjezdů</string>
     <string id="BoardHint">co jede ze zastávky</string>
     <string id="NearestStop">Nejbližší zastávka</string>
+    <string id="LaterDepartures">Pozdější odjezdy</string>
 
     <string id="NearestByGps">nejbližší zastávky podle GPS</string>
     <string id="EnterName">Zadat název</string>
