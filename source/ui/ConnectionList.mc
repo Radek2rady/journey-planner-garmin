@@ -95,7 +95,7 @@ class ConnectionListDelegate extends WatchUi.Menu2InputDelegate {
         if (trip == null) {
             return;
         }
-        var planned = getApp().trip;
+        var planned = getServices().trip;
         planned.setTrip(trip);
         planned.departureTime = null;
         var onTripChanged = _onTripChanged;

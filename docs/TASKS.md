@@ -13,6 +13,9 @@ part of the change that affects them.
       filters, departure board
 - [ ] Confirm on the watch: short connection summary fits; full text of a leg line opens
       with START
+- [ ] Confirm on the watch: Transit appears in the glance loop and opens from it, also
+      during an activity suspended with Resume Later (the first widget build without a
+      glance view did not appear; the change of app type wiped the stored data)
 
 ## To do
 
@@ -43,7 +46,7 @@ part of the change that affects them.
 - [x] Origin by GPS or stop, destination by stop, recent stops, swap
 - [x] Connection list, leg detail with platform, delay and cancellation, later connections
 - [x] English and Czech strings in resources
-- [x] Watch unit tests (31, passing in the simulator): parsing, storage round trips, recent
+- [x] Watch unit tests (32, passing in the simulator): parsing, storage round trips, recent
       stops, coordinates, API client, name entry, smoke tests of every screen
 - [x] Own stop name entry (`StopNameEntry`) instead of the native `TextPicker`, which
       crashed the fr955 simulator on input ("Symbol Not Found Error: Failed invoking
@@ -69,5 +72,8 @@ part of the change that affects them.
 - [x] Departure board of the nearest or a recent stop, with countdown, delay, platform,
       later departures;
       endpoint `/departures`
+- [x] App type changed from watch-app to widget, so it opens from the glance loop and
+      not only from the activity list (which is blocked during an activity); own glance
+      view, required for the glance list from API 4.0; services kept out of glance mode
 - [x] Git repository initialized and pushed to GitHub (by the user)
 - [x] Makefile, README, CLAUDE.md, API contract, plan

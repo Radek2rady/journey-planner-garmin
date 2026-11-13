@@ -11,7 +11,7 @@ module FavouriteList {
     }
 
     function menu() as Menu2 {
-        var app = getApp();
+        var app = getServices();
         var trips = app.favourites.trips;
         var current = app.trip.currentTrip();
         var result = new WatchUi.Menu2({ :title => Rez.Strings.Favourites });
@@ -25,7 +25,7 @@ module FavouriteList {
 
     function removalMenu() as Menu2 {
         var result = new WatchUi.Menu2({ :title => Rez.Strings.RemoveFavourite });
-        addTrips(result, getApp().favourites.trips);
+        addTrips(result, getServices().favourites.trips);
         return result;
     }
 
@@ -48,7 +48,7 @@ class FavouriteListDelegate extends WatchUi.Menu2InputDelegate {
     }
 
     function onSelect(item as MenuItem) as Void {
-        var app = getApp();
+        var app = getServices();
         var id = item.getId();
         if (id == :add) {
             var current = app.trip.currentTrip();
@@ -81,7 +81,7 @@ class FavouriteRemovalDelegate extends WatchUi.Menu2InputDelegate {
     function onSelect(item as MenuItem) as Void {
         var id = item.getId();
         if (id instanceof Number) {
-            getApp().favourites.remove(id);
+            getServices().favourites.remove(id);
             WatchUi.switchToView(FavouriteList.menu(), new FavouriteListDelegate(_onChosen), WatchUi.SLIDE_RIGHT);
         }
     }

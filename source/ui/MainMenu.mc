@@ -7,7 +7,7 @@ import Toybox.WatchUi;
 module MainMenu {
 
     function push() as Void {
-        var app = getApp();
+        var app = getServices();
         var originItem = new WatchUi.MenuItem(Rez.Strings.From, Texts.originName(app.trip, app.location), :origin, null);
         var destinationItem = new WatchUi.MenuItem(Rez.Strings.To, Texts.destinationName(app.trip), :destination, null);
         var departureItem = new WatchUi.MenuItem(Rez.Strings.Departure, Texts.departure(app.trip.departureTime), :when, null);
@@ -44,7 +44,7 @@ class MainMenuDelegate extends WatchUi.Menu2InputDelegate {
         _destinationItem = destinationItem;
         _departureItem = departureItem;
         _filtersItem = filtersItem;
-        getApp().location.setListener(method(:refresh));
+        getServices().location.setListener(method(:refresh));
     }
 
     function onSelect(item as MenuItem) as Void {
@@ -66,7 +66,7 @@ class MainMenuDelegate extends WatchUi.Menu2InputDelegate {
         } else if (id == :swap) {
             swapStops(item);
         } else if (id == :saved) {
-            if (getApp().savedSearches.searches.size() == 0) {
+            if (getServices().savedSearches.searches.size() == 0) {
                 item.setSubLabel(Rez.Strings.NothingSaved);
             } else {
                 item.setSubLabel(Rez.Strings.SavedHint);
@@ -77,13 +77,13 @@ class MainMenuDelegate extends WatchUi.Menu2InputDelegate {
     }
 
     function onBack() as Void {
-        getApp().location.setListener(null);
+        getServices().location.setListener(null);
         WatchUi.popView(WatchUi.SLIDE_DOWN);
     }
 
     //! Shows the current origin, destination, departure time and filters in the menu.
     function refresh() as Void {
-        var app = getApp();
+        var app = getServices();
         _originItem.setSubLabel(Texts.originName(app.trip, app.location));
         _destinationItem.setSubLabel(Texts.destinationName(app.trip));
         _departureItem.setSubLabel(Texts.departure(app.trip.departureTime));
@@ -118,7 +118,7 @@ class MainMenuDelegate extends WatchUi.Menu2InputDelegate {
     }
 
     private function swapStops(item as MenuItem) as Void {
-        var trip = getApp().trip;
+        var trip = getServices().trip;
         if (trip.origin == null || trip.destination == null) {
             item.setSubLabel(Rez.Strings.NeedBothStops);
             return;
@@ -134,7 +134,7 @@ module ConnectionSearch {
     //! Returns null when the request was sent, otherwise the reason why the
     //! search cannot start yet.
     function start(cursor as String?, callback as ConnectionsCallback) as ResourceId? {
-        var app = getApp();
+        var app = getServices();
         var destination = app.trip.destination;
         if (destination == null) {
             return Rez.Strings.SetDestinationFirst;
@@ -156,7 +156,7 @@ module ConnectionSearch {
 
     //! Keeps the results of the current trip for reading without a connection.
     function remember(page as ConnectionsPage) as Void {
-        var app = getApp();
+        var app = getServices();
         var trip = app.trip.currentTrip();
         if (trip == null) {
             return;

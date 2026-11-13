@@ -10,7 +10,7 @@ class HomeView extends WatchUi.View {
     }
 
     function onUpdate(dc as Dc) as Void {
-        var app = getApp();
+        var app = getServices();
         var width = dc.getWidth();
         var height = dc.getHeight();
         var centerX = width / 2;

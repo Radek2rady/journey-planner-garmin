@@ -17,7 +17,7 @@ module StopChooser {
             menu.addItem(new WatchUi.MenuItem(Rez.Strings.MyLocation, Rez.Strings.NearestByGps, :location, null));
         }
         menu.addItem(new WatchUi.MenuItem(Rez.Strings.EnterName, null, :name, null));
-        var recent = getApp().trip.recent;
+        var recent = getServices().trip.recent;
         addStops(menu, recent);
         WatchUi.pushView(menu, new StopChooserDelegate(end, recent, onChanged), WatchUi.SLIDE_LEFT);
     }
@@ -31,7 +31,7 @@ module StopChooser {
     }
 
     function apply(end as TripEnd, stop as Stop?) as Void {
-        var trip = getApp().trip;
+        var trip = getServices().trip;
         if (end == ORIGIN) {
             trip.setOrigin(stop);
         } else {
@@ -79,7 +79,7 @@ class StopChooserDelegate extends WatchUi.Menu2InputDelegate {
             return;
         }
         item.setSubLabel(Texts.get(Rez.Strings.Searching) + " " + name);
-        var app = getApp();
+        var app = getServices();
         app.api.searchStops(name, app.location.getCoordinates(), method(:onStops));
     }
 

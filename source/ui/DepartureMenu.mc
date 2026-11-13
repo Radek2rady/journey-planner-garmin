@@ -91,7 +91,7 @@ class DepartureMenuDelegate extends WatchUi.Menu2InputDelegate {
     function onSelect(item as MenuItem) as Void {
         var id = item.getId();
         if (id == :now) {
-            getApp().trip.departureTime = null;
+            getServices().trip.departureTime = null;
             _onChanged.invoke();
             WatchUi.popView(WatchUi.SLIDE_RIGHT);
         } else if (id == :day) {
@@ -152,7 +152,7 @@ class DepartureMinutesDelegate extends WatchUi.Menu2InputDelegate {
     function onSelect(item as MenuItem) as Void {
         var id = item.getId();
         if (id instanceof Number) {
-            getApp().trip.departureTime = id;
+            getServices().trip.departureTime = id;
             _onChanged.invoke();
             for (var i = 1; i < _depth; i++) {
                 WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);

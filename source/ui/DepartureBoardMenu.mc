@@ -6,7 +6,7 @@ import Toybox.WatchUi;
 module BoardChooser {
 
     function push() as Void {
-        var recent = getApp().trip.recent;
+        var recent = getServices().trip.recent;
         var menu = new WatchUi.Menu2({ :title => Rez.Strings.Board });
         menu.addItem(new WatchUi.MenuItem(Rez.Strings.NearestStop, null, :nearest, null));
         StopChooser.addStops(menu, recent);
@@ -26,7 +26,7 @@ class BoardChooserDelegate extends WatchUi.Menu2InputDelegate {
     }
 
     function onSelect(item as MenuItem) as Void {
-        var app = getApp();
+        var app = getServices();
         var id = item.getId();
         if (id == :nearest) {
             var coordinates = app.location.getCoordinates();
@@ -104,7 +104,7 @@ class DepartureBoardDelegate extends WatchUi.Menu2InputDelegate {
         if (id == :later) {
             _laterItem = item;
             item.setSubLabel(Rez.Strings.Searching);
-            getApp().api.searchDepartures(_board.stopId, null, _board.nextCursor, method(:onBoard));
+            getServices().api.searchDepartures(_board.stopId, null, _board.nextCursor, method(:onBoard));
             WatchUi.requestUpdate();
         } else if (id instanceof Number) {
             WatchUi.pushView(new FullTextView(Texts.departureDetails(_board.departures[id])),

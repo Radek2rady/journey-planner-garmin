@@ -7,7 +7,7 @@ module SavedList {
     //! `onTripChanged` is called when a saved trip becomes the planned trip
     //! because the user searched it again.
     function push(onTripChanged as Method() as Void) as Void {
-        var searches = getApp().savedSearches.searches;
+        var searches = getServices().savedSearches.searches;
         var menu = new WatchUi.Menu2({ :title => Rez.Strings.Saved });
         for (var i = 0; i < searches.size(); i++) {
             menu.addItem(new WatchUi.MenuItem(Texts.tripName(searches[i].trip), Texts.savedAt(searches[i]), i, null));

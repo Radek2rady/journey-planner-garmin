@@ -1,3 +1,4 @@
+import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.Test;
 import Toybox.Time;
@@ -9,7 +10,7 @@ import Toybox.WatchUi;
 //! Puts back the planned trip a test has replaced, so that the tests leave
 //! the stored state of the simulator as they found it.
 function restorePlannedTrip(origin as Stop?, destination as Stop?) as Void {
-    var trip = getApp().trip;
+    var trip = getServices().trip;
     trip.origin = origin;
     trip.destination = destination;
     if (destination != null) {
@@ -65,6 +66,15 @@ function textsDescribeALeg(logger as Logger) as Boolean {
 }
 
 (:test)
+function glanceDrawsWithoutTheServices(logger as Logger) as Boolean {
+    var bitmap = Graphics.createBufferedBitmap({ :width => 180, :height => 60 }).get() as BufferedBitmap;
+    var glance = new TransitGlance();
+    glance.onUpdate(bitmap.getDc());
+    var views = getApp().getGlanceView();
+    return views != null && views[0] instanceof TransitGlance;
+}
+
+(:test)
 function mainMenuOpensAndHandlesItems(logger as Logger) as Boolean {
     MainMenu.push();
     var item = new WatchUi.MenuItem("x", null, :swap, null);
@@ -102,14 +112,14 @@ function stopChooserOpensAndHandlesItems(logger as Logger) as Boolean {
 function connectionListAndDetailOpen(logger as Logger) as Boolean {
     var page = sampleConnectionsPage();
     ConnectionList.push(page, null, null);
-    var plannedOrigin = getApp().trip.origin;
-    var plannedDestination = getApp().trip.destination;
+    var plannedOrigin = getServices().trip.origin;
+    var plannedDestination = getServices().trip.destination;
     var listItem = new WatchUi.MenuItem("x", null, 0, null);
     var delegate = new ConnectionListDelegate(page, [listItem] as Array<MenuItem>, sampleTrip("a", "b"), null);
     delegate.refreshCountdowns(1794410160 - 600);
     CountdownTicker.onTick();
     delegate.onSelect(new WatchUi.MenuItem("x", null, :again, null));
-    Test.assert((getApp().trip.currentTrip() as Trip).isSame(sampleTrip("a", "b")));
+    Test.assert((getServices().trip.currentTrip() as Trip).isSame(sampleTrip("a", "b")));
     delegate.onSelect(new WatchUi.MenuItem("x", null, 0, null));
     delegate.onSelect(new WatchUi.MenuItem("x", null, :later, null));
     delegate.onConnections(null, new ApiError(502, null));
@@ -247,7 +257,7 @@ function departureMenuSetsAndClearsTheTime(logger as Logger) as Boolean {
     Test.assertEqual(DepartureMenu.dayOffset(1000 + 5 * 86400 + 3600, 1000), 5);
     Test.assertEqual(DepartureMenu.dayOffset(999, 1000), -1);
 
-    var trip = getApp().trip;
+    var trip = getServices().trip;
     new DepartureMinutesDelegate(main.method(:refresh), 2).onSelect(new WatchUi.MenuItem("x", null, 1794510900, null));
     Test.assertEqual(trip.departureTime as Number, 1794510900);
     logger.debug(Texts.departure(trip.departureTime));
@@ -270,7 +280,7 @@ function departureMenuSetsAndClearsTheTime(logger as Logger) as Boolean {
 
 (:test)
 function favouriteListAddsChoosesAndRemoves(logger as Logger) as Boolean {
-    var app = getApp();
+    var app = getServices();
     var item = new WatchUi.MenuItem("x", null, :favourites, null);
     var main = new MainMenuDelegate(item, item, item, item, item);
     main.onSelect(item);
@@ -296,7 +306,7 @@ function favouriteListAddsChoosesAndRemoves(logger as Logger) as Boolean {
 
 (:test)
 function filterMenuCyclesThroughTheChoices(logger as Logger) as Boolean {
-    var trip = getApp().trip;
+    var trip = getServices().trip;
     var before = trip.filters;
     trip.filters = new SearchFilters();
 

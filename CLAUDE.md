@@ -18,7 +18,7 @@ The proxy forwards the query and returns a compact JSON (`docs/API.md`, ~2 kB).
 
 | Path | Responsibility |
 | --- | --- |
-| `source/TransitApp.mc` | Lifecycle; owns the services (`api`, `location`, `trip`, `favourites`, `savedSearches`) |
+| `source/TransitApp.mc` | Lifecycle, glance view; `AppServices` (`api`, `location`, `trip`, `favourites`, `savedSearches`) via `getServices()` |
 | `source/model/` | `Stop`, `Trip`, `SearchFilters`, `Leg`, `Connection`, `ConnectionsPage`, `SavedSearch`, `Departure`, `DepartureBoard`; parsing of the wire format |
 | `source/data/` | `TransitApi` (HTTP), `LocationProvider` (GPS), `TripStore`, `Favourites`, `SavedSearches` (persistence) |
 | `source/ui/` | Views, menus and their delegates; `Texts` turns data into localized text |
@@ -71,6 +71,15 @@ command line when the key lives elsewhere.
 5. `docs/TASKS.md` is updated; `docs/PLAN.md` and `docs/API.md` when affected.
 
 ## Gotchas
+
+- The app is a `widget` (manifest), not a `watch-app`: on the fr955 watch-apps sit in
+  the activity list behind START, which is blocked while an activity runs or is
+  suspended with *Resume Later*. A widget opens from the glance loop on the watch face.
+- From API 4.0 an app appears in the glance list only with its own `getGlanceView`. In
+  glance mode (64 kB) only `(:glance)` code and `scope="glance"` strings are loaded, so
+  the services live in `AppServices`, created on first use (`getServices()`), never in
+  the glance. Full-app methods of `TransitApp` carry `(:typecheck(disableGlanceCheck))`.
+- Changing the app type made the watch install Transit anew: stored data was lost.
 
 - Simulator and plain HTTP: uncheck *Settings > Use Device HTTPS Requirements*, otherwise
   requests to `http://localhost:8787` fail with error -1001. A real watch needs a public

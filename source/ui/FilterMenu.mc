@@ -6,7 +6,7 @@ module FilterMenu {
 
     //! `onChanged` is called after a filter has been changed.
     function push(onChanged as Method() as Void) as Void {
-        var filters = getApp().trip.filters;
+        var filters = getServices().trip.filters;
         var menu = new WatchUi.Menu2({ :title => Rez.Strings.Filters });
         menu.addItem(new WatchUi.MenuItem(Rez.Strings.Transfers, Texts.transfersFilter(filters), :transfers, null));
         menu.addItem(new WatchUi.MenuItem(Rez.Strings.Vehicles, Texts.vehiclesFilter(filters), :vehicles, null));
@@ -24,7 +24,7 @@ class FilterMenuDelegate extends WatchUi.Menu2InputDelegate {
     }
 
     function onSelect(item as MenuItem) as Void {
-        var trip = getApp().trip;
+        var trip = getServices().trip;
         var filters = trip.filters;
         var id = item.getId();
         if (id == :transfers) {
