@@ -1,6 +1,8 @@
 import Toybox.Application;
 import Toybox.Graphics;
 import Toybox.Lang;
+import Toybox.Time;
+import Toybox.Time.Gregorian;
 import Toybox.WatchUi;
 
 //! Application entry point. Runs in two modes: as a glance in the glance
@@ -39,8 +41,11 @@ class TransitApp extends Application.AppBase {
     }
 }
 
-//! Glance in the watch's glance list: app name and what it offers. START on
-//! it opens the full app.
+//! Glance in the watch's glance list: the destination of the first favourite
+//! trip and its next departure from the last saved search; the app name
+//! without favourites. START on it opens the full app. The fr955 redraws a
+//! glance only now and then (when shown, at most every 30 s), so the
+//! countdown is computed at drawing time, not by a timer.
 (:glance)
 class TransitGlance extends WatchUi.GlanceView {
 
@@ -49,12 +54,43 @@ class TransitGlance extends WatchUi.GlanceView {
     }
 
     function onUpdate(dc as Dc) as Void {
+        var now = Time.now().value();
+        var next = GlanceData.nextOfFavourite(now);
+        var title = WatchUi.loadResource(Rez.Strings.AppName) as String;
+        var detail = WatchUi.loadResource(Rez.Strings.GlanceHint) as String;
+        if (next != null) {
+            title = next.destination;
+            var time = next.departureTime;
+            detail = time != null ? GlanceText.departure(time, now) : WatchUi.loadResource(Rez.Strings.GlanceSearch) as String;
+        }
         var height = dc.getHeight();
         var left = Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER;
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(0, height * 0.3, Graphics.FONT_GLANCE, WatchUi.loadResource(Rez.Strings.AppName) as String, left);
+        dc.drawText(0, height * 0.3, Graphics.FONT_GLANCE, title, left);
         dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(0, height * 0.72, Graphics.FONT_GLANCE, WatchUi.loadResource(Rez.Strings.GlanceHint) as String, left);
+        dc.drawText(0, height * 0.72, Graphics.FONT_GLANCE, detail, left);
+    }
+}
+
+//! Text of the glance; the full app's `Texts` is not loaded in glance mode.
+(:glance)
+module GlanceText {
+
+    //! A departure further away than this shows its time only.
+    const COUNTDOWN_MINUTES = 120;
+
+    //! "16:19, in 7 min", "16:19, now", or "16:19" when further away.
+    function departure(time as Number, now as Number) as String {
+        var info = Gregorian.info(new Time.Moment(time), Time.FORMAT_SHORT);
+        var text = (info.hour as Number).format("%d") + ":" + (info.min as Number).format("%02d");
+        var minutes = (time - now) / 60;
+        if (minutes == 0) {
+            return text + ", " + WatchUi.loadResource(Rez.Strings.Now);
+        }
+        if (minutes > 0 && minutes < COUNTDOWN_MINUTES) {
+            return text + ", " + WatchUi.loadResource(Rez.Strings.In) + " " + minutes + " " + WatchUi.loadResource(Rez.Strings.Minutes);
+        }
+        return text;
     }
 }
 

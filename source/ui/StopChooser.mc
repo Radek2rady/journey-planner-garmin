@@ -2,7 +2,8 @@ import Toybox.Lang;
 import Toybox.WatchUi;
 
 //! Picks the origin or destination: current location and the stops around it
-//! (origin only), a stop found by name, or a recently used stop.
+//! (origin only), a stop found by name, or a recently used stop. The last item
+//! leads to deleting recent stops.
 module StopChooser {
 
     enum TripEnd {
@@ -12,15 +13,30 @@ module StopChooser {
 
     //! `onChanged` is called after the trip has been updated.
     function push(end as TripEnd, onChanged as Method() as Void) as Void {
-        var menu = new WatchUi.Menu2({ :title => end == ORIGIN ? Rez.Strings.From : Rez.Strings.To });
+        WatchUi.pushView(menu(end), new StopChooserDelegate(end, getServices().trip.recent, onChanged), WatchUi.SLIDE_LEFT);
+    }
+
+    function menu(end as TripEnd) as Menu2 {
+        var result = new WatchUi.Menu2({ :title => end == ORIGIN ? Rez.Strings.From : Rez.Strings.To });
         if (end == ORIGIN) {
-            menu.addItem(new WatchUi.MenuItem(Rez.Strings.MyLocation, Rez.Strings.NearestByGps, :location, null));
-            menu.addItem(new WatchUi.MenuItem(Rez.Strings.NearbyStops, Rez.Strings.NearbyHint, :nearby, null));
+            result.addItem(new WatchUi.MenuItem(Rez.Strings.MyLocation, Rez.Strings.NearestByGps, :location, null));
+            result.addItem(new WatchUi.MenuItem(Rez.Strings.NearbyStops, Rez.Strings.NearbyHint, :nearby, null));
         }
-        menu.addItem(new WatchUi.MenuItem(Rez.Strings.EnterName, null, :name, null));
+        result.addItem(new WatchUi.MenuItem(Rez.Strings.EnterName, null, :name, null));
         var recent = getServices().trip.recent;
-        addStops(menu, recent);
-        WatchUi.pushView(menu, new StopChooserDelegate(end, recent, onChanged), WatchUi.SLIDE_LEFT);
+        addStops(result, recent);
+        if (recent.size() > 0) {
+            result.addItem(new WatchUi.MenuItem(Rez.Strings.DeleteRecent, null, :delete, null));
+        }
+        return result;
+    }
+
+    //! The recent stops to delete one by one, after an item that deletes all.
+    function deletionMenu() as Menu2 {
+        var result = new WatchUi.Menu2({ :title => Rez.Strings.DeleteRecent });
+        result.addItem(new WatchUi.MenuItem(Rez.Strings.DeleteAll, null, :all, null));
+        addStops(result, getServices().trip.recent);
+        return result;
     }
 
     //! Adds one item per stop; the item id is the index into `stops`. The
@@ -65,6 +81,8 @@ class StopChooserDelegate extends WatchUi.Menu2InputDelegate {
         } else if (id == :name) {
             _progressItem = item;
             StopNameEntry.push(self);
+        } else if (id == :delete) {
+            WatchUi.switchToView(StopChooser.deletionMenu(), new RecentDeletionDelegate(_end, _onChanged), WatchUi.SLIDE_LEFT);
         } else if (id instanceof Number) {
             choose(_recent[id]);
         }
@@ -146,5 +164,41 @@ class StopResultsDelegate extends WatchUi.Menu2InputDelegate {
             WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
             WatchUi.popView(WatchUi.SLIDE_RIGHT);
         }
+    }
+}
+
+//! Deletes the chosen recent stop, or all of them, and returns to the
+//! chooser. The planned origin and destination stay as they are.
+class RecentDeletionDelegate extends WatchUi.Menu2InputDelegate {
+
+    private var _end as StopChooser.TripEnd;
+    private var _onChanged as Method() as Void;
+
+    function initialize(end as StopChooser.TripEnd, onChanged as Method() as Void) {
+        Menu2InputDelegate.initialize();
+        _end = end;
+        _onChanged = onChanged;
+    }
+
+    function onSelect(item as MenuItem) as Void {
+        var trip = getServices().trip;
+        var id = item.getId();
+        if (id == :all) {
+            trip.clearRecent();
+        } else if (id instanceof Number) {
+            trip.forgetRecent(id);
+        } else {
+            return;
+        }
+        backToChooser();
+    }
+
+    //! BACK returns to the chooser rather than to the main menu.
+    function onBack() as Void {
+        backToChooser();
+    }
+
+    private function backToChooser() as Void {
+        WatchUi.switchToView(StopChooser.menu(_end), new StopChooserDelegate(_end, getServices().trip.recent, _onChanged), WatchUi.SLIDE_RIGHT);
     }
 }

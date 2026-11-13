@@ -1,6 +1,7 @@
 <strings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">
     <string id="AppName" scope="glance">Transit</string>
     <string id="GlanceHint" scope="glance">Connections, departures</string>
+    <string id="GlanceSearch" scope="glance">search to see times</string>
 
     <!-- Home screen and main menu -->
     <string id="Connections">Connections</string>
@@ -14,8 +15,11 @@
     <string id="Swap">Swap</string>
     <string id="SwapHint">from and to</string>
     <string id="NeedBothStops">Set both stops first</string>
+    <string id="Time">Time</string>
+    <string id="ArriveBy">Arrive by</string>
+    <string id="ArriveByHint">the time is the arrival</string>
     <string id="Departure">Departure</string>
-    <string id="Now">now</string>
+    <string id="Now" scope="glance">now</string>
     <string id="Today">today</string>
     <string id="Tomorrow">tomorrow</string>
     <string id="OtherDay">Another day</string>
@@ -34,6 +38,9 @@
     <string id="NothingSaved">Nothing saved yet</string>
     <string id="Favourites">Favourite trips</string>
     <string id="AddCurrentTrip">Add current trip</string>
+    <string id="DeleteSaved">Delete searches</string>
+    <string id="DeleteRecent">Delete recent stops</string>
+    <string id="DeleteAll">Delete all</string>
     <string id="RemoveFavourite">Remove a trip</string>
     <string id="Board">Departure board</string>
     <string id="BoardHint">what leaves from a stop</string>
@@ -53,16 +60,17 @@
     <string id="SpaceKey">space</string>
 
     <!-- Connections -->
+    <string id="EarlierConnections">Earlier connections</string>
     <string id="LaterConnections">Later connections</string>
     <string id="SearchAgain">Search again</string>
-    <string id="In">in</string>
+    <string id="In" scope="glance">in</string>
     <string id="Departed">departed</string>
     <string id="Walk">Walk</string>
     <string id="GetOff">get off</string>
     <string id="Cancelled">CANCELLED</string>
     <string id="Platform">plat.</string>
     <string id="Direction">to</string>
-    <string id="Minutes">min</string>
+    <string id="Minutes" scope="glance">min</string>
     <string id="Hours">h</string>
     <string id="Destination">Destination</string>
 

@@ -4,9 +4,10 @@ import Toybox.Time;
 import Toybox.Time.Gregorian;
 import Toybox.WatchUi;
 
-//! Picks the departure time of the search. The first menu offers "now" and
-//! the hours of the next day; "another day" leads to a date further ahead.
-//! Every path ends with the minutes.
+//! Picks the time of the search. The first menu switches between departure
+//! and arrival ("arrive by"), offers "now" and the hours of the next day;
+//! "another day" leads to a date further ahead. Every path ends with the
+//! minutes. "Now" always means departing now.
 module DepartureMenu {
 
     const HOURS_AHEAD = 24;
@@ -31,7 +32,8 @@ module DepartureMenu {
     function push(onChanged as Method() as Void) as Void {
         var now = Time.now().value();
         var info = Gregorian.info(new Time.Moment(now), Time.FORMAT_SHORT);
-        var menu = new WatchUi.Menu2({ :title => Rez.Strings.Departure });
+        var menu = new WatchUi.Menu2({ :title => Rez.Strings.Time });
+        menu.addItem(new WatchUi.ToggleMenuItem(Rez.Strings.ArriveBy, Rez.Strings.ArriveByHint, :arrive, getServices().trip.arriveBy, null));
         menu.addItem(new WatchUi.MenuItem(Rez.Strings.Now, null, :now, null));
         menu.addItem(new WatchUi.MenuItem(Rez.Strings.OtherDay, null, :day, null));
         addHours(menu, hourStart(now, info.min, info.sec, 0));
@@ -41,7 +43,7 @@ module DepartureMenu {
     //! The days after today; selecting one leads to its hours.
     function pushDays(onChanged as Method() as Void) as Void {
         var today = Time.today().value();
-        var menu = new WatchUi.Menu2({ :title => Rez.Strings.Departure });
+        var menu = new WatchUi.Menu2({ :title => Rez.Strings.Time });
         for (var i = 1; i <= DAYS_AHEAD; i++) {
             var day = today + i * SECONDS_PER_DAY;
             menu.addItem(new WatchUi.MenuItem(Texts.date(day), i == 1 ? Rez.Strings.Tomorrow : null, day, null));
@@ -90,8 +92,13 @@ class DepartureMenuDelegate extends WatchUi.Menu2InputDelegate {
 
     function onSelect(item as MenuItem) as Void {
         var id = item.getId();
-        if (id == :now) {
-            getServices().trip.departureTime = null;
+        if (id == :arrive && item instanceof ToggleMenuItem) {
+            getServices().trip.arriveBy = item.isEnabled();
+            _onChanged.invoke();
+        } else if (id == :now) {
+            var trip = getServices().trip;
+            trip.departureTime = null;
+            trip.arriveBy = false;
             _onChanged.invoke();
             WatchUi.popView(WatchUi.SLIDE_RIGHT);
         } else if (id == :day) {

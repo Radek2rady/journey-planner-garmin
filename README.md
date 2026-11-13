@@ -30,15 +30,16 @@ speaks plain HTTP) and set a position with **Settings > Set Position**.
 
 | Screen | Action |
 | --- | --- |
+| Glance (watch face, UP/DOWN) | Destination of the first favourite trip and its next departure from the last search; START opens the app |
 | Home | START or tap opens the menu |
-| Menu > From | *My location*, *Nearby stops* (pick one, with distance), *Enter name*, or a recent stop |
-| Menu > To | *Enter name* or a recent stop |
+| Menu > From | *My location*, *Nearby stops* (pick one, with distance), *Enter name*, or a recent stop; *Delete recent stops* at the end |
+| Menu > To | *Enter name* or a recent stop; *Delete recent stops* at the end |
 | Enter name | UP/DOWN or swipe choose a letter (hold UP to move fast), START or tap types it, BACK erases; *Search* (one step above A) finishes |
 | Menu > Favourite trips | Choose a trip to search it at once; *Add current trip*; *Remove a trip* |
-| Menu > Departure | *Now*, an hour of the next 24 hours, or *Another day* (up to 10 days ahead); then the minutes |
+| Menu > Departure | *Arrive by* switches the time to the latest arrival; *Now*, an hour of the next 24 hours, or *Another day* (up to 10 days ahead); then the minutes. By arrival, the list offers *Earlier connections* |
 | Menu > Filters | Transfers and vehicles; each press moves to the next choice |
 | Menu > Departure board | What leaves next from the nearest stop or a recent one; *Later departures* continues |
-| Menu > Saved connections | Results of the last 10 searches, readable without the phone; *Search again* refreshes them |
+| Menu > Saved connections | Results of the last 10 searches, readable without the phone; *Search again* refreshes them; *Delete searches* at the end (one, or *Delete all*) |
 | Menu > Find connections | Lists connections ("!" = tight change); select one to see its legs, select a leg line to read it in full |
 | Connection detail > *Change N min* | Shows the time for the change; select it to see what else goes from that station (*If missed*) |
 

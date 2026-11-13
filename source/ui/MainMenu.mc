@@ -10,7 +10,7 @@ module MainMenu {
         var app = getServices();
         var originItem = new WatchUi.MenuItem(Rez.Strings.From, Texts.originName(app.trip, app.location), :origin, null);
         var destinationItem = new WatchUi.MenuItem(Rez.Strings.To, Texts.destinationName(app.trip), :destination, null);
-        var departureItem = new WatchUi.MenuItem(Rez.Strings.Departure, Texts.departure(app.trip.departureTime), :when, null);
+        var departureItem = new WatchUi.MenuItem(Texts.timeKind(app.trip), Texts.departure(app.trip.departureTime), :when, null);
         var filtersItem = new WatchUi.MenuItem(Rez.Strings.Filters, Texts.filters(app.trip.filters), :filters, null);
 
         var menu = new WatchUi.Menu2({ :title => Rez.Strings.Connections });
@@ -86,6 +86,7 @@ class MainMenuDelegate extends WatchUi.Menu2InputDelegate {
         var app = getServices();
         _originItem.setSubLabel(Texts.originName(app.trip, app.location));
         _destinationItem.setSubLabel(Texts.destinationName(app.trip));
+        _departureItem.setLabel(Texts.timeKind(app.trip));
         _departureItem.setSubLabel(Texts.departure(app.trip.departureTime));
         _filtersItem.setSubLabel(Texts.filters(app.trip.filters));
         WatchUi.requestUpdate();
@@ -150,7 +151,7 @@ module ConnectionSearch {
             }
             origin = TransitApi.formatCoordinates(coordinates);
         }
-        app.api.searchConnections(origin, destination.id, app.trip.departureTime, app.trip.filters, cursor, callback);
+        app.api.searchConnections(origin, destination.id, app.trip.departureTime, app.trip.searchesByArrival(), app.trip.filters, cursor, callback);
         return null;
     }
 

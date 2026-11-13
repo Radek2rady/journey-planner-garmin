@@ -20,7 +20,7 @@ The proxy forwards the query and returns a compact JSON (`docs/API.md`, ~2 kB).
 | --- | --- |
 | `source/TransitApp.mc` | Lifecycle, glance view; `AppServices` (`api`, `location`, `trip`, `favourites`, `savedSearches`) via `getServices()` |
 | `source/model/` | `Stop`, `Trip`, `SearchFilters`, `Leg`, `Connection`, `ConnectionsPage`, `SavedSearch`, `Departure`, `DepartureBoard`; parsing of the wire format |
-| `source/data/` | `TransitApi` (HTTP), `LocationProvider` (GPS), `TripStore`, `Favourites`, `SavedSearches` (persistence) |
+| `source/data/` | `TransitApi` (HTTP), `LocationProvider` (GPS), `TripStore`, `Favourites`, `SavedSearches` (persistence); `GlanceData`, `StorageKeys` (read by the glance) |
 | `source/ui/` | Views, menus and their delegates; `Texts` turns data into localized text |
 | `source/test/` | Watch unit tests (`(:test)` functions) |
 | `resources/`, `resources-ces/` | Strings: English is the default, Czech the translation |
@@ -79,6 +79,10 @@ command line when the key lives elsewhere.
   glance mode (64 kB) only `(:glance)` code and `scope="glance"` strings are loaded, so
   the services live in `AppServices`, created on first use (`getServices()`), never in
   the glance. Full-app methods of `TransitApp` carry `(:typecheck(disableGlanceCheck))`.
+- The glance reads storage directly (`GlanceData`), not through `Favourites` or
+  `SavedSearches`. A change to their storage format must update `GlanceData` too. The
+  glance makes no requests: the fr955 redraws it only now and then into a cache, so a
+  late response would never show.
 - Changing the app type made the watch install Transit anew: stored data was lost.
 
 - Simulator and plain HTTP: uncheck *Settings > Use Device HTTPS Requirements*, otherwise

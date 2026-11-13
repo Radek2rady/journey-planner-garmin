@@ -10,17 +10,20 @@ module ConnectionList {
     //! `savedTrip` is set for results read from storage: the list then offers
     //! to search that trip again, and calls `onTripChanged` when it does.
     function push(page as ConnectionsPage, savedTrip as Trip?, onTripChanged as (Method() as Void)?) as Void {
-        var destination = savedTrip != null ? savedTrip.destination : getServices().trip.destination;
-        show(page, destination != null ? destination.id : null, savedTrip, onTripChanged);
+        var planned = getServices().trip;
+        var destination = savedTrip != null ? savedTrip.destination : planned.destination;
+        show(page, destination != null ? destination.id : null, savedTrip, onTripChanged, savedTrip == null && planned.searchesByArrival());
     }
 
     //! Connections from a transfer stop of another connection. They do not
     //! belong to the planned trip, so later ones cannot be loaded.
     function pushAlternatives(page as ConnectionsPage, destinationId as String) as Void {
-        show(new ConnectionsPage(page.connections, null), destinationId, null, null);
+        show(new ConnectionsPage(page.connections, null), destinationId, null, null, false);
     }
 
-    function show(page as ConnectionsPage, destinationId as String?, savedTrip as Trip?, onTripChanged as (Method() as Void)?) as Void {
+    //! `byArrival`: the page is from a search by arrival, so the next page
+    //! holds earlier connections.
+    function show(page as ConnectionsPage, destinationId as String?, savedTrip as Trip?, onTripChanged as (Method() as Void)?, byArrival as Boolean) as Void {
         var now = Time.now().value();
         var menu = new WatchUi.Menu2({ :title => Rez.Strings.Connections });
         var items = [] as Array<MenuItem>;
@@ -31,7 +34,7 @@ module ConnectionList {
             menu.addItem(item);
         }
         if (page.nextCursor != null) {
-            menu.addItem(new WatchUi.MenuItem(Rez.Strings.LaterConnections, null, :later, null));
+            menu.addItem(new WatchUi.MenuItem(byArrival ? Rez.Strings.EarlierConnections : Rez.Strings.LaterConnections, null, :later, null));
         }
         if (savedTrip != null) {
             menu.addItem(new WatchUi.MenuItem(Rez.Strings.SearchAgain, null, :again, null));
@@ -220,7 +223,7 @@ class ConnectionDetailDelegate extends WatchUi.Menu2InputDelegate {
         var services = getServices();
         _progressItem = item;
         item.setSubLabel(Rez.Strings.Searching);
-        services.api.searchConnections(stationId, destinationId, after, services.trip.filters, null, method(:onConnections));
+        services.api.searchConnections(stationId, destinationId, after, false, services.trip.filters, null, method(:onConnections));
         WatchUi.requestUpdate();
     }
 }

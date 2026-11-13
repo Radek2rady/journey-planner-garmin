@@ -53,12 +53,17 @@ class TransitApi {
     //! `departureTime` is in Unix seconds, null means now. A `cursor` continues
     //! an earlier search and takes precedence over the time.
     //! The filters are sent with a `cursor` as well.
-    function searchConnections(origin as String, destinationId as String, departureTime as Number?, filters as SearchFilters, cursor as String?, callback as ConnectionsCallback) as Void {
+    //! With `arriveBy` the time is the latest arrival and a cursor leads to
+    //! earlier connections; it is sent with a `cursor` as well.
+    function searchConnections(origin as String, destinationId as String, departureTime as Number?, arriveBy as Boolean, filters as SearchFilters, cursor as String?, callback as ConnectionsCallback) as Void {
         var params = { "from" => origin, "to" => destinationId } as Dictionary<String, String>;
         if (cursor != null) {
             params["c"] = cursor;
         } else if (departureTime != null) {
             params["t"] = departureTime.toString();
+        }
+        if (arriveBy && (cursor != null || departureTime != null)) {
+            params["a"] = "1";
         }
         var maxTransfers = filters.maxTransfers;
         if (maxTransfers != null) {

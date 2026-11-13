@@ -267,6 +267,37 @@ class DepartureTimeTest(unittest.TestCase):
             self.assertEqual(proxy.handle("/plan", {"from": "a", "to": "b", "t": value}), (400, {"e": "bad_request"}))
 
 
+class ArriveByTest(unittest.TestCase):
+    UPSTREAM = {"itineraries": [], "previousPageCursor": "EARLIER|1", "nextPageCursor": "LATER|2"}
+
+    def plan(self, query):
+        with mock.patch.object(proxy, "call_api", return_value=self.UPSTREAM) as call:
+            status, body = proxy.handle("/plan", dict({"from": "a", "to": "b"}, **query))
+        return status, body, call
+
+    def test_arrival_time_and_earlier_cursor(self):
+        status, body, call = self.plan({"t": "1794510000", "a": "1"})
+        self.assertEqual(status, 200)
+        self.assertEqual(call.call_args[0][1]["arriveBy"], "true")
+        self.assertEqual(call.call_args[0][1]["time"], "2026-11-12T19:00:00Z")
+        self.assertEqual(body["n"], "EARLIER|1")
+
+    def test_continued_arrive_by_search_keeps_going_earlier(self):
+        status, body, call = self.plan({"c": "EARLIER|1", "a": "1"})
+        self.assertEqual(status, 200)
+        self.assertEqual(call.call_args[0][1]["pageCursor"], "EARLIER|1")
+        self.assertEqual(body["n"], "EARLIER|1")
+
+    def test_departure_search_returns_the_later_cursor(self):
+        _, body, call = self.plan({"t": "1794510000"})
+        self.assertNotIn("arriveBy", call.call_args[0][1])
+        self.assertEqual(body["n"], "LATER|2")
+
+    def test_arrive_by_needs_a_time_and_a_valid_flag(self):
+        self.assertEqual(self.plan({"a": "1"})[0], 400)
+        self.assertEqual(self.plan({"t": "1794510000", "a": "yes"})[0], 400)
+
+
 class FiltersTest(unittest.TestCase):
     def plan(self, query, itineraries=()):
         with mock.patch.object(proxy, "call_api", return_value={"itineraries": list(itineraries)}) as call:

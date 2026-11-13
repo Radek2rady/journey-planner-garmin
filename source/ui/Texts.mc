@@ -77,6 +77,11 @@ module Texts {
     }
 
     //! "now", "today 17:30" or "Fri 13.11. 17:30"
+    //! "Departure" or "Arrive by": what the chosen time means
+    function timeKind(trip as TripStore) as String {
+        return get(trip.searchesByArrival() ? Rez.Strings.ArriveBy : Rez.Strings.Departure);
+    }
+
     function departure(time as Number?) as String {
         if (time == null) {
             return get(Rez.Strings.Now);

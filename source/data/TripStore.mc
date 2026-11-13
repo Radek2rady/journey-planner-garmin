@@ -16,6 +16,9 @@ class TripStore {
     //! Requested departure in Unix seconds; null means now. Not persisted: a
     //! time chosen in an earlier session would be stale.
     var departureTime as Number?;
+    //! The time is the latest arrival rather than the departure. Not
+    //! persisted, like the time.
+    var arriveBy as Boolean = false;
     var filters as SearchFilters = new SearchFilters();
     //! Most recently used first.
     var recent as Array<Stop> = [] as Array<Stop>;
@@ -54,6 +57,11 @@ class TripStore {
         Storage.setValue(KEY_FILTERS, filters.toDictionary() as Dictionary<Storage.KeyType, Storage.ValueType>);
     }
 
+    //! Arrival matters only with a chosen time; "arrive by now" is no search.
+    function searchesByArrival() as Boolean {
+        return arriveBy && departureTime != null;
+    }
+
     //! The planned trip; null while no destination is set.
     function currentTrip() as Trip? {
         var to = destination;
@@ -86,11 +94,29 @@ class TripStore {
         return result;
     }
 
+    //! Forgets the recent stop at `index` of `recent`. The planned trip keeps
+    //! it if it is the origin or destination.
+    function forgetRecent(index as Number) as Void {
+        if (index >= 0 && index < recent.size()) {
+            recent.remove(recent[index]);
+            saveRecent();
+        }
+    }
+
+    function clearRecent() as Void {
+        recent = [] as Array<Stop>;
+        saveRecent();
+    }
+
     private function remember(stop as Stop?) as Void {
         if (stop == null) {
             return;
         }
         recent = withRecent(recent, stop, Config.MAX_RECENT_STOPS);
+        saveRecent();
+    }
+
+    private function saveRecent() as Void {
         var saved = [] as Array<Dictionary<String, String> >;
         for (var i = 0; i < recent.size(); i++) {
             saved.add(recent[i].toDictionary());

@@ -253,9 +253,11 @@ def transfer_count(itinerary: Json) -> int:
 
 def search_connections(origin: str, destination: str, cursor: Optional[str],
                        departure: Optional[int] = None, max_transfers: Optional[int] = None,
-                       vehicles: Optional[list[str]] = None) -> Json:
+                       vehicles: Optional[list[str]] = None, arrive_by: bool = False) -> Json:
     """Connections departing at `departure` (Unix seconds) or now; `cursor` continues a search.
 
+    With `arrive_by`, `departure` is the latest arrival instead, and the cursor
+    returned leads to earlier connections rather than later ones.
     `max_transfers` and `vehicles` (vehicle codes) narrow the search and apply to
     continued searches as well.
     """
@@ -277,10 +279,13 @@ def search_connections(origin: str, destination: str, cursor: Optional[str],
         params["maxTransfers"] = str(max_transfers + 1)
     if vehicles:
         params["transitModes"] = ",".join(mode for code in vehicles for mode in MODES[code])
+    if arrive_by:
+        params["arriveBy"] = "true"
     data = call_api("/plan", params)
     itineraries = [it for it in data.get("itineraries", [])
                    if max_transfers is None or transfer_count(it) <= max_transfers][:MAX_CONNECTIONS]
-    return {"c": [compact_connection(it) for it in itineraries], "n": data.get("nextPageCursor", "")}
+    cursor_key = "previousPageCursor" if arrive_by else "nextPageCursor"
+    return {"c": [compact_connection(it) for it in itineraries], "n": data.get(cursor_key, "")}
 
 
 def compact_departure(stop_time: Json) -> Optional[Json]:
@@ -373,8 +378,11 @@ def handle(path: str, query: dict[str, str], key: str = "") -> tuple[int, Json]:
             vehicles = [code for code in query.get("v", "").split(",") if code]
             if any(code not in MODES for code in vehicles):
                 return 400, {"e": "bad_request"}
+            arrive_by = query.get("a", "")
+            if arrive_by not in ("", "1") or (arrive_by and not departure and not query.get("c")):
+                return 400, {"e": "bad_request"}
             return 200, search_connections(origin, destination, query.get("c"), int(departure) if departure else None,
-                                           int(transfers) if transfers else None, vehicles)
+                                           int(transfers) if transfers else None, vehicles, arrive_by == "1")
         if path == "/departures":
             stop, lat, lon = query.get("stop", ""), query.get("lat", ""), query.get("lon", "")
             if not stop and not (is_coordinate(lat, 90) and is_coordinate(lon, 180)):

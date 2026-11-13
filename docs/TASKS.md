@@ -19,13 +19,19 @@ part of the change that affects them.
 - [ ] Confirm on the watch: *Nearby stops* in the origin chooser (needs the proxy
       deployed)
 
+- [ ] Confirm on the watch: deleting saved searches and recent stops
+
+- [ ] Confirm on the watch: the glance shows the first favourite and its next departure;
+      check that it is redrawn often enough for the countdown
+
+- [ ] Confirm on the watch: arrive-by search and *Earlier connections* (needs the proxy
+      deployed)
+
 ## To do
 
 ### M3: Faster daily use
 
-- [ ] Arrive-by search ("be there by 8:00")
 - [ ] Alert before the departure of a chosen connection
-- [ ] Glance with the next departure of a favourite trip
 
 ### Later (decided: not now)
 
@@ -35,7 +41,6 @@ part of the change that affects them.
 
 ### Comfort
 
-- [ ] Delete saved searches and recent stops
 - [ ] Wording for numeric errors such as -1001
 - [ ] Name entry by letter groups (no holding of DOWN needed)
 
@@ -87,6 +92,12 @@ part of the change that affects them.
       after the planned ride; wire leg keys `i` and `s`
 - [x] Transit opens from the glance loop, also during an activity suspended with Resume
       Later (confirmed on the watch)
+- [x] Arrive-by search: a switch in the time menu; the list then pages to earlier
+      connections; "now" always departs; wire parameter `a`
+- [x] Glance with the next departure of the first favourite trip, from its last saved
+      search (no request from the glance); countdown under 2 hours
+- [x] Delete saved searches and recent stops, one or all, from the end of their lists;
+      the planned trip keeps its stops
 - [x] Nearby stops by GPS in the origin chooser: stops within 500 m with distance, one
       per place (feed variants of one station merged); `/stops` without `q`
 - [x] Git repository initialized and pushed to GitHub (by the user)

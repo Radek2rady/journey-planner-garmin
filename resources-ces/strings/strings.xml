@@ -1,6 +1,7 @@
 <strings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">
     <string id="AppName" scope="glance">Spojení</string>
     <string id="GlanceHint" scope="glance">Spoje, odjezdy</string>
+    <string id="GlanceSearch" scope="glance">vyhledej pro časy</string>
 
     <string id="Connections">Spojení</string>
     <string id="From">Odkud</string>
@@ -13,8 +14,11 @@
     <string id="Swap">Prohodit</string>
     <string id="SwapHint">odkud a kam</string>
     <string id="NeedBothStops">Zadej obě zastávky</string>
+    <string id="Time">Čas</string>
+    <string id="ArriveBy">Příjezd do</string>
+    <string id="ArriveByHint">čas je příjezd</string>
     <string id="Departure">Odjezd</string>
-    <string id="Now">teď</string>
+    <string id="Now" scope="glance">teď</string>
     <string id="Today">dnes</string>
     <string id="Tomorrow">zítra</string>
     <string id="OtherDay">Jiný den</string>
@@ -33,6 +37,9 @@
     <string id="NothingSaved">Zatím nic uloženo</string>
     <string id="Favourites">Oblíbené trasy</string>
     <string id="AddCurrentTrip">Přidat aktuální trasu</string>
+    <string id="DeleteSaved">Smazat hledání</string>
+    <string id="DeleteRecent">Smazat nedávné</string>
+    <string id="DeleteAll">Smazat vše</string>
     <string id="RemoveFavourite">Odebrat trasu</string>
     <string id="Board">Tabule odjezdů</string>
     <string id="BoardHint">co jede ze zastávky</string>
@@ -50,11 +57,12 @@
     <string id="SearchKey">Hledat</string>
     <string id="SpaceKey">mezera</string>
 
+    <string id="EarlierConnections">Dřívější spoje</string>
     <string id="LaterConnections">Pozdější spoje</string>
 
     <string id="SearchAgain">Hledat znovu</string>
 
-    <string id="In">za</string>
+    <string id="In" scope="glance">za</string>
 
     <string id="Departed">odjelo</string>
     <string id="Walk">Pěšky</string>
@@ -62,7 +70,7 @@
     <string id="Cancelled">ZRUŠENO</string>
     <string id="Platform">nást.</string>
     <string id="Direction">směr</string>
-    <string id="Minutes">min</string>
+    <string id="Minutes" scope="glance">min</string>
     <string id="Hours">h</string>
     <string id="Destination">Cíl</string>
 

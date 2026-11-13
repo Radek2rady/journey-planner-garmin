@@ -255,7 +255,55 @@ function savedListOpensAndShowsASearch(logger as Logger) as Boolean {
     new MainMenuDelegate(item, item, item, item, item).onSelect(item);
     var main = new MainMenuDelegate(item, item, item, item, item);
     SavedList.push(main.method(:refresh));
-    new SavedListDelegate([search] as Array<SavedSearch>, main.method(:refresh)).onSelect(new WatchUi.MenuItem("x", null, 0, null));
+    if (getServices().savedSearches.searches.size() > 0) {
+        new SavedListDelegate(main.method(:refresh)).onSelect(new WatchUi.MenuItem("x", null, 0, null));
+    }
+    return true;
+}
+
+//! Deletes saved searches and recent stops through their menus, then puts
+//! back what the simulator had stored before.
+(:test)
+function savedSearchesAndRecentStopsAreDeleted(logger as Logger) as Boolean {
+    var services = getServices();
+    var item = new WatchUi.MenuItem("x", null, :saved, null);
+    var main = new MainMenuDelegate(item, item, item, item, item);
+
+    var saved = services.savedSearches;
+    var savedBefore = saved.searches.slice(0, null);
+    saved.save(new SavedSearch(sampleTrip("del-a", "del-b"), 1, sampleConnectionsPage()));
+    var count = saved.searches.size();
+    SavedList.push(main.method(:refresh));
+    new SavedListDelegate(main.method(:refresh)).onSelect(new WatchUi.MenuItem("x", null, :delete, null));
+    var savedDeletion = new SavedDeletionDelegate(main.method(:refresh));
+    savedDeletion.onSelect(new WatchUi.MenuItem("x", null, 0, null));
+    Test.assertEqual(saved.searches.size(), count - 1);
+    Test.assert(saved.searches.size() == 0 || !saved.searches[0].trip.isSame(sampleTrip("del-a", "del-b")));
+    saved.save(new SavedSearch(sampleTrip("del-a", "del-b"), 1, sampleConnectionsPage()));
+    savedDeletion.onSelect(new WatchUi.MenuItem("x", null, :all, null));
+    Test.assertEqual(saved.searches.size(), 0);
+    for (var i = savedBefore.size() - 1; i >= 0; i--) {
+        saved.save(savedBefore[i]);
+    }
+
+    var trip = services.trip;
+    var plannedOrigin = trip.origin;
+    var plannedDestination = trip.destination;
+    var recentBefore = trip.recent.slice(0, null);
+    trip.setDestination(new Stop("del-1", "Deleted", ""));
+    StopChooser.push(StopChooser.DESTINATION, main.method(:refresh));
+    new StopChooserDelegate(StopChooser.DESTINATION, trip.recent, main.method(:refresh))
+        .onSelect(new WatchUi.MenuItem("x", null, :delete, null));
+    var recentDeletion = new RecentDeletionDelegate(StopChooser.DESTINATION, main.method(:refresh));
+    recentDeletion.onSelect(new WatchUi.MenuItem("x", null, 0, null));
+    Test.assert(trip.recent.size() == 0 || !trip.recent[0].id.equals("del-1"));
+    Test.assertEqual((trip.destination as Stop).id, "del-1");
+    recentDeletion.onSelect(new WatchUi.MenuItem("x", null, :all, null));
+    Test.assertEqual(trip.recent.size(), 0);
+    for (var i = recentBefore.size() - 1; i >= 0; i--) {
+        trip.setDestination(recentBefore[i]);
+    }
+    restorePlannedTrip(plannedOrigin, plannedDestination);
     return true;
 }
 
@@ -283,7 +331,18 @@ function departureMenuSetsAndClearsTheTime(logger as Logger) as Boolean {
 
     var hours = new DepartureMenuDelegate(main.method(:refresh));
     hours.onSelect(new WatchUi.MenuItem("x", null, 1794510000, null));
+
+    // Arrive by: only together with a chosen time; "now" departs again.
+    hours.onSelect(new WatchUi.ToggleMenuItem("x", null, :arrive, true, null));
+    Test.assert(trip.arriveBy);
+    Test.assert(trip.searchesByArrival());
+    Test.assertEqual(Texts.timeKind(trip), Texts.get(Rez.Strings.ArriveBy));
     hours.onSelect(new WatchUi.MenuItem("x", null, :now, null));
+    Test.assert(!trip.arriveBy);
+    trip.arriveBy = true;
+    Test.assert(!trip.searchesByArrival());
+    trip.arriveBy = false;
+    Test.assertEqual(Texts.timeKind(trip), Texts.get(Rez.Strings.Departure));
 
     // Another day: days, then the hours of the chosen day, then the minutes.
     var inAWeek = Time.today().value() + 7 * 86400;
@@ -466,11 +525,11 @@ function apiDeliversConnectionsAndErrors(logger as Logger) as Boolean {
     var api = new TransitApi();
     var probe = new ApiProbe();
 
-    api.searchConnections("49.98060,14.50500", "cz-1", 1794510000, new SearchFilters(), null, probe.method(:onConnections));
+    api.searchConnections("49.98060,14.50500", "cz-1", 1794510000, true, new SearchFilters(), null, probe.method(:onConnections));
     api.onConnectionsResponse(200, { "c" => [], "n" => "" });
     Test.assertEqual((probe.page as ConnectionsPage).connections.size(), 0);
 
-    api.searchConnections("cz-2", "cz-1", null, SearchFilters.fromDictionary({ "x" => 0, "v" => "train" }), "LATER|1", probe.method(:onConnections));
+    api.searchConnections("cz-2", "cz-1", null, false, SearchFilters.fromDictionary({ "x" => 0, "v" => "train" }), "LATER|1", probe.method(:onConnections));
     api.onConnectionsResponse(-104, null);
     Test.assert(probe.page == null);
     Test.assertEqual((probe.error as ApiError).code, -104);
@@ -491,5 +550,34 @@ function apiDeliversDeparturesAndErrors(logger as Logger) as Boolean {
     api.onDeparturesResponse(400, { "e" => "bad_request" });
     Test.assert(probe.board == null);
     Test.assertEqual((probe.error as ApiError).serverCode as String, "bad_request");
+    return true;
+}
+
+(:test)
+function glanceFindsTheNextDepartureOfTheFirstFavourite(logger as Logger) as Boolean {
+    Test.assertEqual(GlanceData.firstUpcoming([0, 100, 200] as Array<Number>, 150) as Number, 2);
+    Test.assertEqual(GlanceData.firstUpcoming([0, 100, 200] as Array<Number>, 100) as Number, 1);
+    Test.assert(GlanceData.firstUpcoming([100, 200] as Array<Number>, 201) == null);
+
+    var departure = 1794410160;
+    var countdown = GlanceText.departure(departure, departure - 7 * 60);
+    Test.assert(countdown.find(" 7 ") != null);
+    Test.assert(GlanceText.departure(departure, departure - 3 * 3600).find(" ") == null);
+    logger.debug(countdown);
+
+    // Through storage: a favourite with a saved search, removed again after.
+    var services = getServices();
+    var trip = sampleTrip("glance-a", "glance-b");
+    services.favourites.add(trip);
+    services.savedSearches.save(new SavedSearch(trip, 1, sampleConnectionsPage()));
+    var next = GlanceData.nextOfFavourite(departure - 600) as NextDeparture;
+    Test.assertEqual(next.destination, "Stop glance-b");
+    Test.assertEqual(next.departureTime as Number, departure);
+    Test.assert((GlanceData.nextOfFavourite(departure + 60) as NextDeparture).departureTime == null);
+    services.savedSearches.remove(0);
+    services.favourites.remove(0);
+
+    var bitmap = Graphics.createBufferedBitmap({ :width => 180, :height => 60 }).get() as BufferedBitmap;
+    new TransitGlance().onUpdate(bitmap.getDc());
     return true;
 }

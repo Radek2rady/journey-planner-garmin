@@ -6,7 +6,6 @@ import Toybox.Lang;
 //! size limit of a single stored value.
 class SavedSearches {
 
-    private const KEY_PREFIX = "search";
     //! Slots of the first storage format, which kept names only.
     private const LEGACY_KEY_PREFIX = "saved";
     private const LEGACY_SLOTS = 10;
@@ -23,7 +22,7 @@ class SavedSearches {
             Storage.deleteValue(LEGACY_KEY_PREFIX + i);
         }
         for (var i = 0; i < Config.MAX_SAVED_SEARCHES; i++) {
-            var saved = Storage.getValue(KEY_PREFIX + i) as Dictionary?;
+            var saved = Storage.getValue(StorageKeys.SEARCH_PREFIX + i) as Dictionary?;
             if (saved != null) {
                 searches.add(SavedSearch.fromDictionary(saved));
             }
@@ -32,12 +31,30 @@ class SavedSearches {
 
     function save(search as SavedSearch) as Void {
         searches = withSaved(searches, search, Config.MAX_SAVED_SEARCHES);
+        persist();
+    }
+
+    //! Deletes the search at `index` of `searches`.
+    function remove(index as Number) as Void {
+        if (index >= 0 && index < searches.size()) {
+            searches.remove(searches[index]);
+            persist();
+        }
+    }
+
+    function clear() as Void {
+        searches = [] as Array<SavedSearch>;
+        persist();
+    }
+
+    //! Writes `searches` to their slots and empties the slots after them.
+    private function persist() as Void {
         try {
             for (var i = 0; i < Config.MAX_SAVED_SEARCHES; i++) {
                 if (i < searches.size()) {
-                    Storage.setValue(KEY_PREFIX + i, searches[i].toDictionary() as Dictionary<Storage.KeyType, Storage.ValueType>);
+                    Storage.setValue(StorageKeys.SEARCH_PREFIX + i, searches[i].toDictionary() as Dictionary<Storage.KeyType, Storage.ValueType>);
                 } else {
-                    Storage.deleteValue(KEY_PREFIX + i);
+                    Storage.deleteValue(StorageKeys.SEARCH_PREFIX + i);
                 }
             }
         } catch (e) {

@@ -38,6 +38,7 @@ Either `q` or a valid `lat` and `lon` is required.
 | `c` | no | Cursor from a previous response; returns the following connections. Overrides `t` |
 | `x` | no | Maximum number of transfers, `0` to `5`; `0` means direct connections only |
 | `v` | no | Allowed vehicles: comma-separated vehicle codes (`bus`, `tram`, `metro`, `train`, `ferry`, `cable`, `air`) |
+| `a` | no | `1`: `t` is the latest arrival ("arrive by") instead of the departure, and `n` leads to earlier connections. Needs `t` or `c`; repeat it with `c` |
 
 `x` and `v` must be repeated together with `c`.
 

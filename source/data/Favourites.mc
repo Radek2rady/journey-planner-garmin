@@ -4,7 +4,6 @@ import Toybox.Lang;
 //! Favourite trips, persisted across app launches.
 class Favourites {
 
-    private const KEY = "favourites";
 
     //! Most recently added first.
     var trips as Array<Trip> = [] as Array<Trip>;
@@ -14,7 +13,7 @@ class Favourites {
 
     function load() as Void {
         trips = [] as Array<Trip>;
-        var saved = Storage.getValue(KEY) as Array<Dictionary>?;
+        var saved = Storage.getValue(StorageKeys.FAVOURITES) as Array<Dictionary>?;
         if (saved != null) {
             for (var i = 0; i < saved.size(); i++) {
                 trips.add(Trip.fromDictionary(saved[i]));
@@ -51,6 +50,6 @@ class Favourites {
         for (var i = 0; i < trips.size(); i++) {
             saved.add(trips[i].toDictionary());
         }
-        Storage.setValue(KEY, saved as Array<Storage.ValueType>);
+        Storage.setValue(StorageKeys.FAVOURITES, saved as Array<Storage.ValueType>);
     }
 }
