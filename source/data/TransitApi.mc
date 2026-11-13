@@ -42,6 +42,12 @@ class TransitApi {
         get("/stops", params, method(:onStopsResponse));
     }
 
+    //! Stops around `near`, nearest first, each with its distance.
+    function searchNearbyStops(near as Coordinates, callback as StopsCallback) as Void {
+        _stopsCallback = callback;
+        get("/stops", { "lat" => formatDegrees(near[0]), "lon" => formatDegrees(near[1]) }, method(:onStopsResponse));
+    }
+
     //! Finds connections departing now, or the page identified by `cursor`.
     //! `origin` is a stop id or "lat,lon".
     //! `departureTime` is in Unix seconds, null means now. A `cursor` continues

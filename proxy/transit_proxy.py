@@ -20,6 +20,9 @@ No dependencies, Python 3.9+.
 from __future__ import annotations
 
 import json
+import math
+import re
+import unicodedata
 import os
 import sys
 import urllib.error
@@ -40,6 +43,7 @@ MAX_CONNECTIONS = 5
 MAX_DEPARTURES = 10
 # Platforms of one stop are separate upstream stops; this radius joins them.
 STOP_RADIUS_M = 200
+NEARBY_RADIUS_M = 500  # how far /stops looks around a position without a name
 WALK = "walk"
 
 # Transitous (MOTIS) mode -> vehicle code understood by the watch app.
@@ -127,6 +131,64 @@ def search_stops(query: str, lat: Optional[str], lon: Optional[str]) -> Json:
         if len(stops) >= MAX_STOPS:
             break
     return {"s": stops}
+
+
+def distance_m(lat1: float, lon1: float, lat2: float, lon2: float) -> int:
+    """Distance in metres; flat-earth approximation, exact enough within a few km."""
+    dy = (lat2 - lat1) * 111_320
+    dx = (lon2 - lon1) * 111_320 * math.cos(math.radians(lat1))
+    return round(math.hypot(dx, dy))
+
+
+def name_words(name: str) -> frozenset[str]:
+    """Words of a stop name without case, diacritics and punctuation; "hl.n." is spelled out."""
+    plain = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode().lower()
+    plain = re.sub(r"hl\.\s*n\.?", "hlavni nadrazi", plain)
+    return frozenset(re.findall(r"[a-z0-9]+", plain))
+
+
+def same_place(a: Json, b: Json) -> bool:
+    """One stop named differently by two feeds: close together, one name within the other."""
+    if distance_m(a["lat"], a["lon"], b["lat"], b["lon"]) > STOP_RADIUS_M:
+        return False
+    words_a, words_b = name_words(a["n"]), name_words(b["n"])
+    return bool(words_a) and bool(words_b) and (words_a <= words_b or words_b <= words_a)
+
+
+def nearby_stops(lat: str, lon: str) -> Json:
+    """Stops within NEARBY_RADIUS_M of the position, nearest first, one per place.
+
+    Platforms of one stop share its name and are merged; any of their ids works
+    as `from`, because routing walks to the other platforms. Czech feeds name
+    the same station differently ("Praha hl.n.", "Hlavní nádraží"); such
+    variants are merged as well. Foreign feeds are used only where no Czech
+    feed covers the place, as they duplicate it.
+    """
+    here_lat, here_lon = float(lat), float(lon)
+    dlat = NEARBY_RADIUS_M / 111_320
+    dlon = dlat / max(math.cos(math.radians(here_lat)), 0.01)
+    found = call_api("/map/stops", {
+        "min": "%.5f,%.5f" % (here_lat - dlat, here_lon - dlon),
+        "max": "%.5f,%.5f" % (here_lat + dlat, here_lon + dlon),
+    })
+    if any(item.get("stopId", "").startswith("cz-") for item in found):
+        found = [item for item in found if item.get("stopId", "").startswith("cz-")]
+    nearest: dict[str, Json] = {}
+    for item in found:
+        name = item.get("name", "")
+        if not name or "lat" not in item or "lon" not in item:
+            continue
+        metres = distance_m(here_lat, here_lon, item["lat"], item["lon"])
+        if metres > NEARBY_RADIUS_M:
+            continue
+        if name not in nearest or metres < nearest[name]["m"]:
+            nearest[name] = {"n": name, "i": item.get("parentId") or item["stopId"], "a": "", "m": metres,
+                             "lat": item["lat"], "lon": item["lon"]}
+    places: list[Json] = []
+    for stop in sorted(nearest.values(), key=lambda stop: stop["m"]):
+        if not any(same_place(stop, kept) for kept in places):
+            places.append(stop)
+    return {"s": [{key: stop[key] for key in ("n", "i", "a", "m")} for stop in places[:MAX_STOPS]]}
 
 
 def place_name(place: Json) -> str:
@@ -292,9 +354,12 @@ def handle(path: str, query: dict[str, str], key: str = "") -> tuple[int, Json]:
     try:
         if path == "/stops":
             text = query.get("q", "").strip()
+            lat, lon = query.get("lat", ""), query.get("lon", "")
+            if not text and is_coordinate(lat, 90) and is_coordinate(lon, 180):
+                return 200, nearby_stops(lat, lon)
             if len(text) < 2:
                 return 400, {"e": "bad_request"}
-            return 200, search_stops(text, query.get("lat"), query.get("lon"))
+            return 200, search_stops(text, lat or None, lon or None)
         if path == "/plan":
             origin, destination = query.get("from", ""), query.get("to", "")
             if not origin or not destination:

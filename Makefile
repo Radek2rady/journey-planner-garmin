@@ -64,7 +64,10 @@ test-watch: ## Unit tests of the watch app (needs `make simulator`)
 	@mkdir -p $(OUT)
 	$(call write_build_config,$(DEV_PROXY_URL),)
 	$(MONKEYC) -t -o $(TEST_APP)
-	"$(SDK_HOME)bin/monkeydo" $(TEST_APP) $(DEVICE) -t
+	@# monkeydo exits with 1 even when all tests pass, so the result is read
+	@# from its output instead.
+	@"$(SDK_HOME)bin/monkeydo" $(TEST_APP) $(DEVICE) -t | tee $(OUT)/test-watch.log; \
+		grep -q '^PASSED' $(OUT)/test-watch.log
 
 clean: ## Remove build output
 	rm -rf $(OUT) proxy/__pycache__

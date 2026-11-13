@@ -154,6 +154,71 @@ class SearchStopsTest(unittest.TestCase):
         self.assertEqual(call.call_args[0][1]["place"], "49.98,14.50")
 
 
+def map_stop(name, stop_id, lat, lon, parent=None):
+    item = {"name": name, "stopId": stop_id, "lat": lat, "lon": lon}
+    if parent:
+        item["parentId"] = parent
+    return item
+
+
+class NearbyStopsTest(unittest.TestCase):
+    HERE = ("50.08300", "14.43500")
+
+    def nearby(self, items):
+        with mock.patch.object(proxy, "call_api", return_value=items) as call:
+            return proxy.nearby_stops(*self.HERE), call
+
+    def test_nearest_first_one_per_name_with_distance(self):
+        result, call = self.nearby([
+            map_stop("Jindřišská", "cz-PID_U203Z1P", 50.0850, 14.4300),
+            map_stop("Hlavní nádraží", "cz-PID_U142Z1P", 50.0835, 14.4341),
+            map_stop("Hlavní nádraží", "cz-PID_U142Z102P", 50.0831, 14.4351, parent="cz-PID_U142S1"),
+        ])
+        self.assertEqual(call.call_args[0][0], "/map/stops")
+        self.assertEqual([stop["n"] for stop in result["s"]], ["Hlavní nádraží", "Jindřišská"])
+        self.assertEqual(result["s"][0]["i"], "cz-PID_U142S1")
+        self.assertEqual(result["s"][0]["a"], "")
+        self.assertLess(result["s"][0]["m"], 20)
+
+    def test_foreign_duplicates_are_dropped_where_czech_feeds_exist(self):
+        result, _ = self.nearby([
+            map_stop("Praha hl.n.", "de-DELFI_1", 50.0831, 14.4351),
+            map_stop("Praha hlavní nádraží", "cz-CZPTT_1:platform:1", 50.0831, 14.4351, parent="cz-CZPTT_1"),
+        ])
+        self.assertEqual([stop["i"] for stop in result["s"]], ["cz-CZPTT_1"])
+
+    def test_one_station_named_differently_by_czech_feeds_is_merged(self):
+        result, _ = self.nearby([
+            map_stop("Praha,Hlavní nádraží", "cz-JDF-1", 50.0834, 14.4352),
+            map_stop("Praha hl.n.", "cz-IDZK-1", 50.0831, 14.4359),
+            map_stop("Hlavní nádraží", "cz-PID_U142S1", 50.0835, 14.4341),
+            map_stop("Hlavní třída", "cz-other", 50.0835, 14.4345),
+        ])
+        self.assertEqual([stop["n"] for stop in result["s"]], ["Praha,Hlavní nádraží", "Hlavní třída"])
+
+    def test_name_words_ignore_case_diacritics_and_abbreviation(self):
+        self.assertEqual(proxy.name_words("Praha hl. n."), proxy.name_words("praha,Hlavní nádraží"))
+
+    def test_foreign_stops_are_kept_where_no_czech_feed_exists(self):
+        result, _ = self.nearby([map_stop("Bratislava hl.st.", "sk-1", 50.0831, 14.4351)])
+        self.assertEqual([stop["i"] for stop in result["s"]], ["sk-1"])
+
+    def test_stops_outside_the_radius_and_the_cap(self):
+        far = map_stop("Far", "cz-far", 50.0900, 14.4350)
+        many = [map_stop("Stop %d" % i, "cz-%d" % i, 50.0830 + i * 0.0001, 14.4350) for i in range(20)]
+        result, _ = self.nearby([far] + many)
+        self.assertNotIn("Far", [stop["n"] for stop in result["s"]])
+        self.assertEqual(len(result["s"]), proxy.MAX_STOPS)
+
+    def test_handle_routes_a_position_without_a_name(self):
+        with mock.patch.object(proxy, "nearby_stops", return_value={"s": []}) as nearby:
+            self.assertEqual(proxy.handle("/stops", {"lat": "50.083", "lon": "14.435"}), (200, {"s": []}))
+        nearby.assert_called_once_with("50.083", "14.435")
+
+    def test_handle_rejects_a_bad_position(self):
+        self.assertEqual(proxy.handle("/stops", {"lat": "500", "lon": "14.435"})[0], 400)
+
+
 class HandleTest(unittest.TestCase):
     def test_rejects_wrong_key(self):
         self.assertEqual(proxy.handle("/stops", {"q": "vestec", "k": "no"}, key="secret"), (403, {"e": "bad_key"}))

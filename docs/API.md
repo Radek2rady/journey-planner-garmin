@@ -11,8 +11,10 @@ it as `k`.
 
 | Parameter | Required | Meaning |
 | --- | --- | --- |
-| `q` | yes | Stop name, at least 2 characters; diacritics optional |
-| `lat`, `lon` | no | Position in degrees; nearby stops rank higher |
+| `q` | no | Stop name, at least 2 characters; diacritics optional |
+| `lat`, `lon` | no | Position in degrees; with `q` nearby stops rank higher, without `q` the stops around the position are returned |
+
+Either `q` or a valid `lat` and `lon` is required.
 
 ```json
 {"s": [{"n": "Vestec,u Klimešů", "i": "cz-PID_U1207Z1", "a": "Vestec, okres Praha-západ"}]}
@@ -23,7 +25,8 @@ it as `k`.
 | `s` | Stops, best match first, at most 8 |
 | `n` | Name |
 | `i` | Id, opaque; pass it back as `from` / `to` |
-| `a` | Municipality and district; may be empty |
+| `a` | Municipality and district; may be empty (always empty without `q`) |
+| `m` | Distance from `lat`/`lon` in metres; only without `q`. Stops within 500 m, nearest first, one per place |
 
 ## GET /plan
 

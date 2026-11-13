@@ -13,6 +13,17 @@ function stopSurvivesDictionaryRoundTrip(logger as Logger) as Boolean {
 }
 
 (:test)
+function nearbyStopKeepsItsDistanceOnlyInMemory(logger as Logger) as Boolean {
+    var stop = Stop.fromDictionary({ "i" => "cz-1", "n" => "Opatov", "a" => "", "m" => 120 });
+    Test.assertEqual(stop.distance as Number, 120);
+    Test.assertEqual(Texts.stopDetail(stop) as String, "120 m");
+    Test.assert(Stop.fromDictionary(stop.toDictionary() as Dictionary).distance == null);
+    Test.assertEqual(Texts.stopDetail(new Stop("cz-1", "Opatov", "Praha")) as String, "Praha");
+    Test.assert(Texts.stopDetail(new Stop("cz-1", "Opatov", "")) == null);
+    return true;
+}
+
+(:test)
 function stopWithoutAreaGetsEmptyArea(logger as Logger) as Boolean {
     var stop = Stop.fromDictionary({ "i" => "cz-1", "n" => "Opatov" });
     Test.assertEqual(stop.area, "");

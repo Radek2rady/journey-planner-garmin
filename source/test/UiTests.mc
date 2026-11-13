@@ -1,4 +1,3 @@
-import Toybox.Communications;
 import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.Test;
@@ -98,6 +97,7 @@ function stopChooserOpensAndHandlesItems(logger as Logger) as Boolean {
     var stops = [new Stop("cz-1", "Opatov", "Praha")] as Array<Stop>;
     var chooser = new StopChooserDelegate(StopChooser.DESTINATION, stops, main.method(:refresh));
     chooser.onSelect(item);
+    chooser.onSelect(new WatchUi.MenuItem("x", null, :nearby, null));
     chooser.searchByName("v");
     chooser.onStops(null, new ApiError(502, "upstream"));
     chooser.onStops([] as Array<Stop>, null);
@@ -452,6 +452,10 @@ function apiDeliversStopsAndErrors(logger as Logger) as Boolean {
     Test.assert(probe.stops == null);
     Test.assertEqual((probe.error as ApiError).serverCode as String, "upstream");
 
+    api.searchNearbyStops([49.9806d, 14.505d], probe.method(:onStops));
+    api.onStopsResponse(200, { "s" => [{ "n" => "Opatov", "i" => "cz-1", "a" => "", "m" => 80 }] });
+    Test.assertEqual((probe.stops as Array<Stop>)[0].distance as Number, 80);
+
     // A response nobody waits for is ignored.
     api.onStopsResponse(-104, null);
     return true;
@@ -488,18 +492,4 @@ function apiDeliversDeparturesAndErrors(logger as Logger) as Boolean {
     Test.assert(probe.board == null);
     Test.assertEqual((probe.error as ApiError).serverCode as String, "bad_request");
     return true;
-}
-
-//! Must stay the last test (tests run in file order). The tests above leave
-//! web requests, location events and the countdown timer running; the
-//! simulator crashed when the test run ended with them still active.
-(:test)
-function testRunLeavesNothingRunning(logger as Logger) as Boolean {
-    Communications.cancelAllRequests();
-    getServices().location.stop();
-    var lists = CountdownTicker.open.slice(0, null);
-    for (var i = 0; i < lists.size(); i++) {
-        CountdownTicker.closed(lists[i]);
-    }
-    return CountdownTicker.ticker == null;
 }

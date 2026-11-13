@@ -44,6 +44,8 @@
 
     <!-- Stop chooser -->
     <string id="NearestByGps">nearest stops by GPS</string>
+    <string id="NearbyStops">Nearby stops</string>
+    <string id="NearbyHint">pick one by GPS</string>
     <string id="EnterName">Enter name</string>
     <string id="Stops">Stops</string>
     <string id="MinTwoLetters">At least 2 letters</string>

@@ -15,18 +15,23 @@ part of the change that affects them.
       with START
 - [ ] Confirm on the watch: change time and the "!" of a tight change, "If missed" search
       from a change (needs the proxy deployed with leg keys `i` and `s`)
-- [ ] Simulator crashes (segfault) when the watch test run ends, since at least 12 Nov;
-      all tests pass before it. Trying: the last test `testRunLeavesNothingRunning`
-      cancels web requests and stops location and the countdown timer. Confirm or drop
+
+- [ ] Confirm on the watch: *Nearby stops* in the origin chooser (needs the proxy
+      deployed)
 
 ## To do
 
 ### M3: Faster daily use
 
 - [ ] Arrive-by search ("be there by 8:00")
-- [ ] Nearest stops by GPS in the origin chooser
 - [ ] Alert before the departure of a chosen connection
 - [ ] Glance with the next departure of a favourite trip
+
+### Later (decided: not now)
+
+- [ ] Download favourite trips over Wi-Fi before leaving (Wi-Fi bulk download: sync mode,
+      `Communications.startSync`, only on Wi-Fi networks saved in the watch); for a dead
+      phone. Unverified whether sync mode accepts our proxy requests on the fr955
 
 ### Comfort
 
@@ -47,7 +52,7 @@ part of the change that affects them.
 - [x] Origin by GPS or stop, destination by stop, recent stops, swap
 - [x] Connection list, leg detail with platform, delay and cancellation, later connections
 - [x] English and Czech strings in resources
-- [x] Watch unit tests (36, passing in the simulator): parsing, storage round trips, recent
+- [x] Watch unit tests (35, passing in the simulator): parsing, storage round trips, recent
       stops, coordinates, API client, name entry, smoke tests of every screen
 - [x] Own stop name entry (`StopNameEntry`) instead of the native `TextPicker`, which
       crashed the fr955 simulator on input ("Symbol Not Found Error: Failed invoking
@@ -82,5 +87,7 @@ part of the change that affects them.
       after the planned ride; wire leg keys `i` and `s`
 - [x] Transit opens from the glance loop, also during an activity suspended with Resume
       Later (confirmed on the watch)
+- [x] Nearby stops by GPS in the origin chooser: stops within 500 m with distance, one
+      per place (feed variants of one station merged); `/stops` without `q`
 - [x] Git repository initialized and pushed to GitHub (by the user)
 - [x] Makefile, README, CLAUDE.md, API contract, plan

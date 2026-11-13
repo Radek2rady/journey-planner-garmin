@@ -42,6 +42,8 @@
     <string id="LaterDepartures">Pozdější odjezdy</string>
 
     <string id="NearestByGps">nejbližší zastávky podle GPS</string>
+    <string id="NearbyStops">Zastávky v okolí</string>
+    <string id="NearbyHint">vybrat podle GPS</string>
     <string id="EnterName">Zadat název</string>
     <string id="Stops">Zastávky</string>
     <string id="MinTwoLetters">Aspoň 2 písmena</string>

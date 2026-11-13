@@ -97,6 +97,14 @@ command line when the key lives elsewhere.
   compiler warns about the collision.
 - `Storage.setValue` wants `Storage.KeyType` / `Storage.ValueType`; see `TripStore`.
 - `monkeydo` does not exit after `make run`; stop it with Ctrl+C.
+- `monkeydo -t` exits with 1 even when every test passes; `make test-watch` therefore
+  judges the run by the `PASSED` line of its output (`bin/test-watch.log`).
+- The simulator sometimes crashes (segfault inside the simulator) after a test run has
+  printed its results; it does not affect the results. Every recorded crash happened
+  while VS Code with the Monkey C extension was running; the first run with VS Code
+  closed did not crash. Likely cause, not yet proven: run the watch tests with VS Code
+  closed. Stopping web requests, location and timers in a last test did not help.
+- A single test runs with `monkeydo bin/Transit-test.prg fr955 -t <testName>`.
 - Transitous counts `maxTransfers` one higher than the number of changes; the proxy
   compensates and enforces the limit on the result (`search_connections`).
 - A new proxy endpoint needs its own function file in `proxy/api/`, otherwise it exists

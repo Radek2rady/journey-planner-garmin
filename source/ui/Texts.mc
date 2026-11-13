@@ -258,6 +258,15 @@ module Texts {
         return change.isTight() ? "! " + text : text;
     }
 
+    //! "120 m" for a nearby stop, otherwise its area; null when neither is known
+    function stopDetail(stop as Stop) as String? {
+        var distance = stop.distance;
+        if (distance != null) {
+            return distance + " m";
+        }
+        return stop.area.equals("") ? null : stop.area;
+    }
+
     //! "Walk 3 min"
     function walk(leg as Leg) as String {
         return get(Rez.Strings.Walk) + " " + leg.walkMinutes + " " + get(Rez.Strings.Minutes);

@@ -1,8 +1,8 @@
 import Toybox.Lang;
 import Toybox.WatchUi;
 
-//! Picks the origin or destination: current location (origin only), a stop
-//! found by name, or a recently used stop.
+//! Picks the origin or destination: current location and the stops around it
+//! (origin only), a stop found by name, or a recently used stop.
 module StopChooser {
 
     enum TripEnd {
@@ -15,6 +15,7 @@ module StopChooser {
         var menu = new WatchUi.Menu2({ :title => end == ORIGIN ? Rez.Strings.From : Rez.Strings.To });
         if (end == ORIGIN) {
             menu.addItem(new WatchUi.MenuItem(Rez.Strings.MyLocation, Rez.Strings.NearestByGps, :location, null));
+            menu.addItem(new WatchUi.MenuItem(Rez.Strings.NearbyStops, Rez.Strings.NearbyHint, :nearby, null));
         }
         menu.addItem(new WatchUi.MenuItem(Rez.Strings.EnterName, null, :name, null));
         var recent = getServices().trip.recent;
@@ -22,11 +23,11 @@ module StopChooser {
         WatchUi.pushView(menu, new StopChooserDelegate(end, recent, onChanged), WatchUi.SLIDE_LEFT);
     }
 
-    //! Adds one item per stop; the item id is the index into `stops`.
+    //! Adds one item per stop; the item id is the index into `stops`. The
+    //! sub-label is the distance of a nearby stop, otherwise its area.
     function addStops(menu as Menu2, stops as Array<Stop>) as Void {
         for (var i = 0; i < stops.size(); i++) {
-            var area = stops[i].area;
-            menu.addItem(new WatchUi.MenuItem(stops[i].name, area.equals("") ? null : area, i, null));
+            menu.addItem(new WatchUi.MenuItem(stops[i].name, Texts.stopDetail(stops[i]), i, null));
         }
     }
 
@@ -45,8 +46,8 @@ class StopChooserDelegate extends WatchUi.Menu2InputDelegate {
     private var _end as StopChooser.TripEnd;
     private var _recent as Array<Stop>;
     private var _onChanged as Method() as Void;
-    //! Item that reports the progress of the running name search.
-    private var _nameItem as MenuItem?;
+    //! Item that reports the progress of the running stop search.
+    private var _progressItem as MenuItem?;
 
     function initialize(end as StopChooser.TripEnd, recent as Array<Stop>, onChanged as Method() as Void) {
         Menu2InputDelegate.initialize();
@@ -59,8 +60,10 @@ class StopChooserDelegate extends WatchUi.Menu2InputDelegate {
         var id = item.getId();
         if (id == :location) {
             choose(null);
+        } else if (id == :nearby) {
+            searchNearby(item);
         } else if (id == :name) {
-            _nameItem = item;
+            _progressItem = item;
             StopNameEntry.push(self);
         } else if (id instanceof Number) {
             choose(_recent[id]);
@@ -70,7 +73,7 @@ class StopChooserDelegate extends WatchUi.Menu2InputDelegate {
     //! Called when the name entry is finished. The results are pushed later,
     //! from the response callback.
     function searchByName(name as String) as Void {
-        var item = _nameItem;
+        var item = _progressItem;
         if (item == null) {
             return;
         }
@@ -84,7 +87,7 @@ class StopChooserDelegate extends WatchUi.Menu2InputDelegate {
     }
 
     function onStops(stops as Array<Stop>?, error as ApiError?) as Void {
-        var item = _nameItem;
+        var item = _progressItem;
         if (item == null) {
             return;
         }
@@ -93,10 +96,23 @@ class StopChooserDelegate extends WatchUi.Menu2InputDelegate {
         } else if (stops.size() == 0) {
             item.setSubLabel(Rez.Strings.NothingFound);
         } else {
-            item.setSubLabel(null);
+            item.setSubLabel(item.getId() == :nearby ? Rez.Strings.NearbyHint : null);
             var menu = new WatchUi.Menu2({ :title => Rez.Strings.Stops });
             StopChooser.addStops(menu, stops);
             WatchUi.pushView(menu, new StopResultsDelegate(_end, stops, _onChanged), WatchUi.SLIDE_LEFT);
+        }
+        WatchUi.requestUpdate();
+    }
+
+    private function searchNearby(item as MenuItem) as Void {
+        var app = getServices();
+        var coordinates = app.location.getCoordinates();
+        if (coordinates == null) {
+            item.setSubLabel(Rez.Strings.WaitingForGps);
+        } else {
+            _progressItem = item;
+            item.setSubLabel(Rez.Strings.Searching);
+            app.api.searchNearbyStops(coordinates, method(:onStops));
         }
         WatchUi.requestUpdate();
     }
