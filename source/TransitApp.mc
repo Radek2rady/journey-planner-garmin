@@ -1,4 +1,5 @@
 import Toybox.Application;
+import Toybox.Communications;
 import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.System;
@@ -35,6 +36,12 @@ class TransitApp extends Application.AppBase {
     function getInitialView() as [Views] or [Views, InputDelegates] {
         getServices();
         return [new HomeView(), new HomeDelegate()];
+    }
+
+    //! Runs a search over Wi-Fi; see `WifiSearch`. Called in sync mode only.
+    (:typecheck([disableGlanceCheck, disableBackgroundCheck]))
+    function getSyncDelegate() as Communications.SyncDelegate? {
+        return new WifiSyncDelegate();
     }
 
     //! Shows the departure alert; see `DepartureAlert`. Never called in a glance.

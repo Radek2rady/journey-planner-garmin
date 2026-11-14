@@ -42,6 +42,12 @@
     <string id="DeleteRecent">Delete recent stops</string>
     <string id="DeleteAll">Delete all</string>
     <string id="RemoveFavourite">Remove a trip</string>
+    <string id="WifiSearch">Search over Wi-Fi</string>
+    <string id="WifiHint">no phone; app closes</string>
+    <string id="WifiMissing">Watch has no Wi-Fi</string>
+    <string id="WifiNotSetUp">Set up Wi-Fi first</string>
+    <string id="WifiSyncing">Searching connections</string>
+    <string id="WifiSaved">saved</string>
     <string id="Board">Departure board</string>
     <string id="BoardHint">what leaves from a stop</string>
     <string id="NearestStop">Nearest stop</string>

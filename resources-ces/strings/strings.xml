@@ -41,6 +41,12 @@
     <string id="DeleteRecent">Smazat nedávné</string>
     <string id="DeleteAll">Smazat vše</string>
     <string id="RemoveFavourite">Odebrat trasu</string>
+    <string id="WifiSearch">Hledat přes Wi-Fi</string>
+    <string id="WifiHint">bez telefonu, zavře se</string>
+    <string id="WifiMissing">Hodinky nemají Wi-Fi</string>
+    <string id="WifiNotSetUp">Wi-Fi není nastavená</string>
+    <string id="WifiSyncing">Hledám spojení</string>
+    <string id="WifiSaved">uloženo</string>
     <string id="Board">Tabule odjezdů</string>
     <string id="BoardHint">co jede ze zastávky</string>
     <string id="NearestStop">Nejbližší zastávka</string>

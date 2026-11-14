@@ -29,7 +29,7 @@ module ConnectionList {
         var items = [] as Array<MenuItem>;
         var connections = page.connections;
         for (var i = 0; i < connections.size(); i++) {
-            var item = new WatchUi.MenuItem(Texts.connectionTimes(connections[i]), Texts.connectionSummary(connections[i], now), i, null);
+            var item = new WatchUi.MenuItem(Texts.connectionLabel(connections[i]), Texts.connectionSummary(connections[i], now), i, null);
             items.add(item);
             menu.addItem(item);
         }

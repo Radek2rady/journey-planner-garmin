@@ -39,6 +39,21 @@ module Texts {
         return get(id != null ? id : Rez.Strings.VehicleOther);
     }
 
+    //! The outcome of the last search over Wi-Fi, or what the item does
+    function wifiState(result as WifiResult?) as String {
+        if (result == null) {
+            return get(Rez.Strings.WifiHint);
+        }
+        var failure = result.error;
+        if (failure != null) {
+            return error(failure);
+        }
+        if (result.found == 0) {
+            return get(Rez.Strings.NothingFound);
+        }
+        return get(Rez.Strings.WifiSaved) + " " + clock(result.time);
+    }
+
     //! What went wrong, in words; the number only for an unknown cause.
     function error(error as ApiError) as String {
         var known = errorText(error);
@@ -181,6 +196,13 @@ module Texts {
     }
 
     //! "16:16 - 16:57"
+    //! "15:50-20:21 4h31": the times and the travel time without the walk to
+    //! the first stop. The label of a connection in the list.
+    function connectionLabel(connection as Connection) as String {
+        var minutes = connection.travelMinutes();
+        return connection.departure + "-" + connection.arrival + " " + (minutes / 60) + get(Rez.Strings.Hours) + (minutes % 60).format("%02d");
+    }
+
     function connectionTimes(connection as Connection) as String {
         return connection.departure + " - " + connection.arrival;
     }
@@ -192,14 +214,13 @@ module Texts {
     const COUNTDOWN_MINUTES = 120;
 
     //! "in 7 min, 331>C", "departed, 331>C" or, for departures further away,
-    //! "3h08, 674>538 +2" with the travel time. Short enough for one menu
-    //! line; the full line names are in the detail of the connection. A
-    //! leading "!" marks a tight change.
+    //! just the lines: "674>538 +2". The travel time is in the label
+    //! (`connectionLabel`). Short enough for one menu line; the full line
+    //! names are in the detail of the connection. A leading "!" marks a
+    //! tight change.
     function connectionSummary(connection as Connection, now as Number) as String {
-        var summary = countdown(connection.departureTime, now);
-        if (summary == null) {
-            summary = duration(connection.durationMinutes);
-        }
+        var when = countdown(connection.departureTime, now);
+        var summary = when != null ? when : "";
         if (connection.hasTightTransfer()) {
             summary = "!" + summary;
         }
@@ -211,7 +232,8 @@ module Texts {
             }
         }
         if (names.size() > 0) {
-            summary += ", " + joinLines(names, SUMMARY_BUDGET - summary.length() - 2);
+            var separator = summary.length() > 1 ? ", " : "";
+            summary += separator + joinLines(names, SUMMARY_BUDGET - summary.length() - separator.length());
         }
         return summary;
     }

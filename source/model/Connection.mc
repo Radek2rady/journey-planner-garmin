@@ -196,6 +196,18 @@ class Connection {
         return result;
     }
 
+    //! Minutes from the departure of the first ride to the arrival: the
+    //! journey without the walk to the first stop. The whole duration when
+    //! there is no ride.
+    function travelMinutes() as Number {
+        for (var i = 0; i < legs.size(); i++) {
+            if (!legs[i].isWalk()) {
+                return Leg.minutesBetween(legs[i].departure, arrival);
+            }
+        }
+        return durationMinutes;
+    }
+
     function hasTightTransfer() as Boolean {
         var changes = transfers();
         for (var i = 0; i < changes.size(); i++) {

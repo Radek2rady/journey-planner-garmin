@@ -83,6 +83,9 @@ command line when the key lives elsewhere.
   64 kB) loads only `(:background)` code and no resources: the alert texts are built by
   the app and stored with the alert (`DepartureAlert`). The watch keeps one scheduled
   background event per app, so there is one alert at a time.
+- Requests over Wi-Fi exist only in sync mode: `WifiSearch` stores the query and calls
+  `startSync2`, the watch closes the app and runs `WifiSyncDelegate` (no UI, no
+  `getServices()`, which would start the GPS); the result goes to the saved searches.
 - The glance reads storage directly (`GlanceData`), not through `Favourites` or
   `SavedSearches`. A change to their storage format must update `GlanceData` too. The
   glance makes no requests: the fr955 redraws it only now and then into a cache, so a

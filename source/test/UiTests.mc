@@ -49,7 +49,10 @@ function textsDescribeALeg(logger as Logger) as Boolean {
     Test.assertEqual(Texts.joinLines([] as Array<String>, 5), "");
     logger.debug(Texts.duration(41) + " / " + Texts.duration(188) + " / " + Texts.duration(60));
     // The sample connection leaves at 1794410160.
-    Test.assertEqual(Texts.connectionSummary(connection, 1794410160 - 3 * 3600), "41 min, 331");
+    Test.assertEqual(Texts.connectionSummary(connection, 1794410160 - 3 * 3600), "331");
+    // 16:19 (bus, after a 3 min walk) to 16:57.
+    Test.assertEqual(connection.travelMinutes(), 38);
+    Test.assertEqual(Texts.connectionLabel(connection), "16:16-16:57 0" + Texts.get(Rez.Strings.Hours) + "38");
     Test.assert(Texts.countdown(1794410160, 1794410160 - 120 * 60) == null);
     Test.assert(Texts.countdown(0, 1794410160) == null);
     logger.debug(Texts.connectionSummary(connection, 1794410160 - 7 * 60 - 30));
@@ -635,5 +638,30 @@ function errorsAreWordedByCause(logger as Logger) as Boolean {
     Test.assert(Texts.error(new ApiError(500, null)).find("500") != null);
     Test.assert(Texts.error(new ApiError(-9999, null)).find("-9999") != null);
     Test.assert(Texts.error(new ApiError(-1001, null)).find("1001") == null);
+    return true;
+}
+
+//! The query of a search over Wi-Fi survives storage; the outcome is worded.
+//! The sync itself needs a watch with Wi-Fi and is not run here.
+(:test)
+function wifiSearchQueryAndOutcome(logger as Logger) as Boolean {
+    var query = new ConnectionQuery(sampleTrip(null, "b"), "49.98060,14.50500", 1794510000, true,
+        SearchFilters.fromDictionary({ "x" => 1, "v" => "train" }));
+    var restored = ConnectionQuery.fromDictionary(query.toDictionary());
+    Test.assert(restored.trip.isSame(query.trip));
+    Test.assertEqual(restored.origin, "49.98060,14.50500");
+    Test.assertEqual(restored.departureTime as Number, 1794510000);
+    Test.assert(restored.arriveBy);
+    Test.assertEqual(restored.filters.maxTransfers as Number, 1);
+    var now = ConnectionQuery.fromDictionary(new ConnectionQuery(sampleTrip("a", "b"), "a", null, false, new SearchFilters()).toDictionary());
+    Test.assert(now.departureTime == null && !now.arriveBy);
+
+    Test.assertEqual(Texts.wifiState(null), Texts.get(Rez.Strings.WifiHint));
+    Test.assertEqual(Texts.wifiState(new WifiResult(1794510000, 0, null)), Texts.get(Rez.Strings.NothingFound));
+    Test.assertEqual(Texts.wifiState(new WifiResult(1794510000, 3, new ApiError(-104, null))), Texts.get(Rez.Strings.ErrorPhone));
+    Test.assert(Texts.wifiState(new WifiResult(1794510000, 3, null)).find(Texts.get(Rez.Strings.WifiSaved)) == 0);
+    Test.assertEqual(wifiProblem(WifiSearch.NO_WIFI) as ResourceId, Rez.Strings.WifiMissing);
+    Test.assert(wifiProblem(WifiSearch.AVAILABLE) == null);
+    logger.debug(WifiSearch.availability().toString());
     return true;
 }

@@ -30,13 +30,12 @@ part of the change that affects them.
 - [ ] Confirm on the watch: the departure alert appears with the app closed (in the
       simulator: *Simulation > Background Events*); also while an activity runs
 
+- [ ] Confirm on the watch: search over Wi-Fi with the phone's Bluetooth off (does sync
+      mode reach the proxy? how long does it take?); then add stop search by name and
+      the departure board over Wi-Fi
+- [ ] Confirm on the watch: the connection label with the travel time fits one line
+
 ## To do
-
-### Later (decided: not now)
-
-- [ ] Download favourite trips over Wi-Fi before leaving (Wi-Fi bulk download: sync mode,
-      `Communications.startSync`, only on Wi-Fi networks saved in the watch); for a dead
-      phone. Unverified whether sync mode accepts our proxy requests on the fr955
 
 ### Comfort
 
@@ -90,6 +89,9 @@ part of the change that affects them.
       after the planned ride; wire leg keys `i` and `s`
 - [x] Transit opens from the glance loop, also during an activity suspended with Resume
       Later (confirmed on the watch)
+- [x] Search over Wi-Fi without the phone (sync mode, Wi-Fi networks saved in the watch):
+      the planned trip; results go to the saved searches
+- [x] Travel time in the connection label ("15:50-20:21 4h31"), from the first ride
 - [x] Errors in words by cause (phone, timeout, cancelled, too large, bad response, HTTPS,
       proxy key, bad request, data source); the number only for an unknown cause
 - [x] Alert before the departure of a chosen connection: 5, 10 or 15 min, a notification

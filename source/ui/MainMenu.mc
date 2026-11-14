@@ -3,7 +3,7 @@ import Toybox.Time;
 import Toybox.WatchUi;
 
 //! Main menu: search, favourite trips, origin, destination, departure time,
-//! filters, swap, saved connections, departure board.
+//! filters, swap, saved connections, departure board, search over Wi-Fi.
 module MainMenu {
 
     function push() as Void {
@@ -24,6 +24,7 @@ module MainMenu {
         menu.addItem(new WatchUi.MenuItem(Rez.Strings.Swap, Rez.Strings.SwapHint, :swap, null));
         menu.addItem(new WatchUi.MenuItem(Rez.Strings.Saved, Rez.Strings.SavedHint, :saved, null));
         menu.addItem(new WatchUi.MenuItem(Rez.Strings.Board, Rez.Strings.BoardHint, :board, null));
+        menu.addItem(new WatchUi.MenuItem(Rez.Strings.WifiSearch, Texts.wifiState(WifiSearch.result()), :wifi, null));
         WatchUi.pushView(menu, new MainMenuDelegate(searchItem, originItem, destinationItem, departureItem, filtersItem), WatchUi.SLIDE_UP);
     }
 }
@@ -51,6 +52,8 @@ class MainMenuDelegate extends WatchUi.Menu2InputDelegate {
         var id = item.getId();
         if (id == :search) {
             startSearch();
+        } else if (id == :wifi) {
+            searchOverWifi(item);
         } else if (id == :favourites) {
             FavouriteList.push(method(:searchChosenTrip));
         } else if (id == :origin) {
@@ -92,6 +95,20 @@ class MainMenuDelegate extends WatchUi.Menu2InputDelegate {
         WatchUi.requestUpdate();
     }
 
+    //! Stores the search of the planned trip and asks the watch for a sync
+    //! over Wi-Fi; the watch closes the app. The connections end up in the
+    //! saved searches.
+    private function searchOverWifi(item as MenuItem) as Void {
+        var problem = wifiProblem(WifiSearch.availability());
+        var query = problem == null ? ConnectionSearch.prepare() : problem;
+        if (!(query instanceof ConnectionQuery)) {
+            item.setSubLabel(query);
+            WatchUi.requestUpdate();
+            return;
+        }
+        WifiSearch.request(query, Texts.get(Rez.Strings.WifiSyncing));
+    }
+
     //! A favourite trip was chosen: show it and search right away.
     function searchChosenTrip() as Void {
         refresh();
@@ -129,19 +146,37 @@ class MainMenuDelegate extends WatchUi.Menu2InputDelegate {
     }
 }
 
+//! Problem that keeps the search over Wi-Fi from starting; null when it can.
+function wifiProblem(availability as WifiSearch.Availability) as ResourceId? {
+    if (availability == WifiSearch.NO_WIFI) {
+        return Rez.Strings.WifiMissing;
+    }
+    return availability == WifiSearch.NOT_SET_UP ? Rez.Strings.WifiNotSetUp : null;
+}
+
 //! Starts a connection search for the current trip.
 module ConnectionSearch {
 
     //! Returns null when the request was sent, otherwise the reason why the
     //! search cannot start yet.
     function start(cursor as String?, callback as ConnectionsCallback) as ResourceId? {
+        var query = prepare();
+        if (!(query instanceof ConnectionQuery)) {
+            return query;
+        }
+        getServices().api.searchConnections(query.origin, query.trip.destination.id, query.departureTime, query.arriveBy, query.filters, cursor, callback);
+        return null;
+    }
+
+    //! The search of the planned trip, or the reason why it cannot be made yet.
+    function prepare() as ConnectionQuery or ResourceId {
         var app = getServices();
-        var destination = app.trip.destination;
-        if (destination == null) {
+        var trip = app.trip.currentTrip();
+        if (trip == null) {
             return Rez.Strings.SetDestinationFirst;
         }
         var origin;
-        var originStop = app.trip.origin;
+        var originStop = trip.origin;
         if (originStop != null) {
             origin = originStop.id;
         } else {
@@ -151,8 +186,7 @@ module ConnectionSearch {
             }
             origin = TransitApi.formatCoordinates(coordinates);
         }
-        app.api.searchConnections(origin, destination.id, app.trip.departureTime, app.trip.searchesByArrival(), app.trip.filters, cursor, callback);
-        return null;
+        return new ConnectionQuery(trip, origin, app.trip.departureTime, app.trip.searchesByArrival(), app.trip.filters);
     }
 
     //! Keeps the results of the current trip for reading without a connection.
