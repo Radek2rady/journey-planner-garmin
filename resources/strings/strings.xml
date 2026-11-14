@@ -45,6 +45,12 @@
     <string id="Board">Departure board</string>
     <string id="BoardHint">what leaves from a stop</string>
     <string id="NearestStop">Nearest stop</string>
+    <string id="Alert">Alert before departure</string>
+    <string id="AlertOff">off</string>
+    <string id="AlertAt">alert at</string>
+    <string id="TooLate">too late</string>
+    <string id="AlertFailed">not possible</string>
+    <string id="DepartureIn">Departure in</string>
     <string id="Change">Change</string>
     <string id="IfMissed">If missed: what next</string>
     <string id="LaterDepartures">Later departures</string>
@@ -81,6 +87,13 @@
     <string id="WaitingForGps">Waiting for GPS</string>
     <string id="ErrorPhone">Phone not connected</string>
     <string id="ErrorTimeout">Request timed out</string>
+    <string id="ErrorCancelled">Request cancelled</string>
+    <string id="ErrorTooLarge">Response too large</string>
+    <string id="ErrorResponse">Bad response</string>
+    <string id="ErrorHttps">HTTPS required</string>
+    <string id="ErrorKey">Wrong proxy key</string>
+    <string id="ErrorRequest">Bad request</string>
+    <string id="ErrorSource">Data source down</string>
     <string id="ErrorServer">Server error</string>
     <string id="ErrorGeneric">Error</string>
 

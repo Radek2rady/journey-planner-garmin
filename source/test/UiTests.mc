@@ -128,7 +128,7 @@ function connectionListAndDetailOpen(logger as Logger) as Boolean {
     restorePlannedTrip(plannedOrigin, plannedDestination);
 
     ConnectionDetail.push(page.connections[0], null);
-    new ConnectionDetailDelegate(["16:19 Vestec\nBus 331"] as Array<String>, null).onSelect(new WatchUi.MenuItem("x", null, 0, null));
+    new ConnectionDetailDelegate(page.connections[0], ["16:19 Vestec\nBus 331"] as Array<String>, null).onSelect(new WatchUi.MenuItem("x", null, 0, null));
     return true;
 }
 
@@ -141,7 +141,7 @@ function tightChangeIsMarkedAndSearchedFrom(logger as Logger) as Boolean {
     logger.debug(Texts.connectionSummary(connection, 1794410340 - 600));
 
     ConnectionDetail.push(connection, "cz-9");
-    var delegate = new ConnectionDetailDelegate([] as Array<String>, "cz-9");
+    var delegate = new ConnectionDetailDelegate(connection, [] as Array<String>, "cz-9");
     var item = new WatchUi.MenuItem("x", null, transfer, null);
     delegate.onSelect(item);
     delegate.onConnections(null, new ApiError(502, null));
@@ -579,5 +579,61 @@ function glanceFindsTheNextDepartureOfTheFirstFavourite(logger as Logger) as Boo
 
     var bitmap = Graphics.createBufferedBitmap({ :width => 180, :height => 60 }).get() as BufferedBitmap;
     new TransitGlance().onUpdate(bitmap.getDc());
+    return true;
+}
+
+(:test)
+function departureAlertStepsThroughLeadTimesAndOff(logger as Logger) as Boolean {
+    var departure = 1794410160;
+    Test.assertEqual(DepartureAlert.nextLead(0, departure, departure - 3600), 5);
+    Test.assertEqual(DepartureAlert.nextLead(5, departure, departure - 3600), 10);
+    Test.assertEqual(DepartureAlert.nextLead(15, departure, departure - 3600), 0);
+    // 12 minutes ahead: 15 minutes before is already past.
+    Test.assertEqual(DepartureAlert.nextLead(10, departure, departure - 12 * 60), 0);
+    Test.assertEqual(DepartureAlert.nextLead(0, departure, departure - 4 * 60), 0);
+
+    var alert = new DepartureAlert(departure, 10, "331 > C", "Departure in 10 min", "16:19 331, Vestec");
+    Test.assertEqual(alert.alertTime(), departure - 600);
+    var restored = DepartureAlert.fromDictionary(alert.toDictionary());
+    Test.assert(restored.isFor(departure, "331 > C"));
+    Test.assert(!restored.isFor(departure, "332"));
+    Test.assertEqual(restored.detail, "16:19 331, Vestec");
+
+    // Through the connection detail, with a departure an hour from now.
+    var connection = sampleTransferConnection();
+    connection.departureTime = Time.now().value() + 3600;
+    logger.debug(Texts.alertDetail(connection));
+    logger.debug(Texts.alertTitle(5));
+    ConnectionDetail.push(connection, null);
+    var delegate = new ConnectionDetailDelegate(connection, [] as Array<String>, null);
+    var item = new WatchUi.MenuItem("x", null, :alert, null);
+    var leads = [5, 10, 15] as Array<Number>;
+    for (var i = 0; i < leads.size(); i++) {
+        delegate.onSelect(item);
+        var scheduled = DepartureAlert.upcoming(Time.now().value());
+        Test.assert(scheduled != null);
+        Test.assertEqual((scheduled as DepartureAlert).leadMinutes, leads[i]);
+        logger.debug(Texts.alertState(connection, scheduled));
+    }
+    delegate.onSelect(item);
+    Test.assert(DepartureAlert.upcoming(Time.now().value()) == null);
+    Test.assertEqual(Texts.alertState(connection, null), Texts.get(Rez.Strings.AlertOff));
+    return true;
+}
+
+(:test)
+function errorsAreWordedByCause(logger as Logger) as Boolean {
+    Test.assertEqual(Texts.errorText(new ApiError(-104, null)) as ResourceId, Rez.Strings.ErrorPhone);
+    Test.assertEqual(Texts.errorText(new ApiError(-300, null)) as ResourceId, Rez.Strings.ErrorTimeout);
+    Test.assertEqual(Texts.errorText(new ApiError(-1001, null)) as ResourceId, Rez.Strings.ErrorHttps);
+    Test.assertEqual(Texts.errorText(new ApiError(-402, null)) as ResourceId, Rez.Strings.ErrorTooLarge);
+    Test.assertEqual(Texts.errorText(new ApiError(-400, null)) as ResourceId, Rez.Strings.ErrorResponse);
+    Test.assertEqual(Texts.errorText(new ApiError(403, "bad_key")) as ResourceId, Rez.Strings.ErrorKey);
+    Test.assertEqual(Texts.errorText(new ApiError(400, "bad_request")) as ResourceId, Rez.Strings.ErrorRequest);
+    Test.assertEqual(Texts.errorText(new ApiError(502, "upstream_503")) as ResourceId, Rez.Strings.ErrorSource);
+    Test.assert(Texts.errorText(new ApiError(500, null)) == null);
+    Test.assert(Texts.error(new ApiError(500, null)).find("500") != null);
+    Test.assert(Texts.error(new ApiError(-9999, null)).find("-9999") != null);
+    Test.assert(Texts.error(new ApiError(-1001, null)).find("1001") == null);
     return true;
 }

@@ -27,11 +27,10 @@ part of the change that affects them.
 - [ ] Confirm on the watch: arrive-by search and *Earlier connections* (needs the proxy
       deployed)
 
+- [ ] Confirm on the watch: the departure alert appears with the app closed (in the
+      simulator: *Simulation > Background Events*); also while an activity runs
+
 ## To do
-
-### M3: Faster daily use
-
-- [ ] Alert before the departure of a chosen connection
 
 ### Later (decided: not now)
 
@@ -41,7 +40,6 @@ part of the change that affects them.
 
 ### Comfort
 
-- [ ] Wording for numeric errors such as -1001
 - [ ] Name entry by letter groups (no holding of DOWN needed)
 
 ### Housekeeping
@@ -92,6 +90,10 @@ part of the change that affects them.
       after the planned ride; wire leg keys `i` and `s`
 - [x] Transit opens from the glance loop, also during an activity suspended with Resume
       Later (confirmed on the watch)
+- [x] Errors in words by cause (phone, timeout, cancelled, too large, bad response, HTTPS,
+      proxy key, bad request, data source); the number only for an unknown cause
+- [x] Alert before the departure of a chosen connection: 5, 10 or 15 min, a notification
+      from a background service (`Background`, `Notifications` permissions); one at a time
 - [x] Arrive-by search: a switch in the time menu; the list then pages to earlier
       connections; "now" always departs; wire parameter `a`
 - [x] Glance with the next departure of the first favourite trip, from its last saved

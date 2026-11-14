@@ -130,8 +130,9 @@ class ConnectionListDelegate extends WatchUi.Menu2InputDelegate {
     }
 }
 
-//! Legs of one connection: boarding and alighting of every ride, with the
-//! walks between them and the time for each change. Selecting a line shows
+//! Legs of one connection: an alert before the departure (while it is still
+//! ahead), then boarding and alighting of every ride, with the walks between
+//! them and the time for each change. Selecting a line shows
 //! it in full on its own screen, because a menu line cuts long stop names
 //! and directions. Selecting a change searches what else goes from there,
 //! for when the change is missed.
@@ -141,6 +142,10 @@ module ConnectionDetail {
     //! changes only show their time.
     function push(connection as Connection, destinationId as String?) as Void {
         var menu = new WatchUi.Menu2({ :title => Texts.connectionTimes(connection) });
+        var now = Time.now().value();
+        if (connection.departureTime > now) {
+            menu.addItem(new WatchUi.MenuItem(Rez.Strings.Alert, Texts.alertState(connection, DepartureAlert.upcoming(now)), :alert, null));
+        }
         var lines = [] as Array<String>;
         var legs = connection.legs;
         var transfers = connection.transfers();
@@ -160,7 +165,7 @@ module ConnectionDetail {
             addLine(menu, lines, Texts.boarding(leg), Texts.boardingDetails(leg));
             addLine(menu, lines, Texts.alighting(leg), Texts.get(Rez.Strings.GetOff));
         }
-        WatchUi.pushView(menu, new ConnectionDetailDelegate(lines, destinationId), WatchUi.SLIDE_LEFT);
+        WatchUi.pushView(menu, new ConnectionDetailDelegate(connection, lines, destinationId), WatchUi.SLIDE_LEFT);
     }
 
     //! Adds a menu item and remembers its full text; the item id is the
@@ -173,13 +178,15 @@ module ConnectionDetail {
 
 class ConnectionDetailDelegate extends WatchUi.Menu2InputDelegate {
 
+    private var _connection as Connection;
     private var _lines as Array<String>;
     private var _destinationId as String?;
     //! Item of the change whose alternatives are being searched.
     private var _progressItem as MenuItem?;
 
-    function initialize(lines as Array<String>, destinationId as String?) {
+    function initialize(connection as Connection, lines as Array<String>, destinationId as String?) {
         Menu2InputDelegate.initialize();
+        _connection = connection;
         _lines = lines;
         _destinationId = destinationId;
     }
@@ -190,7 +197,30 @@ class ConnectionDetailDelegate extends WatchUi.Menu2InputDelegate {
             WatchUi.pushView(new FullTextView(_lines[id]), new WatchUi.BehaviorDelegate(), WatchUi.SLIDE_LEFT);
         } else if (id instanceof Transfer) {
             searchFrom(item, id);
+        } else if (id == :alert) {
+            stepAlert(item);
         }
+    }
+
+    //! Moves the alert of this connection to the next lead time: 5, 10 or 15
+    //! minutes before the departure, then off. Replaces an alert of another
+    //! connection, as only one can be scheduled.
+    private function stepAlert(item as MenuItem) as Void {
+        var connection = _connection;
+        var now = Time.now().value();
+        var current = DepartureAlert.upcoming(now);
+        var lead = current != null && current.isFor(connection.departureTime, connection.lines) ? current.leadMinutes : 0;
+        var next = DepartureAlert.nextLead(lead, connection.departureTime, now);
+        if (next == 0) {
+            if (lead != 0) {
+                DepartureAlert.cancel();
+            }
+            item.setSubLabel(lead != 0 ? Rez.Strings.AlertOff : Rez.Strings.TooLate);
+        } else {
+            var alert = new DepartureAlert(connection.departureTime, next, connection.lines, Texts.alertTitle(next), Texts.alertDetail(connection));
+            item.setSubLabel(DepartureAlert.schedule(alert) ? Texts.alertState(connection, alert) : Texts.get(Rez.Strings.AlertFailed));
+        }
+        WatchUi.requestUpdate();
     }
 
     function onConnections(page as ConnectionsPage?, error as ApiError?) as Void {

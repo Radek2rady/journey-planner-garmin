@@ -1,6 +1,7 @@
 import Toybox.Application;
 import Toybox.Graphics;
 import Toybox.Lang;
+import Toybox.System;
 import Toybox.Time;
 import Toybox.Time.Gregorian;
 import Toybox.WatchUi;
@@ -9,7 +10,7 @@ import Toybox.WatchUi;
 //! list (64 kB, only `(:glance)` code is loaded) and as the full app. The
 //! services are therefore created on first use in the full app, never in
 //! the glance; UI code reaches them through getServices().
-(:glance)
+(:glance, :background)
 class TransitApp extends Application.AppBase {
 
     //! `AppServices` once the full app has started; typed loosely because the
@@ -21,7 +22,7 @@ class TransitApp extends Application.AppBase {
     }
 
     //! Runs in both modes; services exist only in the full app.
-    (:typecheck(disableGlanceCheck))
+    (:typecheck([disableGlanceCheck, disableBackgroundCheck]))
     function onStop(state as Dictionary?) as Void {
         var started = services;
         if (started != null) {
@@ -30,12 +31,19 @@ class TransitApp extends Application.AppBase {
     }
 
     //! Called only in the full app, where all code is loaded.
-    (:typecheck(disableGlanceCheck))
+    (:typecheck([disableGlanceCheck, disableBackgroundCheck]))
     function getInitialView() as [Views] or [Views, InputDelegates] {
         getServices();
         return [new HomeView(), new HomeDelegate()];
     }
 
+    //! Shows the departure alert; see `DepartureAlert`. Never called in a glance.
+    (:typecheck(disableGlanceCheck))
+    function getServiceDelegate() as [System.ServiceDelegate] {
+        return [new AlertService()];
+    }
+
+    (:typecheck(disableBackgroundCheck))
     function getGlanceView() as [GlanceView] or [GlanceView, GlanceViewDelegate] or Null {
         return [new TransitGlance()];
     }

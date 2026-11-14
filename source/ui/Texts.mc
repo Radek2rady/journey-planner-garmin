@@ -39,18 +39,60 @@ module Texts {
         return get(id != null ? id : Rez.Strings.VehicleOther);
     }
 
+    //! What went wrong, in words; the number only for an unknown cause.
     function error(error as ApiError) as String {
-        if (error.code == Communications.BLE_CONNECTION_UNAVAILABLE) {
-            return get(Rez.Strings.ErrorPhone);
+        var known = errorText(error);
+        if (known != null) {
+            return get(known);
         }
-        if (error.code == Communications.NETWORK_REQUEST_TIMED_OUT) {
-            return get(Rez.Strings.ErrorTimeout);
-        }
-        var serverCode = error.serverCode;
-        if (serverCode != null) {
-            return get(Rez.Strings.ErrorServer) + " (" + serverCode + ")";
+        if (error.code > 0) {
+            return get(Rez.Strings.ErrorServer) + " " + error.code;
         }
         return get(Rez.Strings.ErrorGeneric) + " " + error.code;
+    }
+
+    //! The text of a known cause: a code of the proxy (docs/API.md) or of
+    //! the watch's communication layer (negative numbers).
+    function errorText(error as ApiError) as ResourceId? {
+        var serverCode = error.serverCode;
+        if (serverCode != null) {
+            if (serverCode.equals("bad_key")) {
+                return Rez.Strings.ErrorKey;
+            }
+            if (serverCode.equals("bad_request") || serverCode.equals("not_found")) {
+                return Rez.Strings.ErrorRequest;
+            }
+            if (serverCode.find("upstream") == 0) {
+                return Rez.Strings.ErrorSource;
+            }
+        }
+        switch (error.code) {
+            case Communications.BLE_CONNECTION_UNAVAILABLE:
+            case Communications.BLE_ERROR:
+            case Communications.BLE_UNKNOWN_SEND_ERROR:
+                return Rez.Strings.ErrorPhone;
+            case Communications.BLE_HOST_TIMEOUT:
+            case Communications.BLE_SERVER_TIMEOUT:
+            case Communications.NETWORK_REQUEST_TIMED_OUT:
+            case Communications.REQUEST_CONNECTION_DROPPED:
+                return Rez.Strings.ErrorTimeout;
+            case Communications.BLE_REQUEST_CANCELLED:
+            case Communications.REQUEST_CANCELLED:
+            case Communications.BLE_QUEUE_FULL:
+                return Rez.Strings.ErrorCancelled;
+            case Communications.NETWORK_RESPONSE_TOO_LARGE:
+            case Communications.NETWORK_RESPONSE_OUT_OF_MEMORY:
+            case Communications.STORAGE_FULL:
+                return Rez.Strings.ErrorTooLarge;
+            case Communications.BLE_NO_DATA:
+            case Communications.INVALID_HTTP_BODY_IN_NETWORK_RESPONSE:
+            case Communications.INVALID_HTTP_HEADER_FIELDS_IN_NETWORK_RESPONSE:
+            case Communications.UNSUPPORTED_CONTENT_TYPE_IN_RESPONSE:
+                return Rez.Strings.ErrorResponse;
+            case Communications.SECURE_CONNECTION_REQUIRED:
+                return Rez.Strings.ErrorHttps;
+        }
+        return null;
     }
 
     //! "17:30", in the time zone of the watch
@@ -270,6 +312,30 @@ module Texts {
             return distance + " m";
         }
         return stop.area.equals("") ? null : stop.area;
+    }
+
+    //! "alert at 16:14" when `alert` belongs to `connection`, otherwise "off"
+    function alertState(connection as Connection, alert as DepartureAlert?) as String {
+        if (alert == null || !alert.isFor(connection.departureTime, connection.lines)) {
+            return get(Rez.Strings.AlertOff);
+        }
+        return get(Rez.Strings.AlertAt) + " " + clock(alert.alertTime());
+    }
+
+    //! "Departure in 5 min": title of the alert notification
+    function alertTitle(leadMinutes as Number) as String {
+        return get(Rez.Strings.DepartureIn) + " " + leadMinutes + " " + get(Rez.Strings.Minutes);
+    }
+
+    //! "16:19 331, Vestec,u Klimešů": the first ride, or the times without one
+    function alertDetail(connection as Connection) as String {
+        for (var i = 0; i < connection.legs.size(); i++) {
+            var leg = connection.legs[i];
+            if (!leg.isWalk()) {
+                return leg.departure + " " + shortLine(leg.line) + ", " + leg.from;
+            }
+        }
+        return connectionTimes(connection);
     }
 
     //! "Walk 3 min"

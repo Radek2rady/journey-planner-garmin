@@ -18,7 +18,7 @@ The proxy forwards the query and returns a compact JSON (`docs/API.md`, ~2 kB).
 
 | Path | Responsibility |
 | --- | --- |
-| `source/TransitApp.mc` | Lifecycle, glance view; `AppServices` (`api`, `location`, `trip`, `favourites`, `savedSearches`) via `getServices()` |
+| `source/TransitApp.mc`, `source/AlertService.mc` | Lifecycle, glance view, background service of the departure alert; `AppServices` (`api`, `location`, `trip`, `favourites`, `savedSearches`) via `getServices()` |
 | `source/model/` | `Stop`, `Trip`, `SearchFilters`, `Leg`, `Connection`, `ConnectionsPage`, `SavedSearch`, `Departure`, `DepartureBoard`; parsing of the wire format |
 | `source/data/` | `TransitApi` (HTTP), `LocationProvider` (GPS), `TripStore`, `Favourites`, `SavedSearches` (persistence); `GlanceData`, `StorageKeys` (read by the glance) |
 | `source/ui/` | Views, menus and their delegates; `Texts` turns data into localized text |
@@ -79,6 +79,10 @@ command line when the key lives elsewhere.
   glance mode (64 kB) only `(:glance)` code and `scope="glance"` strings are loaded, so
   the services live in `AppServices`, created on first use (`getServices()`), never in
   the glance. Full-app methods of `TransitApp` carry `(:typecheck(disableGlanceCheck))`.
+- The app class is `(:glance, :background)`. The background service (`AlertService`,
+  64 kB) loads only `(:background)` code and no resources: the alert texts are built by
+  the app and stored with the alert (`DepartureAlert`). The watch keeps one scheduled
+  background event per app, so there is one alert at a time.
 - The glance reads storage directly (`GlanceData`), not through `Favourites` or
   `SavedSearches`. A change to their storage format must update `GlanceData` too. The
   glance makes no requests: the fr955 redraws it only now and then into a cache, so a

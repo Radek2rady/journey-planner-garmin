@@ -44,6 +44,12 @@
     <string id="Board">Tabule odjezdů</string>
     <string id="BoardHint">co jede ze zastávky</string>
     <string id="NearestStop">Nejbližší zastávka</string>
+    <string id="Alert">Upozornit na odjezd</string>
+    <string id="AlertOff">vypnuto</string>
+    <string id="AlertAt">upozorním v</string>
+    <string id="TooLate">už je pozdě</string>
+    <string id="AlertFailed">nelze nastavit</string>
+    <string id="DepartureIn">Odjezd za</string>
     <string id="Change">Přestup</string>
     <string id="IfMissed">Nestihnu? Co dál</string>
     <string id="LaterDepartures">Pozdější odjezdy</string>
@@ -80,6 +86,13 @@
     <string id="WaitingForGps">Čekám na GPS</string>
     <string id="ErrorPhone">Telefon není připojen</string>
     <string id="ErrorTimeout">Vypršel čas</string>
+    <string id="ErrorCancelled">Přerušeno</string>
+    <string id="ErrorTooLarge">Moc velká odpověď</string>
+    <string id="ErrorResponse">Vadná odpověď</string>
+    <string id="ErrorHttps">Vyžaduje HTTPS</string>
+    <string id="ErrorKey">Špatný klíč proxy</string>
+    <string id="ErrorRequest">Chybný dotaz</string>
+    <string id="ErrorSource">Zdroj nedostupný</string>
     <string id="ErrorServer">Chyba serveru</string>
     <string id="ErrorGeneric">Chyba</string>
 
