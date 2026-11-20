@@ -122,3 +122,8 @@ command line when the key lives elsewhere.
   locally but not on Vercel.
 - Transitous is a free community service: keep request volume low and the `User-Agent`
   in the proxy meaningful.
+
+## Verification
+- Always: `make build` (zero warnings) and `make test-proxy`.
+- Watch logic changed: `make test-watch` (needs `make simulator`; judge by the `PASSED` line in `bin/test-watch.log`).
+- The manual steps of "Definition of done" (simulator, string files) are reported as not run unless done.

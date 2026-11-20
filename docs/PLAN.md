@@ -44,6 +44,25 @@ Exit criteria: full flow verified in the simulator; all tests green.
 - Glance view with the next departure of the favourite trip
 - More devices than fr955
 
+### M5: Connect IQ Store
+
+Publish the app for free, mainly to go through the whole release process. Constraints
+found on 2026-11-20:
+
+- Transitous allows only open-source, non-commercial apps that are light on its
+  resources (heavy use: over 720 `/plan` requests a day; then contact the project on
+  Matrix first). Every request needs a `User-Agent` with app name, version and contact.
+  Attribution: a visible link to transitous.org/sources and the OpenStreetMap notice.
+- Czech feeds: CZPTT trains and JDF buses CC0 (Oběhy), PID CC BY, IDS JMK and PMDP own
+  open-data terms. Fine for a free app with attribution.
+- Garmin: free developer account; a privacy policy is required because positions and
+  search terms leave the watch; location only after the user opts in; the listing names
+  all dependencies (phone, internet, third-party service); no Garmin or third-party
+  marks in the name.
+- The name "Transit" clashes with an existing transit app; pick another one.
+
+Exit criteria: the app is approved and listed in the store.
+
 ## Risks
 
 | Risk | Mitigation |

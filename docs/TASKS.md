@@ -37,6 +37,25 @@ part of the change that affects them.
 
 ## To do
 
+### M5: Connect IQ Store
+
+- [ ] Choose a store name that does not clash with existing apps or marks
+- [ ] Add a `LICENSE` (open source, required by Transitous) and make the repository public
+- [ ] Proxy `User-Agent` with the app version and a contact URL
+- [ ] About screen: version, data sources (Transitous, OpenStreetMap), privacy policy URL
+- [ ] Privacy policy on a public URL: what leaves the watch (position, stop names, search
+      times), where it goes (proxy on Vercel, Transitous), that nothing is stored, that
+      the data goes to the developer and not to Garmin
+- [ ] Location only after an explicit choice; one-time notice before the first use
+- [ ] More devices in the manifest, each checked in the simulator (memory, round and
+      AMOLED screens, touch-only and button-only input)
+- [ ] Finish the open "Confirm on the watch" items above, including memory use
+- [ ] Watch the proxy's daily `/plan` count on Vercel; tell Transitous on Matrix before it
+      gets near 720 a day
+- [ ] Store listing: icon, screenshots, description in English and Czech, dependencies
+      (phone with Garmin Connect, internet, Transitous), support contact
+- [ ] Export the `.iq`, upload, go through the review
+
 ### Comfort
 
 - [ ] Name entry by letter groups (no holding of DOWN needed)
