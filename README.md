@@ -1,6 +1,7 @@
 # Spojení CZ
 
-Public transport journey planner for the Garmin Forerunner 955. Choose where from (your GPS
+Public transport journey planner for Garmin watches (55 models with Connect IQ API 5.2+,
+listed in `manifest.xml`; developed on the Forerunner 955). Choose where from (your GPS
 position or a stop) and where to; the watch lists the next connections anywhere in the
 Czech Republic, including transfers, platforms and delays.
 
@@ -9,7 +10,8 @@ routing service.
 
 ## Requirements
 
-- Connect IQ SDK 9.x with the `fr955` device (Connect IQ SDK Manager)
+- Connect IQ SDK 9.x with the devices of `manifest.xml` (Connect IQ SDK Manager); `fr955`
+  is the default for `make build` / `make run`, another one with `DEVICE=fr965`
 - A developer key (`Monkey C: Generate a Developer Key` in VS Code)
 - Java, Python 3.9+, `make`
 

@@ -43,7 +43,7 @@ Exit criteria: full flow verified in the simulator; all tests green.
 ### M4: Resilience
 
 - Glance view with the next departure of the favourite trip
-- More devices than fr955
+- More devices than fr955 (done: 55 watches with API 5.2+)
 
 ### M5: Connect IQ Store
 

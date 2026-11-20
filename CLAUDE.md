@@ -1,6 +1,7 @@
 # Spojení CZ (code name Transit)
 
-Journey planner for Garmin watches (Connect IQ, Monkey C), target device Forerunner 955.
+Journey planner for Garmin watches (Connect IQ, Monkey C): 55 watches with API 5.2+ in
+`manifest.xml`, developed and tested first on the Forerunner 955 (`DEVICE` in the Makefile).
 The user picks an origin (GPS position or a stop) and a destination stop; the watch shows
 the next connections for the whole Czech Republic, with delays and platforms.
 
@@ -90,6 +91,9 @@ command line when the key lives elsewhere.
   `SavedSearches`. A change to their storage format must update `GlanceData` too. The
   glance makes no requests: the fr955 redraws it only now and then into a cache, so a
   late response would never show.
+- The launcher icon must match each device's size, otherwise the build warns. Devices
+  whose size is not the default 40x40 get `resources-icon-<size>` in `monkey.jungle`;
+  a new device in the manifest may need a line there.
 - Changing the app type made the watch install Transit anew: stored data was lost.
 
 - Simulator and plain HTTP: uncheck *Settings > Use Device HTTPS Requirements*, otherwise

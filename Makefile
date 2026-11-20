@@ -15,11 +15,12 @@ PROXY_URL     ?=
 PROXY_KEY     ?=
 
 OUT      := bin
-APP      := $(OUT)/Transit.prg
+# One debug build per device, so that `make run DEVICE=...` never runs another device's build.
+APP      := $(OUT)/Transit-$(DEVICE).prg
 TEST_APP := $(OUT)/Transit-test.prg
 BUILD_CONFIG := source/BuildConfig.mc
 APP_VERSION  := $(shell sed -n 's/.*<iq:application .* version="\([^"]*\)".*/\1/p' manifest.xml)
-SOURCES  := $(shell find source resources resources-ces -type f ! -path $(BUILD_CONFIG)) manifest.xml monkey.jungle
+SOURCES  := $(shell find source resources resources-ces resources-icon-* -type f ! -path $(BUILD_CONFIG)) manifest.xml monkey.jungle
 MONKEYC   = "$(SDK_HOME)bin/monkeyc" -f monkey.jungle -d $(DEVICE) -y "$(DEVELOPER_KEY)" -w
 
 # Writes $(BUILD_CONFIG) with the proxy address $(1), key $(2) and the app version.

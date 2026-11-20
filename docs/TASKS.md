@@ -49,8 +49,10 @@ part of the change that affects them.
 - [ ] Confirm on the watch: the location question (native confirmation) appears before
       the first use of the position, and the origin reads "My location (not allowed)"
       until then (the English question fits in the fr955 simulator)
-- [ ] More devices in the manifest, each checked in the simulator (memory, round and
-      AMOLED screens, touch-only and button-only input)
+- [ ] Check one device of each screen kind in the simulator: fr255s (218 px, smallest),
+      fenix7s (240 px), fr955 (260 px MIP), fr265 (416 px AMOLED), fr965 (454 px AMOLED),
+      venux1 (rectangle); home screen, menus, name entry, connection detail, About,
+      glance; touch-only and button-only input
 - [ ] Finish the open "Confirm on the watch" items above, including memory use
 - [ ] Protect the proxy before the store release (the key in the app can be extracted):
       - CDN cache through `Cache-Control: s-maxage` (stops by name and nearby stops 1 day
@@ -66,6 +68,7 @@ part of the change that affects them.
         carriers share IPs)
 - [ ] Watch the proxy's daily `/plan` count on Vercel; tell Transitous on Matrix before it
       gets near 720 a day
+- [ ] Confirm on the watch: the new launcher icon on the fr955 (MIP colours) is readable
 - [ ] Store listing: icon, screenshots, description in English and Czech, dependencies
       (phone with Garmin Connect, internet, Transitous), support contact
 - [ ] Export the `.iq`, upload, go through the review
@@ -155,3 +158,9 @@ part of the change that affects them.
 - [x] Branch and pull request workflow; GitHub Actions runs the proxy tests on Python 3.9
       and 3.12 for each pull request and push to `main`
 - [x] Makefile, README, CLAUDE.md, API contract, plan
+- [x] 55 watches with API 5.2+ in the manifest (Forerunner 165-970, fenix 7/8/9/E, epix 2,
+      enduro 3/4, MARQ 2/3, Venu 3/4/X1, vivoactive 5/6, Instinct 3 and Crossover AMOLED);
+      left out: Venu 2 and Venu Sq 2 (API 5.0), Instinct with the small semi-octagon
+      screen, bike computers
+- [x] Launcher icon chosen by the user (option C: bus and train on a navy circle) in every
+      size the devices expect (`resources-icon-<size>`); lights left out at 38 and 40 px
