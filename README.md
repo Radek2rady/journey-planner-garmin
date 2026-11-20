@@ -50,6 +50,15 @@ speaks plain HTTP) and set a position with **Settings > Set Position**.
 Host the proxy, put its address into `local.mk`, run `make release` and copy
 `bin/Transit-release.prg` to `GARMIN/APPS`. Step by step: [docs/DEPLOY.md](docs/DEPLOY.md).
 
+## Development
+
+`main` deploys the proxy to production, so every change goes through a short-lived branch
+(`feature/...`, `fix/...`) and a pull request, merged with *Squash and merge*. GitHub
+Actions runs the proxy tests on each pull request; Vercel deploys a preview proxy for it,
+which a debug or release build can point to through `local.mk`. Watch tests need the
+simulator and run locally (`make test-watch`). Versions sent to the store are tagged
+`vX.Y.Z`.
+
 ## Documentation
 
 - [CLAUDE.md](CLAUDE.md): architecture, conventions, definition of done

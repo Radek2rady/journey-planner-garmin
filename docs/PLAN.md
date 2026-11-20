@@ -14,6 +14,7 @@ under 30 seconds, without taking out the phone.
 | Proxy hosted on Vercel (free plan) | No own server; HTTPS included; runs the stdlib Python proxy unchanged, so there is one implementation and one test suite. |
 | Proxy address and key are build settings (`local.mk`) | Keeps the key out of the repository and lets debug builds use the local proxy. |
 | Stops entered by name once, then picked from recents | Typing on a watch is slow; most trips repeat. |
+| Branch and pull request per change, squash merge, CI on proxy tests | `main` deploys the production proxy; a pull request gets a Vercel preview to try first. Watch build and tests stay local: they need the Connect IQ SDK, the device files and the simulator. |
 
 ## Milestones
 

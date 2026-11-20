@@ -55,6 +55,10 @@ part of the change that affects them.
 - [ ] Store listing: icon, screenshots, description in English and Czech, dependencies
       (phone with Garmin Connect, internet, Transitous), support contact
 - [ ] Export the `.iq`, upload, go through the review
+- [ ] Protect `main` on GitHub: changes only through pull requests with passing
+      *Proxy tests* (by the user)
+- [ ] Tag the store version (`v1.0.0`) and attach the `.iq` to a GitHub release
+- [ ] Look into building the watch app in CI (SDK and device files without a sign-in)
 
 ### Comfort
 
@@ -124,4 +128,6 @@ part of the change that affects them.
 - [x] Nearby stops by GPS in the origin chooser: stops within 500 m with distance, one
       per place (feed variants of one station merged); `/stops` without `q`
 - [x] Git repository initialized and pushed to GitHub (by the user)
+- [x] Branch and pull request workflow; GitHub Actions runs the proxy tests on Python 3.9
+      and 3.12 for each pull request and push to `main`
 - [x] Makefile, README, CLAUDE.md, API contract, plan
