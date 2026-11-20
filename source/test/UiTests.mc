@@ -79,6 +79,21 @@ function textsDescribeTheApp(logger as Logger) as Boolean {
 }
 
 (:test)
+function locationConsentAsksAndRemembers(logger as Logger) as Boolean {
+    var location = getServices().location;
+    var allowed = location.allowed;
+    location.allowed = false;
+    Test.assert(!LocationConsent.ask());
+    Test.assert(Texts.originName(new TripStore(), location).equals(Texts.get(Rez.Strings.MyLocationOff)));
+    new LocationConsentDelegate().onResponse(WatchUi.CONFIRM_NO);
+    Test.assert(!location.allowed);
+    location.allowed = true;
+    Test.assert(LocationConsent.ask());
+    location.allowed = allowed;
+    return true;
+}
+
+(:test)
 function glanceDrawsWithoutTheServices(logger as Logger) as Boolean {
     var bitmap = Graphics.createBufferedBitmap({ :width => 180, :height => 60 }).get() as BufferedBitmap;
     var glance = new TransitGlance();

@@ -47,10 +47,24 @@ part of the change that affects them.
 - [ ] Privacy policy on a public URL: what leaves the watch (position, stop names, search
       times), where it goes (proxy on Vercel, Transitous), that nothing is stored, that
       the data goes to the developer and not to Garmin
-- [ ] Location only after an explicit choice; one-time notice before the first use
+- [ ] Confirm on the watch: the location question (native confirmation) appears before
+      the first use of the position, and the origin reads "My location (not allowed)"
+      until then (the English question fits in the fr955 simulator)
 - [ ] More devices in the manifest, each checked in the simulator (memory, round and
       AMOLED screens, touch-only and button-only input)
 - [ ] Finish the open "Confirm on the watch" items above, including memory use
+- [ ] Protect the proxy before the store release (the key in the app can be extracted):
+      - CDN cache through `Cache-Control: s-maxage` (stops by name and nearby stops 1 day
+        with coordinates rounded to ~100 m, departures 30 s, connections 60 s)
+      - Daily cap of upstream requests (about 700 `/plan`) shared by all instances, in
+        Upstash Redis over REST (stdlib only); decide what happens when Upstash is down
+      - A second, private key for the developer's own build with a reserved budget, so
+        that an exhausted public cap does not block it
+      - `429` with code `rate_limited`; the watch shows "too many requests, try later",
+        also for a bare 429 without JSON (Vercel WAF); `docs/API.md` and tests of both
+        sides
+      - Vercel WAF limit per IP only if abuse shows up (one rule on Hobby; mobile
+        carriers share IPs)
 - [ ] Watch the proxy's daily `/plan` count on Vercel; tell Transitous on Matrix before it
       gets near 720 a day
 - [ ] Store listing: icon, screenshots, description in English and Czech, dependencies
@@ -133,6 +147,10 @@ part of the change that affects them.
       at the end of the main menu with the version and the data sources (Transitous,
       OpenStreetMap)
 - [x] Proxy `User-Agent` with its version and the repository URL as contact
+- [x] Location only after consent: no GPS and no position in any request until the user
+      says yes to a one-time question, asked on the first action that needs the position
+      (My location, Nearby stops, nearest departure board, search or Wi-Fi search from
+      the current position); the answer is remembered
 - [x] Branch and pull request workflow; GitHub Actions runs the proxy tests on Python 3.9
       and 3.12 for each pull request and push to `main`
 - [x] Makefile, README, CLAUDE.md, API contract, plan

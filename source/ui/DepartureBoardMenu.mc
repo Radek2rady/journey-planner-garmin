@@ -29,6 +29,9 @@ class BoardChooserDelegate extends WatchUi.Menu2InputDelegate {
         var app = getServices();
         var id = item.getId();
         if (id == :nearest) {
+            if (!LocationConsent.ask()) {
+                return;
+            }
             var coordinates = app.location.getCoordinates();
             if (coordinates == null) {
                 item.setSubLabel(Rez.Strings.WaitingForGps);

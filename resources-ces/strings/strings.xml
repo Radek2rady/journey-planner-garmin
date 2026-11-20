@@ -9,6 +9,8 @@
     <string id="StartHint">START: menu</string>
     <string id="MyLocation">Moje poloha</string>
     <string id="MyLocationWaiting">Moje poloha (hledám GPS)</string>
+    <string id="MyLocationOff">Moje poloha (nepovolena)</string>
+    <string id="LocationQuestion">Odesílat polohu pro hledání?</string>
     <string id="NotSet">Nezadáno</string>
     <string id="FindConnections">Hledat spojení</string>
     <string id="Swap">Prohodit</string>

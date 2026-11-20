@@ -10,6 +10,8 @@
     <string id="StartHint">START: menu</string>
     <string id="MyLocation">My location</string>
     <string id="MyLocationWaiting">My location (waiting for GPS)</string>
+    <string id="MyLocationOff">My location (not allowed)</string>
+    <string id="LocationQuestion">Send your position for searches?</string>
     <string id="NotSet">Not set</string>
     <string id="FindConnections">Find connections</string>
     <string id="Swap">Swap</string>

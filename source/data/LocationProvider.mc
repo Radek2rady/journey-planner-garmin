@@ -1,25 +1,45 @@
 import Toybox.Lang;
+import Toybox.Application.Storage;
 import Toybox.Position;
 import Toybox.WatchUi;
 
 //! Latitude and longitude in degrees.
 typedef Coordinates as [Double, Double];
 
-//! Tracks the watch position while the app runs.
+//! Tracks the watch position while the app runs, once the user has allowed
+//! it. Until then no position is read and none leaves the watch.
 class LocationProvider {
 
+    private const KEY_ALLOWED = "locationAllowed";
+
+    var allowed as Boolean;
     private var _info as Position.Info?;
     private var _hadFix as Boolean = false;
     private var _listener as (Method() as Void)?;
 
     function initialize() {
+        var stored = Storage.getValue(KEY_ALLOWED);
+        allowed = stored instanceof Boolean && stored;
+    }
+
+    //! Remembers the user's consent and starts tracking.
+    function allow() as Void {
+        allowed = true;
+        Storage.setValue(KEY_ALLOWED, true);
+        start();
     }
 
     function start() as Void {
+        if (!allowed) {
+            return;
+        }
         Position.enableLocationEvents(Position.LOCATION_CONTINUOUS, method(:onPosition));
     }
 
     function stop() as Void {
+        if (!allowed) {
+            return;
+        }
         Position.enableLocationEvents(Position.LOCATION_DISABLE, method(:onPosition));
     }
 
@@ -30,6 +50,9 @@ class LocationProvider {
 
     //! Current or last known position; null when the watch has none.
     function getCoordinates() as Coordinates? {
+        if (!allowed) {
+            return null;
+        }
         var info = _info;
         if (info == null) {
             info = Position.getInfo();
