@@ -50,6 +50,9 @@
     <string id="WifiSaved">saved</string>
     <string id="Board">Departure board</string>
     <string id="BoardHint">what leaves from a stop</string>
+    <string id="About">About</string>
+    <string id="Version">version</string>
+    <string id="AboutSources">Timetables: Transitous, transitous.org/sources. Map data © OpenStreetMap contributors.</string>
     <string id="NearestStop">Nearest stop</string>
     <string id="Alert">Alert before departure</string>
     <string id="AlertOff">off</string>

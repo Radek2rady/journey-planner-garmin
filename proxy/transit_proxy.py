@@ -34,7 +34,9 @@ from typing import Any, Optional
 from zoneinfo import ZoneInfo
 
 API = "https://api.transitous.org/api/v1"
-USER_AGENT = "garmin-transit-watch-app/0.1 (personal project)"
+# Transitous asks every client for its name, version and a contact.
+VERSION = "0.9.0"
+USER_AGENT = f"journey-planner-garmin/{VERSION} (+https://github.com/Radek2rady/journey-planner-garmin)"
 TIMEZONE = ZoneInfo("Europe/Prague")
 UPSTREAM_TIMEOUT_S = 25
 

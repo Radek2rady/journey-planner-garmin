@@ -20,6 +20,15 @@ module Texts {
         return get(location.getCoordinates() != null ? Rez.Strings.MyLocation : Rez.Strings.MyLocationWaiting);
     }
 
+    function version(number as String) as String {
+        return get(Rez.Strings.Version) + " " + number;
+    }
+
+    //! Name, version and the data sources the app must credit.
+    function about(number as String) as String {
+        return get(Rez.Strings.AppName) + " " + number + "\n" + get(Rez.Strings.AboutSources);
+    }
+
     function destinationName(trip as TripStore) as String {
         var destination = trip.destination;
         return destination != null ? destination.name : get(Rez.Strings.NotSet);

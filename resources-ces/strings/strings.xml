@@ -49,6 +49,9 @@
     <string id="WifiSaved">uloženo</string>
     <string id="Board">Tabule odjezdů</string>
     <string id="BoardHint">co jede ze zastávky</string>
+    <string id="About">O aplikaci</string>
+    <string id="Version">verze</string>
+    <string id="AboutSources">Jízdní řády: Transitous, transitous.org/sources. Mapová data © přispěvatelé OpenStreetMap.</string>
     <string id="NearestStop">Nejbližší zastávka</string>
     <string id="Alert">Upozornit na odjezd</string>
     <string id="AlertOff">vypnuto</string>

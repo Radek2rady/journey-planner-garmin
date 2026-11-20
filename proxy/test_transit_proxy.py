@@ -1,5 +1,6 @@
 """Unit tests for the proxy. Run: python3 -m unittest discover -s proxy"""
 
+import io
 import unittest
 import urllib.error
 from unittest import mock
@@ -248,6 +249,17 @@ class HandleTest(unittest.TestCase):
         params = call.call_args[0][1]
         self.assertEqual(params["pageCursor"], "next")
         self.assertNotIn("time", params)
+
+
+class UserAgentTest(unittest.TestCase):
+    def test_upstream_request_names_app_version_and_contact(self):
+        response = mock.MagicMock()
+        response.__enter__.return_value = io.BytesIO(b"[]")
+        with mock.patch("urllib.request.urlopen", return_value=response) as urlopen:
+            proxy.call_api("/geocode", {"text": "vestec"})
+        agent = urlopen.call_args[0][0].get_header("User-agent")
+        self.assertIn("journey-planner-garmin/" + proxy.VERSION, agent)
+        self.assertIn("https://github.com/", agent)
 
 
 class DepartureTimeTest(unittest.TestCase):

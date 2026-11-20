@@ -50,6 +50,7 @@ when searching.
 
 The Makefile writes `source/BuildConfig.mc` before every build: the local proxy for
 `make build` / `make run` / `make test-watch`, the values from `local.mk` for
-`make release`. The file is generated and ignored by git; the key never enters the
+`make release`, and always the app version from `manifest.xml`. The file is generated
+and ignored by git; the key never enters the
 repository. A fresh checkout needs one `make build` before the VS Code extension can
 build on its own.

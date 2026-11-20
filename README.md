@@ -57,7 +57,8 @@ Host the proxy, put its address into `local.mk`, run `make release` and copy
 Actions runs the proxy tests on each pull request; Vercel deploys a preview proxy for it,
 which a debug or release build can point to through `local.mk`. Watch tests need the
 simulator and run locally (`make test-watch`). Versions sent to the store are tagged
-`vX.Y.Z`.
+`vX.Y.Z`; the app version is `version` in `manifest.xml` (shown under *About*), the proxy
+version is `VERSION` in `proxy/transit_proxy.py` (sent in its `User-Agent`).
 
 ## Documentation
 

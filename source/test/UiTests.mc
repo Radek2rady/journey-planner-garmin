@@ -69,6 +69,16 @@ function textsDescribeALeg(logger as Logger) as Boolean {
 }
 
 (:test)
+function textsDescribeTheApp(logger as Logger) as Boolean {
+    var about = Texts.about("1.2.3");
+    Test.assert(about.find(Texts.get(Rez.Strings.AppName) + " 1.2.3") == 0);
+    Test.assert(about.find("transitous.org/sources") != null);
+    Test.assert(about.find("OpenStreetMap") != null);
+    Test.assert(Texts.version("1.2.3").find("1.2.3") != null);
+    return true;
+}
+
+(:test)
 function glanceDrawsWithoutTheServices(logger as Logger) as Boolean {
     var bitmap = Graphics.createBufferedBitmap({ :width => 180, :height => 60 }).get() as BufferedBitmap;
     var glance = new TransitGlance();
@@ -85,6 +95,7 @@ function mainMenuOpensAndHandlesItems(logger as Logger) as Boolean {
     delegate.refresh();
     delegate.onSelect(item);
     delegate.onSelect(new WatchUi.MenuItem("x", null, :search, null));
+    delegate.onSelect(new WatchUi.MenuItem("x", null, :about, null));
     delegate.onConnections(null, new ApiError(-104, null));
     delegate.onConnections(sampleConnectionsPage(), null);
     return true;
