@@ -1,4 +1,4 @@
-# Transit
+# Spojení CZ
 
 Public transport journey planner for the Garmin Forerunner 955. Choose where from (your GPS
 position or a stop) and where to; the watch lists the next connections anywhere in the
@@ -67,3 +67,9 @@ version is `VERSION` in `proxy/transit_proxy.py` (sent in its `User-Agent`).
 - [docs/DEPLOY.md](docs/DEPLOY.md): hosting the proxy, building for the watch
 - [docs/PLAN.md](docs/PLAN.md): roadmap
 - [docs/TASKS.md](docs/TASKS.md): done and to do
+
+## License
+
+[MIT](LICENSE). Timetable data: [Transitous](https://transitous.org/sources/) and its
+sources; map data © [OpenStreetMap](https://www.openstreetmap.org/copyright)
+contributors.
