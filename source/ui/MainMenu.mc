@@ -102,6 +102,9 @@ class MainMenuDelegate extends WatchUi.Menu2InputDelegate {
     //! over Wi-Fi; the watch closes the app. The connections end up in the
     //! saved searches.
     private function searchOverWifi(item as MenuItem) as Void {
+        if (!mayUseOrigin()) {
+            return;
+        }
         var problem = wifiProblem(WifiSearch.availability());
         var query = problem == null ? ConnectionSearch.prepare() : problem;
         if (!(query instanceof ConnectionQuery)) {
@@ -133,9 +136,17 @@ class MainMenuDelegate extends WatchUi.Menu2InputDelegate {
     }
 
     private function startSearch() as Void {
+        if (!mayUseOrigin()) {
+            return;
+        }
         var item = _searchItem;
         var problem = ConnectionSearch.start(null, method(:onConnections));
         item.setSubLabel(problem != null ? problem : Rez.Strings.Searching);
+    }
+
+    //! A search from the current position needs the user's consent first.
+    private function mayUseOrigin() as Boolean {
+        return getServices().trip.origin != null || LocationConsent.ask();
     }
 
     private function swapStops(item as MenuItem) as Void {

@@ -104,6 +104,8 @@ command line when the key lives elsewhere.
   `Texts.SUMMARY_BUDGET` characters or offer the full text on a separate view.
 - Stored data outlives the code: a changed storage format gets a new key (see
   `SavedSearches`), because reading the old shape is a fatal error, not an exception.
+- `WatchUi.Confirmation` shows two lines of text on the fr955 and cuts the rest with
+  "...". Keep its question short; put explanations in the store listing.
 - Menu item ids are symbols (`:search`). Do not give a private method the same name, the
   compiler warns about the collision.
 - `Storage.setValue` wants `Storage.KeyType` / `Storage.ValueType`; see `TripStore`.

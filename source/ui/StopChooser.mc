@@ -76,6 +76,7 @@ class StopChooserDelegate extends WatchUi.Menu2InputDelegate {
         var id = item.getId();
         if (id == :location) {
             choose(null);
+            LocationConsent.ask();
         } else if (id == :nearby) {
             searchNearby(item);
         } else if (id == :name) {
@@ -123,6 +124,9 @@ class StopChooserDelegate extends WatchUi.Menu2InputDelegate {
     }
 
     private function searchNearby(item as MenuItem) as Void {
+        if (!LocationConsent.ask()) {
+            return;
+        }
         var app = getServices();
         var coordinates = app.location.getCoordinates();
         if (coordinates == null) {

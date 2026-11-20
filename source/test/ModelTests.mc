@@ -1,3 +1,4 @@
+import Toybox.Application.Storage;
 import Toybox.Lang;
 import Toybox.Test;
 
@@ -106,6 +107,26 @@ function invalidPositionsAreRejected(logger as Logger) as Boolean {
     Test.assert(LocationProvider.isValid(49.98d, 14.50d));
     Test.assert(!LocationProvider.isValid(0.0d, 0.0d));
     Test.assert(!LocationProvider.isValid(180.0d, 180.0d));
+    return true;
+}
+
+(:test)
+function locationIsUsedOnlyAfterConsent(logger as Logger) as Boolean {
+    var stored = Storage.getValue("locationAllowed");
+    Storage.deleteValue("locationAllowed");
+    var location = new LocationProvider();
+    Test.assert(!location.allowed);
+    Test.assert(location.getCoordinates() == null);
+    location.start();
+    location.allow();
+    Test.assert(location.allowed);
+    Test.assert(new LocationProvider().allowed);
+    location.stop();
+    if (stored != null) {
+        Storage.setValue("locationAllowed", stored as Storage.ValueType);
+    } else {
+        Storage.deleteValue("locationAllowed");
+    }
     return true;
 }
 

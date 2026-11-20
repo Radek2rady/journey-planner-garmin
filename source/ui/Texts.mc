@@ -17,6 +17,9 @@ module Texts {
         if (origin != null) {
             return origin.name;
         }
+        if (!location.allowed) {
+            return get(Rez.Strings.MyLocationOff);
+        }
         return get(location.getCoordinates() != null ? Rez.Strings.MyLocation : Rez.Strings.MyLocationWaiting);
     }
 

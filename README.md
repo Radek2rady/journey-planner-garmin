@@ -32,7 +32,7 @@ speaks plain HTTP) and set a position with **Settings > Set Position**.
 | --- | --- |
 | Glance (watch face, UP/DOWN) | Destination of the first favourite trip and its next departure from the last search; START opens the app |
 | Home | START or tap opens the menu |
-| Menu > From | *My location*, *Nearby stops* (pick one, with distance), *Enter name*, or a recent stop; *Delete recent stops* at the end |
+| Menu > From | *My location*, *Nearby stops* (pick one, with distance), *Enter name*, or a recent stop; *Delete recent stops* at the end. The first use of the position asks for permission; until then no position leaves the watch |
 | Menu > To | *Enter name* or a recent stop; *Delete recent stops* at the end |
 | Enter name | UP/DOWN or swipe choose a letter (hold UP to move fast), START or tap types it, BACK erases; *Search* (one step above A) finishes |
 | Menu > Favourite trips | Choose a trip to search it at once; *Add current trip*; *Remove a trip* |
