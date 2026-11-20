@@ -1,4 +1,4 @@
-# Transit
+# Spojení CZ (code name Transit)
 
 Journey planner for Garmin watches (Connect IQ, Monkey C), target device Forerunner 955.
 The user picks an origin (GPS position or a stop) and a destination stop; the watch shows

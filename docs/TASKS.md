@@ -39,8 +39,7 @@ part of the change that affects them.
 
 ### M5: Connect IQ Store
 
-- [ ] Choose a store name that does not clash with existing apps or marks
-- [ ] Add a `LICENSE` (open source, required by Transitous) and make the repository public
+- [ ] Make the repository public (by the user)
 - [ ] Privacy policy URL on the About screen (once the policy exists)
 - [ ] Confirm on the watch: the About text fits the screen in both languages (English
       fits in the fr955 simulator)
@@ -81,7 +80,7 @@ part of the change that affects them.
 
 ### Housekeeping
 
-- [ ] Decide whether the project folder should be renamed from `Odjezdy` to `Transit`
+- [ ] Decide whether the project folder should be renamed from `Odjezdy` (code name Transit, app name Spojení CZ)
 
 ## Done
 
@@ -151,6 +150,8 @@ part of the change that affects them.
       says yes to a one-time question, asked on the first action that needs the position
       (My location, Nearby stops, nearest departure board, search or Wi-Fi search from
       the current position); the answer is remembered
+- [x] App name "Spojení CZ" in both languages (store name); code name stays Transit
+- [x] MIT `LICENSE`; README credits Transitous and OpenStreetMap
 - [x] Branch and pull request workflow; GitHub Actions runs the proxy tests on Python 3.9
       and 3.12 for each pull request and push to `main`
 - [x] Makefile, README, CLAUDE.md, API contract, plan

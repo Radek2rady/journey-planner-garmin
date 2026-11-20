@@ -60,7 +60,10 @@ found on 2026-11-20:
   search terms leave the watch; location only after the user opts in; the listing names
   all dependencies (phone, internet, third-party service); no Garmin or third-party
   marks in the name.
-- The name "Transit" clashes with an existing transit app; pick another one.
+- Store name: "Spojení CZ" in both languages ("Transit" clashes with an existing app).
+  Czech departure-board apps exist in the store (Odjezdy, Mobi, LiveBus, PID, ...); none
+  plans A-to-B connections with changes across trains, buses and city transport, so the
+  listing stresses connections and names "jízdní řád", "vlak", "MHD" in the description.
 
 Exit criteria: the app is approved and listed in the store.
 
