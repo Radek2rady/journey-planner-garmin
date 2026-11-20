@@ -3,7 +3,7 @@ import Toybox.Time;
 import Toybox.WatchUi;
 
 //! Main menu: search, favourite trips, origin, destination, departure time,
-//! filters, swap, saved connections, departure board, search over Wi-Fi.
+//! filters, swap, saved connections, departure board, search over Wi-Fi, about.
 module MainMenu {
 
     function push() as Void {
@@ -25,6 +25,7 @@ module MainMenu {
         menu.addItem(new WatchUi.MenuItem(Rez.Strings.Saved, Rez.Strings.SavedHint, :saved, null));
         menu.addItem(new WatchUi.MenuItem(Rez.Strings.Board, Rez.Strings.BoardHint, :board, null));
         menu.addItem(new WatchUi.MenuItem(Rez.Strings.WifiSearch, Texts.wifiState(WifiSearch.result()), :wifi, null));
+        menu.addItem(new WatchUi.MenuItem(Rez.Strings.About, Texts.version(BuildConfig.APP_VERSION), :about, null));
         WatchUi.pushView(menu, new MainMenuDelegate(searchItem, originItem, destinationItem, departureItem, filtersItem), WatchUi.SLIDE_UP);
     }
 }
@@ -64,6 +65,8 @@ class MainMenuDelegate extends WatchUi.Menu2InputDelegate {
             DepartureMenu.push(method(:refresh));
         } else if (id == :board) {
             BoardChooser.push();
+        } else if (id == :about) {
+            WatchUi.pushView(new FullTextView(Texts.about(BuildConfig.APP_VERSION)), new WatchUi.BehaviorDelegate(), WatchUi.SLIDE_LEFT);
         } else if (id == :filters) {
             FilterMenu.push(method(:refresh));
         } else if (id == :swap) {

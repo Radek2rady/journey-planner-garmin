@@ -41,8 +41,9 @@ part of the change that affects them.
 
 - [ ] Choose a store name that does not clash with existing apps or marks
 - [ ] Add a `LICENSE` (open source, required by Transitous) and make the repository public
-- [ ] Proxy `User-Agent` with the app version and a contact URL
-- [ ] About screen: version, data sources (Transitous, OpenStreetMap), privacy policy URL
+- [ ] Privacy policy URL on the About screen (once the policy exists)
+- [ ] Confirm on the watch: the About text fits the screen in both languages (English
+      fits in the fr955 simulator)
 - [ ] Privacy policy on a public URL: what leaves the watch (position, stop names, search
       times), where it goes (proxy on Vercel, Transitous), that nothing is stored, that
       the data goes to the developer and not to Garmin
@@ -128,6 +129,10 @@ part of the change that affects them.
 - [x] Nearby stops by GPS in the origin chooser: stops within 500 m with distance, one
       per place (feed variants of one station merged); `/stops` without `q`
 - [x] Git repository initialized and pushed to GitHub (by the user)
+- [x] App version in `manifest.xml`, passed to the app through `BuildConfig`; About item
+      at the end of the main menu with the version and the data sources (Transitous,
+      OpenStreetMap)
+- [x] Proxy `User-Agent` with its version and the repository URL as contact
 - [x] Branch and pull request workflow; GitHub Actions runs the proxy tests on Python 3.9
       and 3.12 for each pull request and push to `main`
 - [x] Makefile, README, CLAUDE.md, API contract, plan
