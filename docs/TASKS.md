@@ -56,8 +56,8 @@ part of the change that affects them.
 - [ ] Watch the proxy's daily `/plan` count on Vercel; tell Transitous on Matrix before it
       gets near 720 a day
 - [ ] Confirm on the watch: the new launcher icon on the fr955 (MIP colours) is readable
-- [ ] Store listing: icon, screenshots, description in English and Czech, dependencies
-      (phone with Garmin Connect, internet, Transitous), support contact
+- [ ] Store listing: screenshots for the public version (chosen by the user) and a public
+      contact e-mail (an alias, not the personal address)
 - [ ] Install the beta from the Connect IQ app on the phone and remove the sideloaded
       `.prg` from `GARMIN/APPS` (by the user)
 - [ ] `make store`, upload, go through the review
@@ -180,6 +180,8 @@ part of the change that affects them.
       Austrian feed, and our Czech-first sort pushed it down), merges copies of one station
       (equal names within 1 km, similar within 200 m; Czech id preferred) and puts the
       searched town's main station first
+- [x] Store texts in Czech and English approved by the user (informal Czech, keywords
+      without third-party marks); kept locally in `store/listing.md`
 - [x] Developer key backed up outside this computer (by the user, 2026-11-21)
 - [x] Beta 0.9.0 uploaded to the store with *Beta App* checked (2026-11-21): working
       description, cover `store/cover-500.png`, three simulator screenshots in
