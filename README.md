@@ -45,6 +45,7 @@ speaks plain HTTP) and set a position with **Settings > Set Position**.
 | Menu > Saved connections | Results of the last 10 searches, readable without the phone; *Search again* refreshes them; *Delete searches* at the end (one, or *Delete all*) |
 | Menu > Find connections | Lists connections: "15:50-20:21 4h31" with the travel time from the first ride (without the walk to it), "!" = tight change; select one to see its legs, select a leg line to read it in full |
 | Connection detail > *Alert before departure* | Each press: 5, 10, 15 minutes before, off; the watch shows a notification then, also with the app closed. One alert at a time |
+| Menu > About | Version and data sources; *Privacy policy* opens on the phone |
 | Connection detail > *Change N min* | Shows the time for the change; select it to see what else goes from that station (*If missed*) |
 
 ## On the watch

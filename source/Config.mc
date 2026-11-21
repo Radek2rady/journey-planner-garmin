@@ -6,4 +6,5 @@ module Config {
     const MIN_QUERY_LENGTH = 2;
     const MAX_SAVED_SEARCHES = 10;
     const MAX_FAVOURITES = 10;
+    const PRIVACY_URL = "https://github.com/Radek2rady/journey-planner-garmin/blob/main/PRIVACY.md";
 }
