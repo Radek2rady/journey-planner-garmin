@@ -66,7 +66,7 @@ class MainMenuDelegate extends WatchUi.Menu2InputDelegate {
         } else if (id == :board) {
             BoardChooser.push();
         } else if (id == :about) {
-            WatchUi.pushView(new FullTextView(Texts.about(BuildConfig.APP_VERSION)), new WatchUi.BehaviorDelegate(), WatchUi.SLIDE_LEFT);
+            AboutMenu.push();
         } else if (id == :filters) {
             FilterMenu.push(method(:refresh));
         } else if (id == :swap) {

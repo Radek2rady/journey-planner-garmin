@@ -54,6 +54,9 @@
     <string id="Board">Departure board</string>
     <string id="BoardHint">what leaves from a stop</string>
     <string id="About">About</string>
+    <string id="PrivacyPolicy">Privacy policy</string>
+    <string id="PrivacyHint">opens on the phone</string>
+    <string id="PrivacySent">sent to the phone</string>
     <string id="Version">version</string>
     <string id="AboutSources">Timetables: Transitous, transitous.org/sources. Map data © OpenStreetMap contributors.</string>
     <string id="NearestStop">Nearest stop</string>
