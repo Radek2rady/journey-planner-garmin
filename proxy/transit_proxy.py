@@ -50,6 +50,8 @@ MAX_CONNECTIONS = 5
 MAX_DEPARTURES = 10
 # Platforms of one stop are separate upstream stops; this radius joins them.
 STOP_RADIUS_M = 200
+# Feeds place one station up to a few hundred metres apart; equal names join within this.
+SAME_NAME_RADIUS_M = 1000
 NEARBY_RADIUS_M = 500  # how far /stops looks around a position without a name
 WALK = "walk"
 
@@ -129,21 +131,32 @@ def search_stops(query: str, lat: Optional[str], lon: Optional[str]) -> Json:
     if lat and lon:
         params["place"] = lat + "," + lon
         params["placeBias"] = "2"
-    # Czech feeds first; foreign feeds carry duplicates of Czech stations.
-    found = sorted(call_api("/geocode", params), key=lambda item: not item.get("id", "").startswith("cz-"))
+    # Transitous ranks the best match first, even when only a foreign feed has it
+    # (Brno hl.n. comes from the Austrian railway data). Keep that order and merge the
+    # copies of one place from several feeds, preferring the Czech id.
     stops: list[Json] = []
-    seen: set[tuple[str, str]] = set()
-    for item in found:
+    places: list[Optional[Json]] = []
+    for item in call_api("/geocode", params):
         if item.get("type") != "STOP":
             continue
-        area = stop_area(item.get("areas", []))
-        key = (item["name"], area)
-        if key in seen:
+        stop = {"n": item["name"], "i": item["id"], "a": stop_area(item.get("areas", []))}
+        place = {"n": item["name"], "lat": item["lat"], "lon": item["lon"]} if "lat" in item and "lon" in item else None
+        copy = next((index for index, kept in enumerate(stops)
+                     if (kept["n"], kept["a"]) == (stop["n"], stop["a"])
+                     or (place is not None and places[index] is not None
+                         and (same_place(places[index], place) or same_named_place(places[index], place)))), None)
+        if copy is not None:
+            if stop["i"].startswith("cz-") and not stops[copy]["i"].startswith("cz-"):
+                stops[copy], places[copy] = stop, place
             continue
-        seen.add(key)
-        stops.append({"n": item["name"], "i": item["id"], "a": area})
+        stops.append(stop)
+        places.append(place)
         if len(stops) >= MAX_STOPS:
             break
+    # A town's name alone most often means its main station.
+    wanted = name_words(query)
+    main = name_words("hl.n.")
+    stops.sort(key=lambda stop: not (wanted | main) <= name_words(stop["n"]))
     return {"s": stops}
 
 
@@ -167,6 +180,13 @@ def same_place(a: Json, b: Json) -> bool:
         return False
     words_a, words_b = name_words(a["n"]), name_words(b["n"])
     return bool(words_a) and bool(words_b) and (words_a <= words_b or words_b <= words_a)
+
+
+def same_named_place(a: Json, b: Json) -> bool:
+    """Copies of one station from several feeds: the same name, some hundred metres apart."""
+    if name_words(a["n"]) != name_words(b["n"]):
+        return False
+    return distance_m(a["lat"], a["lon"], b["lat"], b["lon"]) <= SAME_NAME_RADIUS_M
 
 
 def nearby_stops(lat: str, lon: str) -> Json:

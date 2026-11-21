@@ -176,6 +176,10 @@ part of the change that affects them.
       the phone opens (`Communications.openWebPage`, `Config.PRIVACY_URL`)
 - [x] Store packages: `make beta` (own app id, private key) and `make store` (public
       key); built from a copy in `bin/pkg`; all 67 device builds without warnings
+- [x] Stop search by name keeps Transitous' order (it ranked Brno hl.n. first, from the
+      Austrian feed, and our Czech-first sort pushed it down), merges copies of one station
+      (equal names within 1 km, similar within 200 m; Czech id preferred) and puts the
+      searched town's main station first
 - [x] Developer key backed up outside this computer (by the user, 2026-11-21)
 - [x] Beta 0.9.0 uploaded to the store with *Beta App* checked (2026-11-21): working
       description, cover `store/cover-500.png`, three simulator screenshots in

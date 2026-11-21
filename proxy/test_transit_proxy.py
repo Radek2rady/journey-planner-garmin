@@ -135,7 +135,7 @@ class SearchStopsTest(unittest.TestCase):
         with mock.patch.object(proxy, "call_api", return_value=items) as call:
             return proxy.search_stops("vestec", lat, lon), call
 
-    def test_czech_feeds_first_and_duplicates_removed(self):
+    def test_upstream_order_is_kept_and_duplicates_removed(self):
         result, _ = self.search(
             [
                 geocode_item("Brno hl.n.", "at-1"),
@@ -144,8 +144,46 @@ class SearchStopsTest(unittest.TestCase):
                 {"type": "ADDRESS", "name": "Brno", "id": "x"},
             ]
         )
-        self.assertEqual([stop["i"] for stop in result["s"]], ["cz-1", "at-1"])
-        self.assertEqual(result["s"][0], {"n": "Brno hlavní nádraží", "i": "cz-1", "a": "Brno"})
+        self.assertEqual([stop["i"] for stop in result["s"]], ["at-1", "cz-1"])
+        self.assertEqual(result["s"][1], {"n": "Brno hlavní nádraží", "i": "cz-1", "a": "Brno"})
+
+    def test_copies_of_one_place_merge_into_the_first_with_the_czech_id(self):
+        def at(item, lat, lon):
+            return dict(item, lat=lat, lon=lon)
+        result, _ = self.search(
+            [
+                at(geocode_item("Brno hl.n.", "at-1", [(8, "Brno")]), 49.1906, 16.6127),
+                at(geocode_item("Brno", "ee-1", [(8, "Brno")]), 49.1909, 16.6125),
+                at(geocode_item("Brno-Židenice", "cz-2", [(8, "Brno")]), 49.2001, 16.6420),
+                at(geocode_item("Brno hl. n.", "hu-1", [(8, "Brno")]), 49.1907, 16.6128),
+                at(geocode_item("Brno hl.n.", "cz-1", [(8, "Brno")]), 49.1905, 16.6126),
+            ]
+        )
+        self.assertEqual([stop["i"] for stop in result["s"]], ["cz-1", "cz-2"])
+        self.assertEqual(result["s"][0]["n"], "Brno hl.n.")
+
+    def test_main_station_of_the_searched_town_comes_first(self):
+        items = [geocode_item(name, "cz-%d" % i) for i, name in
+                 enumerate(["Praha-Libeň", "Praha-Kyje", "Praha hl.n.", "Kolín hl.n."])]
+        with mock.patch.object(proxy, "call_api", return_value=items):
+            result = proxy.search_stops("praha", None, None)
+        self.assertEqual([stop["n"] for stop in result["s"]], ["Praha hl.n.", "Praha-Libeň", "Praha-Kyje", "Kolín hl.n."])
+        with mock.patch.object(proxy, "call_api", return_value=items):
+            result = proxy.search_stops("libeň", None, None)
+        self.assertEqual(result["s"][0]["n"], "Praha-Libeň")
+
+    def test_equal_names_merge_further_apart_than_similar_ones(self):
+        def at(name, stop_id, lat, lon):
+            return dict(geocode_item(name, stop_id, [(8, "Brno")]), lat=lat, lon=lon)
+        result, _ = self.search(
+            [
+                at("Brno hl.n.", "at-1", 49.19037, 16.61234),
+                at("Brno", "ee-1", 49.19000, 16.62000),
+                at("BRNO", "eu-1", 49.19386, 16.61439),
+                at("Brno hl. n.", "hu-1", 49.18917, 16.60972),
+            ]
+        )
+        self.assertEqual([stop["i"] for stop in result["s"]], ["at-1", "ee-1"])
 
     def test_result_is_capped(self):
         items = [geocode_item("Stop %d" % i, "cz-%d" % i) for i in range(30)]
