@@ -161,6 +161,12 @@ part of the change that affects them.
 - [x] 55 watches with API 5.2+ in the manifest (Forerunner 165-970, fenix 7/8/9/E, epix 2,
       enduro 3/4, MARQ 2/3, Venu 3/4/X1, vivoactive 5/6, Instinct 3 and Crossover AMOLED);
       left out: Venu 2 and Venu Sq 2 (API 5.0), Instinct with the small semi-octagon
-      screen, bike computers
+      screen, bike computers; debug builds per device (`bin/Transit-<device>.prg`), so
+      `make run DEVICE=...` always runs the right one
+- [x] Texts that would run off the screen are shortened with "..." (`TextFit`): the glance
+      title and detail, the name being typed (its end stays visible); the glance hint falls back
+      to a short variant ("Connections" / "Spojení") before shortening
+- [x] Czech texts never use "spoj/spoje": "Uložená spojení", "Dřívější/Pozdější
+      spojení", "Spojení, odjezdy", unknown vehicle "Linka"
 - [x] Launcher icon chosen by the user (option C: bus and train on a navy circle) in every
       size the devices expect (`resources-icon-<size>`); lights left out at 38 and 40 px

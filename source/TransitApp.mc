@@ -71,19 +71,24 @@ class TransitGlance extends WatchUi.GlanceView {
     function onUpdate(dc as Dc) as Void {
         var now = Time.now().value();
         var next = GlanceData.nextOfFavourite(now);
+        var height = dc.getHeight();
+        var width = dc.getWidth();
+        var font = Graphics.FONT_GLANCE;
         var title = WatchUi.loadResource(Rez.Strings.AppName) as String;
-        var detail = WatchUi.loadResource(Rez.Strings.GlanceHint) as String;
+        var detail = TextFit.firstThatFits(dc, [
+            WatchUi.loadResource(Rez.Strings.GlanceHint) as String,
+            WatchUi.loadResource(Rez.Strings.GlanceHintShort) as String
+        ] as Array<String>, font, width);
         if (next != null) {
             title = next.destination;
             var time = next.departureTime;
             detail = time != null ? GlanceText.departure(time, now) : WatchUi.loadResource(Rez.Strings.GlanceSearch) as String;
         }
-        var height = dc.getHeight();
         var left = Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER;
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(0, height * 0.3, Graphics.FONT_GLANCE, title, left);
+        dc.drawText(0, height * 0.3, font, TextFit.keepStart(dc, title, font, width), left);
         dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(0, height * 0.72, Graphics.FONT_GLANCE, detail, left);
+        dc.drawText(0, height * 0.72, font, TextFit.keepStart(dc, detail, font, width), left);
     }
 }
 

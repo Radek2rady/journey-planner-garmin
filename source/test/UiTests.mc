@@ -94,6 +94,32 @@ function locationConsentAsksAndRemembers(logger as Logger) as Boolean {
 }
 
 (:test)
+function textIsShortenedToFitAWidth(logger as Logger) as Boolean {
+    var dc = (Graphics.createBufferedBitmap({ :width => 200, :height => 60 }).get() as BufferedBitmap).getDc();
+    var font = Graphics.FONT_SMALL;
+    Test.assertEqual(TextFit.keepStart(dc, "Opatov", font, 200), "Opatov");
+    var name = "Praha hlavní nádraží, nástupiště 1";
+    var start = TextFit.keepStart(dc, name, font, 80);
+    Test.assert(dc.getTextWidthInPixels(start, font) <= 80);
+    var dots = TextFit.ELLIPSIS.length();
+    Test.assert(start.find(TextFit.ELLIPSIS) == start.length() - dots);
+    var head = start.substring(0, start.length() - dots) as String;
+    Test.assert(head.length() > 0 && name.find(head) == 0);
+    var end = TextFit.keepEnd(dc, name, font, 80);
+    Test.assert(dc.getTextWidthInPixels(end, font) <= 80);
+    Test.assert(end.find(TextFit.ELLIPSIS) == 0);
+    var tail = end.substring(dots, end.length()) as String;
+    Test.assert(tail.length() > 0 && name.find(tail) == name.length() - tail.length());
+    logger.debug(start + " / " + end);
+    Test.assertEqual(TextFit.keepStart(dc, name, font, 1), TextFit.ELLIPSIS);
+    var variants = [name, "Opatov"] as Array<String>;
+    Test.assertEqual(TextFit.firstThatFits(dc, variants, font, 200), "Opatov");
+    Test.assertEqual(TextFit.firstThatFits(dc, [name] as Array<String>, font, 80), start);
+    Test.assertEqual(TextFit.firstThatFits(dc, ["Opatov", name] as Array<String>, font, 200), "Opatov");
+    return true;
+}
+
+(:test)
 function glanceDrawsWithoutTheServices(logger as Logger) as Boolean {
     var bitmap = Graphics.createBufferedBitmap({ :width => 180, :height => 60 }).get() as BufferedBitmap;
     var glance = new TransitGlance();
