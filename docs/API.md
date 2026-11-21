@@ -22,7 +22,7 @@ Either `q` or a valid `lat` and `lon` is required.
 
 | Key | Meaning |
 | --- | --- |
-| `s` | Stops, best match first, at most 8 |
+| `s` | Stops, best match first (Transitous order; the searched town's main station on top), at most 8; copies of one station from several feeds appear once, with the Czech id when there is one |
 | `n` | Name |
 | `i` | Id, opaque; pass it back as `from` / `to` |
 | `a` | Municipality and district; may be empty (always empty without `q`) |
