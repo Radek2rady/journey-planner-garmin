@@ -46,7 +46,14 @@ release: ## Optimized build for the watch; needs PROXY_URL in local.mk
 	$(call write_build_config,$(PROXY_URL),$(PROXY_KEY))
 	$(MONKEYC) -r -O 2 -o $(OUT)/Transit-release.prg
 	$(call write_build_config,$(DEV_PROXY_URL),)
-	@echo "Copy $(OUT)/Transit-release.prg to GARMIN/APPS on the watch"
+	@echo ""
+	@echo "=========================================================================="
+	@echo "  WATCH BUILD for $(DEVICE), proxy $(PROXY_URL)"
+	@echo "  Copy this file to GARMIN/APPS on the watch:"
+	@echo "    $(CURDIR)/$(OUT)/Transit-release.prg"
+	@ls -l $(OUT)/Transit-release.prg | awk '{print "    built " $$6 " " $$7 " " $$8 ", " $$5 " bytes"}'
+	@echo "  Not bin/Transit-<device>.prg: those are simulator builds for localhost."
+	@echo "=========================================================================="
 
 simulator: ## Start the Connect IQ simulator
 	"$(SDK_HOME)bin/connectiq"
