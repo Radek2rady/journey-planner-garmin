@@ -1,8 +1,10 @@
 """Unit tests for the proxy. Run: python3 -m unittest discover -s proxy"""
 
 import io
+import threading
 import unittest
 import urllib.error
+import urllib.request
 from unittest import mock
 
 import transit_proxy as proxy
@@ -260,6 +262,71 @@ class UserAgentTest(unittest.TestCase):
         agent = urlopen.call_args[0][0].get_header("User-agent")
         self.assertIn("journey-planner-garmin/" + proxy.VERSION, agent)
         self.assertIn("https://github.com/", agent)
+
+
+class ProtectionTest(unittest.TestCase):
+    def test_successful_answers_are_cached_errors_are_not(self):
+        self.assertEqual(proxy.cache_seconds("/stops", 200), 24 * 3600)
+        self.assertEqual(proxy.cache_seconds("/departures", 200), 30)
+        self.assertEqual(proxy.cache_seconds("/plan", 200), 60)
+        self.assertEqual(proxy.cache_seconds("/plan", 429), 0)
+        self.assertEqual(proxy.cache_seconds("/nope", 200), 0)
+
+    def test_plan_is_refused_when_the_budget_is_used_up(self):
+        with mock.patch.object(proxy, "take_plan_budget", return_value=False), \
+                mock.patch.object(proxy, "call_api") as call:
+            self.assertEqual(proxy.handle("/plan", {"from": "a", "to": "b"}), (429, {"e": "rate_limited"}))
+        call.assert_not_called()
+
+    def test_private_key_is_accepted_and_uses_its_own_budget(self):
+        with mock.patch.object(proxy, "take_plan_budget", return_value=True) as budget, \
+                mock.patch.object(proxy, "call_api", return_value={"itineraries": []}):
+            status, _ = proxy.handle("/plan", {"from": "a", "to": "b", "k": "mine"}, key="public", private_key="mine")
+            self.assertEqual(status, 200)
+            budget.assert_called_with(True)
+            proxy.handle("/plan", {"from": "a", "to": "b", "k": "public"}, key="public", private_key="mine")
+            budget.assert_called_with(False)
+        self.assertEqual(proxy.handle("/stops", {"q": "vestec", "k": "other"}, key="public", private_key="mine"),
+                         (403, {"e": "bad_key"}))
+
+    def test_budget_counts_per_day_and_stops_at_the_limit(self):
+        env = {"UPSTASH_REDIS_REST_URL": "https://counter.example/", "UPSTASH_REDIS_REST_TOKEN": "t",
+               "PLAN_DAILY_LIMIT": "2"}
+        for count, allowed in ((2, True), (3, False)):
+            response = mock.MagicMock()
+            response.__enter__.return_value = io.BytesIO(b'[{"result": %d}, {"result": 1}]' % count)
+            with mock.patch.dict("os.environ", env), \
+                    mock.patch("urllib.request.urlopen", return_value=response) as urlopen:
+                self.assertEqual(proxy.take_plan_budget(False), allowed)
+            request = urlopen.call_args[0][0]
+            self.assertEqual(request.full_url, "https://counter.example/pipeline")
+            self.assertEqual(request.get_header("Authorization"), "Bearer t")
+            self.assertIn(b'"INCR", "plan:', request.data)
+
+    def test_server_sends_the_cache_header(self):
+        server = proxy.ThreadingHTTPServer(("127.0.0.1", 0), proxy.Handler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        base = "http://127.0.0.1:%d" % server.server_address[1]
+        try:
+            with mock.patch.object(proxy, "handle", return_value=(200, {"c": [], "n": ""})), \
+                    mock.patch("builtins.print"):
+                with urllib.request.urlopen(base + "/plan?from=a&to=b") as response:
+                    self.assertEqual(response.headers["Cache-Control"], "public, max-age=0, s-maxage=60")
+            with mock.patch("builtins.print"), self.assertRaises(urllib.error.HTTPError) as refused:
+                urllib.request.urlopen(base + "/stops?q=v")
+            self.assertEqual(refused.exception.headers["Cache-Control"], "no-store")
+        finally:
+            server.shutdown()
+            server.server_close()
+
+    def test_without_a_working_counter_searches_go_on(self):
+        with mock.patch.dict("os.environ", {}, clear=True):
+            self.assertTrue(proxy.take_plan_budget(False))
+        env = {"KV_REST_API_URL": "https://counter.example", "KV_REST_API_TOKEN": "t"}
+        with mock.patch.dict("os.environ", env, clear=True), mock.patch("sys.stderr"), \
+                mock.patch("urllib.request.urlopen", side_effect=TimeoutError()):
+            self.assertTrue(proxy.take_plan_budget(True))
 
 
 class DepartureTimeTest(unittest.TestCase):

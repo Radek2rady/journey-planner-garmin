@@ -89,11 +89,17 @@ module Texts {
             if (serverCode.equals("bad_request") || serverCode.equals("not_found")) {
                 return Rez.Strings.ErrorRequest;
             }
+            if (serverCode.equals("rate_limited") || serverCode.equals("upstream_429")) {
+                return Rez.Strings.ErrorBusy;
+            }
             if (serverCode.find("upstream") == 0) {
                 return Rez.Strings.ErrorSource;
             }
         }
         switch (error.code) {
+            // A bare 429 comes from a rate limit in front of the proxy.
+            case 429:
+                return Rez.Strings.ErrorBusy;
             case Communications.BLE_CONNECTION_UNAVAILABLE:
             case Communications.BLE_ERROR:
             case Communications.BLE_UNKNOWN_SEND_ERROR:

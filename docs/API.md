@@ -127,4 +127,20 @@ Non-200 responses carry `{"e": "<code>"}`:
 | 400 | `bad_request` | Missing, too short or malformed parameter |
 | 403 | `bad_key` | Wrong or missing `k` |
 | 404 | `not_found` | Unknown path |
+| 429 | `rate_limited` | Today's `/plan` budget is used up (see below); try again tomorrow |
 | 502 | `upstream`, `upstream_<status>` | Transitous failed or timed out |
+
+The watch shows the same "busy" text for `rate_limited`, `upstream_429` and a bare 429
+without a body (a rate limit in front of the proxy).
+
+## Caching and budget
+
+Successful answers carry `Cache-Control: public, max-age=0, s-maxage=<s>`, so the CDN in
+front of the hosted proxy answers repeated requests itself: `/stops` for a day,
+`/departures` for 30 s, `/plan` for 60 s. Errors carry `no-store`. Positions are sent
+with three decimals, so nearby requests share the cache.
+
+Requests to `/plan` that reach the proxy count against a daily budget (Europe/Prague
+day) kept in Upstash Redis: `PLAN_DAILY_LIMIT` (default 700) for the public key, a
+separate `PRIVATE_PLAN_DAILY_LIMIT` (default 100) for `TRANSIT_PROXY_PRIVATE_KEY`. When
+the counter is not set up or does not answer, requests are allowed.

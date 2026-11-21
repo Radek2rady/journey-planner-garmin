@@ -24,6 +24,14 @@ appends `/stops` and `/plan` to `PROXY_URL`, so `PROXY_URL` ends with `/api`.
    (`python3 -c "import secrets; print(secrets.token_urlsafe(24))"`), then redeploy.
 4. Check: `https://<project>.vercel.app/api/stops?q=praha&k=<key>` returns stops; without
    `k` it returns `{"e":"bad_key"}`.
+5. Your own key: add `TRANSIT_PROXY_PRIVATE_KEY` (another random value). Use it in your
+   own `local.mk`; the store build gets `TRANSIT_PROXY_KEY`. Each key has its own daily
+   budget, so strangers using up the public one do not block your watch.
+6. Daily budget: *Storage* (or *Marketplace*) > *Upstash for Redis* > create a free
+   database and connect it to the project. It adds `KV_REST_API_URL` and
+   `KV_REST_API_TOKEN` (or `UPSTASH_REDIS_REST_URL` / `_TOKEN`); redeploy. Optional
+   `PLAN_DAILY_LIMIT` and `PRIVATE_PLAN_DAILY_LIMIT` change the defaults 700 and 100.
+   Without the database the proxy works, but with no cap.
 
 Later pushes to the default branch deploy automatically.
 
@@ -33,7 +41,7 @@ Create `local.mk` in the project root (ignored by git):
 
 ```
 PROXY_URL = https://<project>.vercel.app/api
-PROXY_KEY = <the same value as TRANSIT_PROXY_KEY>
+PROXY_KEY = <TRANSIT_PROXY_PRIVATE_KEY for your own watch>
 ```
 
 Then:
