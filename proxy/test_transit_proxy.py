@@ -1,5 +1,6 @@
 """Unit tests for the proxy. Run: python3 -m unittest discover -s proxy"""
 
+import importlib
 import io
 import threading
 import unittest
@@ -326,6 +327,15 @@ class ProtectionTest(unittest.TestCase):
             budget.assert_called_with(False)
         self.assertEqual(proxy.handle("/stops", {"q": "vestec", "k": "other"}, key="public", private_key="mine"),
                          (403, {"e": "bad_key"}))
+
+    def test_keys_pasted_with_spaces_still_match(self):
+        env = {"TRANSIT_PROXY_KEY": " public\n", "TRANSIT_PROXY_PRIVATE_KEY": "mine \n"}
+        with mock.patch.dict("os.environ", env):
+            module = importlib.reload(proxy)
+            try:
+                self.assertEqual((module.Handler.key, module.Handler.private_key), ("public", "mine"))
+            finally:
+                importlib.reload(proxy)
 
     def test_budget_counts_per_day_and_stops_at_the_limit(self):
         env = {"UPSTASH_REDIS_REST_URL": "https://counter.example/", "UPSTASH_REDIS_REST_TOKEN": "t",

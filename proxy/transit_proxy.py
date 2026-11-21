@@ -495,8 +495,9 @@ def handle(path: str, query: dict[str, str], key: str = "", private_key: str = "
 
 
 class Handler(BaseHTTPRequestHandler):
-    key = os.environ.get("TRANSIT_PROXY_KEY", "")
-    private_key = os.environ.get("TRANSIT_PROXY_PRIVATE_KEY", "")
+    # A space or line break pasted with a key into the host's settings must not lock the watch out.
+    key = os.environ.get("TRANSIT_PROXY_KEY", "").strip()
+    private_key = os.environ.get("TRANSIT_PROXY_PRIVATE_KEY", "").strip()
     # Fixed endpoint for hosts that run one function per path (see proxy/api/);
     # None takes the endpoint from the request path.
     route: Optional[str] = None

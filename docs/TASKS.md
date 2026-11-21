@@ -189,6 +189,7 @@ part of the change that affects them.
 - [x] Store screenshots in Czech from the fr965 simulator, approved by the user: glance,
       home, connection list, connection detail, full leg text (`store/screens/cz-1..5.jpg`,
       local only); public contact e-mail entered by the user
+- [x] The proxy trims spaces and line breaks around its keys from the host's settings
 - [x] Version 1.0.0 for the first public release (app in `manifest.xml`, proxy `VERSION`)
 - [x] Screens checked in the simulator on 2026-11-21: fr255s (218 px), fenix7s (240 px),
       fr265 (416 px AMOLED), fr965 (454 px AMOLED), venux1 (rectangle), fr955 on the watch;
