@@ -248,6 +248,17 @@ function nameInputTypesErasesAndFinishes(logger as Logger) as Boolean {
 }
 
 (:test)
+function stopNameViewDrawsShortAndLongNames(logger as Logger) as Boolean {
+    var input = new NameInput();
+    var view = new StopNameView(input);
+    var dc = (Graphics.createBufferedBitmap({ :width => 218, :height => 218 }).get() as BufferedBitmap).getDc();
+    view.onUpdate(dc);
+    input.text = "PRAHA HLAVNI NADRAZI NASTUPISTE";
+    view.onUpdate(dc);
+    return true;
+}
+
+(:test)
 function stopNameEntryOpensAndHandlesKeys(logger as Logger) as Boolean {
     var item = new WatchUi.MenuItem("x", null, :name, null);
     var main = new MainMenuDelegate(item, item, item, item, item);
