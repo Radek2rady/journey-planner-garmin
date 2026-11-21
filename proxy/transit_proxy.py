@@ -40,7 +40,7 @@ from zoneinfo import ZoneInfo
 
 API = "https://api.transitous.org/api/v1"
 # Transitous asks every client for its name, version and a contact.
-VERSION = "0.9.0"
+VERSION = "1.0.0"
 USER_AGENT = f"journey-planner-garmin/{VERSION} (+https://github.com/Radek2rady/journey-planner-garmin)"
 TIMEZONE = ZoneInfo("Europe/Prague")
 UPSTREAM_TIMEOUT_S = 25
@@ -352,6 +352,23 @@ def nearest_stop(lat: str, lon: str) -> Optional[Json]:
     return next((item for item in found if item.get("type") == "STOP"), None)
 
 
+def without_copies(departures: list[Json]) -> list[Json]:
+    """One line per departure: a train in two feeds ("S7 (Os 9974)" and "S7") looks the same
+    on the watch. Of the copies the one with more details (platform, delay) stays."""
+    kept: dict[tuple[str, str, int], int] = {}
+    result: list[Json] = []
+    for line in departures:
+        key = (re.split(r"[ (]", line["r"])[0], line["h"].lower(), line["s"])
+        if key in kept:
+            index = kept[key]
+            if len(line) > len(result[index]):
+                result[index] = line
+            continue
+        kept[key] = len(result)
+        result.append(line)
+    return result
+
+
 def search_departures(stop: Optional[str], lat: Optional[str] = None, lon: Optional[str] = None,
                       cursor: Optional[str] = None) -> Json:
     """Next departures from the stop `stop`, or from the stop nearest to the position.
@@ -370,7 +387,7 @@ def search_departures(stop: Optional[str], lat: Optional[str] = None, lon: Optio
     else:
         params["time"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     data = call_api("/stoptimes", params)
-    departures = [line for line in map(compact_departure, data.get("stopTimes", [])) if line]
+    departures = without_copies([line for line in map(compact_departure, data.get("stopTimes", [])) if line])
     return {
         "n": name or data.get("place", {}).get("name", ""),
         "i": stop,
@@ -478,8 +495,9 @@ def handle(path: str, query: dict[str, str], key: str = "", private_key: str = "
 
 
 class Handler(BaseHTTPRequestHandler):
-    key = os.environ.get("TRANSIT_PROXY_KEY", "")
-    private_key = os.environ.get("TRANSIT_PROXY_PRIVATE_KEY", "")
+    # A space or line break pasted with a key into the host's settings must not lock the watch out.
+    key = os.environ.get("TRANSIT_PROXY_KEY", "").strip()
+    private_key = os.environ.get("TRANSIT_PROXY_PRIVATE_KEY", "").strip()
     # Fixed endpoint for hosts that run one function per path (see proxy/api/);
     # None takes the endpoint from the request path.
     route: Optional[str] = None

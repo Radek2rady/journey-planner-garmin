@@ -107,7 +107,7 @@ Departure board of one stop: what leaves next, in all directions.
 | --- | --- | --- |
 | `n` | always | Name of the stop; empty when no stop is near the position |
 | `i` | always | Id of the stop; pass it as `stop` together with `c` |
-| `d` | always | Departures in time order, at most 10 |
+| `d` | always | Departures in time order, at most 10; a departure found in two feeds (same line, direction and time) appears once |
 | `c` | always | Cursor for later departures; empty when there are none |
 | `k` | always | Vehicle code |
 | `r` | always | Line or train name |

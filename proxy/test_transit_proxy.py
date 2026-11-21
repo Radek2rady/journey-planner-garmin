@@ -1,5 +1,6 @@
 """Unit tests for the proxy. Run: python3 -m unittest discover -s proxy"""
 
+import importlib
 import io
 import threading
 import unittest
@@ -327,6 +328,15 @@ class ProtectionTest(unittest.TestCase):
         self.assertEqual(proxy.handle("/stops", {"q": "vestec", "k": "other"}, key="public", private_key="mine"),
                          (403, {"e": "bad_key"}))
 
+    def test_keys_pasted_with_spaces_still_match(self):
+        env = {"TRANSIT_PROXY_KEY": " public\n", "TRANSIT_PROXY_PRIVATE_KEY": "mine \n"}
+        with mock.patch.dict("os.environ", env):
+            module = importlib.reload(proxy)
+            try:
+                self.assertEqual((module.Handler.key, module.Handler.private_key), ("public", "mine"))
+            finally:
+                importlib.reload(proxy)
+
     def test_budget_counts_per_day_and_stops_at_the_limit(self):
         env = {"UPSTASH_REDIS_REST_URL": "https://counter.example/", "UPSTASH_REDIS_REST_TOKEN": "t",
                "PLAN_DAILY_LIMIT": "2"}
@@ -486,6 +496,18 @@ class DeparturesTest(unittest.TestCase):
         self.assertIsNone(proxy.compact_departure(stop_time(place={"name": "X", "arrival": "2026-11-11T15:19:00Z"})))
         terminating = {"name": "X", "departure": "2026-11-11T15:19:00Z", "pickupType": "NOT_ALLOWED"}
         self.assertIsNone(proxy.compact_departure(stop_time(place=terminating)))
+
+    def test_copies_of_one_departure_from_two_feeds_appear_once(self):
+        lines = [
+            {"k": "train", "r": "S7", "h": "Řevnice", "d": "22:46", "s": 100},
+            {"k": "train", "r": "S7 (Os 9974)", "h": "Řevnice", "d": "22:46", "s": 100, "p": "9"},
+            {"k": "train", "r": "S7", "h": "Beroun", "d": "22:46", "s": 100},
+            {"k": "tram", "r": "9", "h": "Řevnice", "d": "22:46", "s": 100},
+            {"k": "train", "r": "S7", "h": "Řevnice", "d": "23:16", "s": 1900},
+        ]
+        result = proxy.without_copies(lines)
+        self.assertEqual([(line["r"], line["h"], line["s"]) for line in result],
+                         [("S7 (Os 9974)", "Řevnice", 100), ("S7", "Beroun", 100), ("9", "Řevnice", 100), ("S7", "Řevnice", 1900)])
 
     def test_board_of_a_stop(self):
         upstream = {"place": {"name": "Vestec,BIOCEV"}, "stopTimes": [stop_time(), stop_time(displayName="331")]}
