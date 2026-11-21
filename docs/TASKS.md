@@ -39,9 +39,8 @@ part of the change that affects them.
 
 ### M5: Connect IQ Store
 
-- [ ] Make the repository public (by the user)
-- [ ] Privacy policy URL on the About screen and in the store listing (once the repository
-      is public)
+- [ ] Privacy policy URL in the store listing
+- [ ] Confirm on the watch: *About > Privacy policy* opens the page on the phone
 - [ ] Confirm on the watch: the About text fits the screen in both languages (English
       fits in the fr955 simulator)
 - [ ] Confirm on the watch: the location question (native confirmation) appears before
@@ -52,9 +51,6 @@ part of the change that affects them.
       venux1 (rectangle); home screen, menus, name entry, connection detail, About,
       glance; touch-only and button-only input
 - [ ] Finish the open "Confirm on the watch" items above, including memory use
-- [ ] Set up on Vercel (by the user): `TRANSIT_PROXY_PRIVATE_KEY`, Upstash for Redis
-      connected to the project, own `local.mk` with the private key (`docs/DEPLOY.md`);
-      then check that a response carries `Cache-Control` and that `/plan` counts
 - [ ] Vercel WAF limit per IP only if abuse shows up (one rule on Hobby; mobile carriers
       share IPs)
 - [ ] Watch the proxy's daily `/plan` count on Vercel; tell Transitous on Matrix before it
@@ -174,6 +170,11 @@ part of the change that affects them.
       "Busy, try later" / "Zkus to později" also for a bare 429
 - [x] `make release` ends with the full path, time and size of the watch build, so that a
       simulator build (`localhost`, times out on the watch) is not copied by mistake
+- [x] Repository public; Vercel set up with the private key and Upstash; cache (HIT on a
+      repeated request) and the `/plan` counter checked on 2026-11-21; the watch build
+      with the private key works on the fr955
+- [x] About is a small menu: the app (version, data sources) and *Privacy policy*, which
+      the phone opens (`Communications.openWebPage`, `Config.PRIVACY_URL`)
 - [x] Store packages: `make beta` (own app id, private key) and `make store` (public
       key); built from a copy in `bin/pkg`; all 67 device builds without warnings
 - [x] Launcher icon chosen by the user (option C: bus and train on a navy circle) in every

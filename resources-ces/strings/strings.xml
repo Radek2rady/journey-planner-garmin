@@ -53,6 +53,9 @@
     <string id="Board">Tabule odjezdů</string>
     <string id="BoardHint">co jede ze zastávky</string>
     <string id="About">O aplikaci</string>
+    <string id="PrivacyPolicy">Zásady ochrany soukromí</string>
+    <string id="PrivacyHint">otevře se v telefonu</string>
+    <string id="PrivacySent">odesláno do telefonu</string>
     <string id="Version">verze</string>
     <string id="AboutSources">Jízdní řády: Transitous, transitous.org/sources. Mapová data © přispěvatelé OpenStreetMap.</string>
     <string id="NearestStop">Nejbližší zastávka</string>

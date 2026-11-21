@@ -120,6 +120,18 @@ function textIsShortenedToFitAWidth(logger as Logger) as Boolean {
 }
 
 (:test)
+function aboutMenuOpensItsItems(logger as Logger) as Boolean {
+    AboutMenu.push();
+    var delegate = new AboutMenuDelegate();
+    delegate.onSelect(new WatchUi.MenuItem("x", null, :info, null));
+    var privacy = new WatchUi.MenuItem("x", null, :privacy, null);
+    delegate.onSelect(privacy);
+    Test.assertEqual(privacy.getSubLabel() as String, Texts.get(Rez.Strings.PrivacySent));
+    Test.assert(Config.PRIVACY_URL.find("https://") == 0);
+    return true;
+}
+
+(:test)
 function glanceDrawsWithoutTheServices(logger as Logger) as Boolean {
     var bitmap = Graphics.createBufferedBitmap({ :width => 180, :height => 60 }).get() as BufferedBitmap;
     var glance = new TransitGlance();
