@@ -12,7 +12,7 @@ it as `k`.
 | Parameter | Required | Meaning |
 | --- | --- | --- |
 | `q` | no | Stop name, at least 2 characters; diacritics optional |
-| `lat`, `lon` | no | Position in degrees; with `q` nearby stops rank higher, without `q` the stops around the position are returned |
+| `lat`, `lon` | no | Position in degrees, three decimals (about 100 m); with `q` nearby stops rank higher, without `q` the stops around the position are returned |
 
 Either `q` or a valid `lat` and `lon` is required.
 
@@ -26,13 +26,13 @@ Either `q` or a valid `lat` and `lon` is required.
 | `n` | Name |
 | `i` | Id, opaque; pass it back as `from` / `to` |
 | `a` | Municipality and district; may be empty (always empty without `q`) |
-| `m` | Distance from `lat`/`lon` in metres; only without `q`. Stops within 500 m, nearest first, one per place |
+| `m` | Distance from `lat`/`lon` in metres (from the rounded position, so up to ~60 m off); only without `q`. Stops within 500 m, nearest first, one per place |
 
 ## GET /plan
 
 | Parameter | Required | Meaning |
 | --- | --- | --- |
-| `from` | yes | Stop id, or `lat,lon` in degrees |
+| `from` | yes | Stop id, or `lat,lon` in degrees (three decimals) |
 | `to` | yes | Stop id |
 | `t` | no | Departure time, Unix seconds; the search starts then instead of now |
 | `c` | no | Cursor from a previous response; returns the following connections. Overrides `t` |
@@ -94,7 +94,7 @@ Departure board of one stop: what leaves next, in all directions.
 | Parameter | Required | Meaning |
 | --- | --- | --- |
 | `stop` | one of | Stop id |
-| `lat`, `lon` | one of | Position in degrees; the nearest stop is used |
+| `lat`, `lon` | one of | Position in degrees (three decimals); the nearest stop is used |
 | `c` | no | Cursor from a previous response; returns later departures. Needs `stop` |
 
 ```json

@@ -132,7 +132,8 @@ function locationIsUsedOnlyAfterConsent(logger as Logger) as Boolean {
 
 (:test)
 function coordinatesAreFormattedForTheApi(logger as Logger) as Boolean {
-    Test.assertEqual(TransitApi.formatCoordinates([49.9806d, 14.505d]), "49.98060,14.50500");
+    Test.assertEqual(TransitApi.formatCoordinates([49.9806d, 14.505d]), "49.981,14.505");
+    Test.assertEqual(TransitApi.formatCoordinates([50.08712d, 14.42041d]), "50.087,14.420");
     return true;
 }
 
