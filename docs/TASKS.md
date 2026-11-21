@@ -169,5 +169,7 @@ part of the change that affects them.
       60 s), daily `/plan` budget in Upstash Redis (700 public, 100 for the developer's
       private key; allowed when the counter is down), `429 rate_limited`, the watch says
       "Busy, try later" / "Zkus to později" also for a bare 429
+- [x] `make release` ends with the full path, time and size of the watch build, so that a
+      simulator build (`localhost`, times out on the watch) is not copied by mistake
 - [x] Launcher icon chosen by the user (option C: bus and train on a navy circle) in every
       size the devices expect (`resources-icon-<size>`); lights left out at 38 and 40 px

@@ -51,7 +51,9 @@ make release
 ```
 
 Copy `bin/Transit-release.prg` to `GARMIN/APPS` on the watch (USB; on macOS through an
-MTP tool such as OpenMTP). The phone with Garmin Connect must be connected to the watch
+MTP tool such as OpenMTP); `make release` prints its full path and time at the end. The
+`bin/Transit-<device>.prg` files are simulator builds that call `localhost` and only time
+out on a watch. The phone with Garmin Connect must be connected to the watch
 when searching.
 
 ## How the settings reach the app
