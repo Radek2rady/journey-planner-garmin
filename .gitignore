@@ -15,3 +15,6 @@ source/BuildConfig.mc
 __pycache__/
 .vercel/
 .DS_Store
+
+# Store listing assets (cover, screenshots); kept locally only
+store/
