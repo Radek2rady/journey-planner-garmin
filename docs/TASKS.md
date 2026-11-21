@@ -58,7 +58,10 @@ part of the change that affects them.
 - [ ] Confirm on the watch: the new launcher icon on the fr955 (MIP colours) is readable
 - [ ] Store listing: icon, screenshots, description in English and Czech, dependencies
       (phone with Garmin Connect, internet, Transitous), support contact
-- [ ] Export the `.iq`, upload, go through the review
+- [ ] Back up the developer key outside this computer (by the user); the store accepts
+      updates only with the same key
+- [ ] Upload `make beta` with *Beta App* checked, install it from the phone (by the user)
+- [ ] `make store`, upload, go through the review
 - [ ] Protect `main` on GitHub: changes only through pull requests with passing
       *Proxy tests* (by the user)
 - [ ] Tag the store version (`v1.0.0`) and attach the `.iq` to a GitHub release
@@ -172,5 +175,7 @@ part of the change that affects them.
       with the private key works on the fr955
 - [x] About is a small menu: the app (version, data sources) and *Privacy policy*, which
       the phone opens (`Communications.openWebPage`, `Config.PRIVACY_URL`)
+- [x] Store packages: `make beta` (own app id, private key) and `make store` (public
+      key); built from a copy in `bin/pkg`; all 67 device builds without warnings
 - [x] Launcher icon chosen by the user (option C: bus and train on a navy circle) in every
       size the devices expect (`resources-icon-<size>`); lights left out at 38 and 40 px

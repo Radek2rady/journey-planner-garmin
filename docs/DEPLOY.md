@@ -56,6 +56,27 @@ MTP tool such as OpenMTP); `make release` prints its full path and time at the e
 out on a watch. The phone with Garmin Connect must be connected to the watch
 when searching.
 
+## Store packages
+
+The store takes an `.iq` package with the app for every device of `manifest.xml`.
+
+```
+make beta     # bin/Transit-beta.iq: own app id, your PROXY_KEY
+make store    # bin/Transit-store.iq: app id of manifest.xml, STORE_PROXY_KEY
+```
+
+- `make store` needs `STORE_PROXY_KEY = <TRANSIT_PROXY_KEY>` in `local.mk`: strangers'
+  watches use the public key and its budget, your own build keeps the private one.
+- Upload at https://apps.garmin.com/developer/upload. The beta goes up with *Beta App*
+  checked: only your account sees it, you install it from the Connect IQ app on the
+  phone and can replace it with new versions. Remove the sideloaded `.prg` from
+  `GARMIN/APPS` then, otherwise the watch shows the app twice.
+- The beta has its own app id (`BETA_APP_ID` in the Makefile), so it never mixes with the
+  public app. Keep that id: a new id would be a new app in the store.
+- Every upload of the same app must be signed with the same developer key. Keep a backup
+  of `DEVELOPER_KEY` outside this computer; without it the app can never be updated.
+- Both targets build from a copy in `bin/pkg`, so `manifest.xml` itself never changes.
+
 ## How the settings reach the app
 
 The Makefile writes `source/BuildConfig.mc` before every build: the local proxy for
