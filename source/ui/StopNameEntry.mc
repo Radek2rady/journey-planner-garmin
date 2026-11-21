@@ -90,7 +90,9 @@ class StopNameView extends WatchUi.View {
 
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
         dc.clear();
-        dc.drawText(x, height * 0.2, Graphics.FONT_SMALL, _input.text + "_", centered);
+        // The round screen is narrow this high up; the end of the name matters while typing.
+        var typed = TextFit.keepEnd(dc, _input.text + "_", Graphics.FONT_SMALL, (dc.getWidth() * 0.7).toNumber());
+        dc.drawText(x, height * 0.2, Graphics.FONT_SMALL, typed, centered);
         dc.drawText(x, height * 0.54, Graphics.FONT_LARGE, keyLabel(0), centered);
 
         dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
