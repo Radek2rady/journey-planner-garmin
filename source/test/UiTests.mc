@@ -686,6 +686,9 @@ function errorsAreWordedByCause(logger as Logger) as Boolean {
     Test.assertEqual(Texts.errorText(new ApiError(403, "bad_key")) as ResourceId, Rez.Strings.ErrorKey);
     Test.assertEqual(Texts.errorText(new ApiError(400, "bad_request")) as ResourceId, Rez.Strings.ErrorRequest);
     Test.assertEqual(Texts.errorText(new ApiError(502, "upstream_503")) as ResourceId, Rez.Strings.ErrorSource);
+    Test.assertEqual(Texts.errorText(new ApiError(429, "rate_limited")) as ResourceId, Rez.Strings.ErrorBusy);
+    Test.assertEqual(Texts.errorText(new ApiError(502, "upstream_429")) as ResourceId, Rez.Strings.ErrorBusy);
+    Test.assertEqual(Texts.errorText(new ApiError(429, null)) as ResourceId, Rez.Strings.ErrorBusy);
     Test.assert(Texts.errorText(new ApiError(500, null)) == null);
     Test.assert(Texts.error(new ApiError(500, null)).find("500") != null);
     Test.assert(Texts.error(new ApiError(-9999, null)).find("-9999") != null);

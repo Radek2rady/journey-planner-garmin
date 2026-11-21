@@ -52,18 +52,11 @@ part of the change that affects them.
       venux1 (rectangle); home screen, menus, name entry, connection detail, About,
       glance; touch-only and button-only input
 - [ ] Finish the open "Confirm on the watch" items above, including memory use
-- [ ] Protect the proxy before the store release (the key in the app can be extracted):
-      - CDN cache through `Cache-Control: s-maxage` (stops by name and nearby stops 1 day
-        with coordinates rounded to ~100 m, departures 30 s, connections 60 s)
-      - Daily cap of upstream requests (about 700 `/plan`) shared by all instances, in
-        Upstash Redis over REST (stdlib only); decide what happens when Upstash is down
-      - A second, private key for the developer's own build with a reserved budget, so
-        that an exhausted public cap does not block it
-      - `429` with code `rate_limited`; the watch shows "too many requests, try later",
-        also for a bare 429 without JSON (Vercel WAF); `docs/API.md` and tests of both
-        sides
-      - Vercel WAF limit per IP only if abuse shows up (one rule on Hobby; mobile
-        carriers share IPs)
+- [ ] Set up on Vercel (by the user): `TRANSIT_PROXY_PRIVATE_KEY`, Upstash for Redis
+      connected to the project, own `local.mk` with the private key (`docs/DEPLOY.md`);
+      then check that a response carries `Cache-Control` and that `/plan` counts
+- [ ] Vercel WAF limit per IP only if abuse shows up (one rule on Hobby; mobile carriers
+      share IPs)
 - [ ] Watch the proxy's daily `/plan` count on Vercel; tell Transitous on Matrix before it
       gets near 720 a day
 - [ ] Confirm on the watch: the new launcher icon on the fr955 (MIP colours) is readable
@@ -172,5 +165,9 @@ part of the change that affects them.
 - [x] Position sent with three decimals (about 100 m) instead of five (about 1 m); requests
       stay GET, so that the planned CDN cache works, and the privacy policy says Vercel
       keeps request logs for about an hour (user's decision)
+- [x] Proxy protection: CDN cache (`s-maxage`: stops 1 day, departures 30 s, connections
+      60 s), daily `/plan` budget in Upstash Redis (700 public, 100 for the developer's
+      private key; allowed when the counter is down), `429 rate_limited`, the watch says
+      "Busy, try later" / "Zkus to později" also for a bare 429
 - [x] Launcher icon chosen by the user (option C: bus and train on a navy circle) in every
       size the devices expect (`resources-icon-<size>`); lights left out at 38 and 40 px

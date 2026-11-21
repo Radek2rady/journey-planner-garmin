@@ -61,7 +61,8 @@ command line when the key lives elsewhere.
   tests of both sides together.
 - Git: only the user runs commands that change the repository or the remote (`git init`,
   `add`, `commit`, `push`, ...). Assistants may run read-only commands such as `git diff`.
-- Privacy: positions and search terms are never logged. No secrets or keys in the repo.
+- Privacy: positions and search terms are never logged by the proxy (Vercel keeps request
+  logs for about an hour, see `PRIVACY.md`). No secrets or keys in the repo.
 
 ## Definition of done
 

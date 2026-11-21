@@ -106,6 +106,7 @@
     <string id="ErrorKey">Wrong proxy key</string>
     <string id="ErrorRequest">Bad request</string>
     <string id="ErrorSource">Data source down</string>
+    <string id="ErrorBusy">Busy, try later</string>
     <string id="ErrorServer">Server error</string>
     <string id="ErrorGeneric">Error</string>
 

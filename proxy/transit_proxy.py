@@ -13,6 +13,11 @@ Environment:
   PORT               listening port (default 8787)
   HOST               bind address (default 127.0.0.1; use 0.0.0.0 when hosted)
   TRANSIT_PROXY_KEY  optional shared secret, sent by the watch as parameter k
+  TRANSIT_PROXY_PRIVATE_KEY  optional second key for the developer's own build; it has
+                     its own daily budget, so an exhausted public one does not block it
+  UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN (or KV_REST_API_URL, KV_REST_API_TOKEN)
+                     counter of the daily /plan budget; without them there is no cap
+  PLAN_DAILY_LIMIT, PRIVATE_PLAN_DAILY_LIMIT  the budgets (default 700 and 100)
 
 No dependencies, Python 3.9+.
 """
@@ -73,6 +78,13 @@ MODES = {
     "air": ["AIRPLANE"],
 }
 MAX_TRANSFER_LIMIT = 5
+
+# Seconds the CDN in front of the hosted proxy may keep a successful answer.
+CACHE_STOPS_S = 24 * 3600
+CACHE_DEPARTURES_S = 30
+CACHE_PLAN_S = 60
+COUNTER_TIMEOUT_S = 3
+COUNTER_TTL_S = 2 * 24 * 3600
 
 Json = dict[str, Any]
 
@@ -347,6 +359,50 @@ def search_departures(stop: Optional[str], lat: Optional[str] = None, lon: Optio
     }
 
 
+def cache_seconds(path: str, status: int) -> int:
+    """How long the CDN may cache an answer; errors are never cached."""
+    if status != 200:
+        return 0
+    return {"/stops": CACHE_STOPS_S, "/departures": CACHE_DEPARTURES_S, "/plan": CACHE_PLAN_S}.get(path, 0)
+
+
+def counter_settings() -> Optional[tuple[str, str]]:
+    url = os.environ.get("UPSTASH_REDIS_REST_URL") or os.environ.get("KV_REST_API_URL")
+    token = os.environ.get("UPSTASH_REDIS_REST_TOKEN") or os.environ.get("KV_REST_API_TOKEN")
+    return (url.rstrip("/"), token) if url and token else None
+
+
+def count_today(name: str) -> Optional[int]:
+    """Adds one to today's counter `name`; None when no counter is set up or reachable."""
+    settings = counter_settings()
+    if settings is None:
+        return None
+    url, token = settings
+    key = "%s:%s" % (name, datetime.now(TIMEZONE).strftime("%Y-%m-%d"))
+    body = json.dumps([["INCR", key], ["EXPIRE", key, str(COUNTER_TTL_S)]]).encode()
+    request = urllib.request.Request(url + "/pipeline", data=body, method="POST", headers={
+        "Authorization": "Bearer " + token, "Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(request, timeout=COUNTER_TIMEOUT_S) as response:
+            return int(json.load(response)[0]["result"])
+    except Exception as error:  # noqa: BLE001 - a broken counter must not stop searches
+        print("counter error:", type(error).__name__, file=sys.stderr)
+        return None
+
+
+def take_plan_budget(private: bool) -> bool:
+    """Counts one /plan request against today's budget; False once it is used up.
+
+    Without a reachable counter the request is allowed: Transitous has no hard limit,
+    and a short outage of the counter must not make the app unusable.
+    """
+    if private:
+        count, limit = count_today("plan-private"), int(os.environ.get("PRIVATE_PLAN_DAILY_LIMIT", "100"))
+    else:
+        count, limit = count_today("plan"), int(os.environ.get("PLAN_DAILY_LIMIT", "700"))
+    return count is None or count <= limit
+
+
 def is_coordinate(text: str, limit: float) -> bool:
     try:
         return abs(float(text)) <= limit
@@ -354,9 +410,10 @@ def is_coordinate(text: str, limit: float) -> bool:
         return False
 
 
-def handle(path: str, query: dict[str, str], key: str = "") -> tuple[int, Json]:
+def handle(path: str, query: dict[str, str], key: str = "", private_key: str = "") -> tuple[int, Json]:
     """Route one request; returns (HTTP status, JSON body)."""
-    if key and query.get("k") != key:
+    private = bool(private_key) and query.get("k") == private_key
+    if key and query.get("k") != key and not private:
         return 403, {"e": "bad_key"}
     try:
         if path == "/stops":
@@ -383,6 +440,8 @@ def handle(path: str, query: dict[str, str], key: str = "") -> tuple[int, Json]:
             arrive_by = query.get("a", "")
             if arrive_by not in ("", "1") or (arrive_by and not departure and not query.get("c")):
                 return 400, {"e": "bad_request"}
+            if not take_plan_budget(private):
+                return 429, {"e": "rate_limited"}
             return 200, search_connections(origin, destination, query.get("c"), int(departure) if departure else None,
                                            int(transfers) if transfers else None, vehicles, arrive_by == "1")
         if path == "/departures":
@@ -400,6 +459,7 @@ def handle(path: str, query: dict[str, str], key: str = "") -> tuple[int, Json]:
 
 class Handler(BaseHTTPRequestHandler):
     key = os.environ.get("TRANSIT_PROXY_KEY", "")
+    private_key = os.environ.get("TRANSIT_PROXY_PRIVATE_KEY", "")
     # Fixed endpoint for hosts that run one function per path (see proxy/api/);
     # None takes the endpoint from the request path.
     route: Optional[str] = None
@@ -407,10 +467,13 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:  # noqa: N802 - name required by BaseHTTPRequestHandler
         url = urllib.parse.urlparse(self.path)
         query = {name: values[0] for name, values in urllib.parse.parse_qs(url.query).items()}
-        status, body = handle(self.route or url.path, query, self.key)
+        path = self.route or url.path
+        status, body = handle(path, query, self.key, self.private_key)
         raw = json.dumps(body, ensure_ascii=False, separators=(",", ":")).encode()
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
+        seconds = cache_seconds(path, status)
+        self.send_header("Cache-Control", "public, max-age=0, s-maxage=%d" % seconds if seconds else "no-store")
         self.send_header("Content-Length", str(len(raw)))
         self.end_headers()
         self.wfile.write(raw)

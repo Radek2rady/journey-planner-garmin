@@ -105,6 +105,7 @@
     <string id="ErrorKey">Špatný klíč proxy</string>
     <string id="ErrorRequest">Chybný dotaz</string>
     <string id="ErrorSource">Zdroj nedostupný</string>
+    <string id="ErrorBusy">Zkus to později</string>
     <string id="ErrorServer">Chyba serveru</string>
     <string id="ErrorGeneric">Chyba</string>
 
