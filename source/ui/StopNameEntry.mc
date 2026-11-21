@@ -23,7 +23,7 @@ class NameInput {
 
     static const DONE = 0;
     static const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
-    static const MAX_LENGTH = 16;
+    static const MAX_LENGTH = 24;
 
     var text as String = "";
     var key as Number = 1;
@@ -85,19 +85,36 @@ class StopNameView extends WatchUi.View {
 
     function onUpdate(dc as Dc) as Void {
         var x = dc.getWidth() / 2;
+        var width = dc.getWidth();
         var height = dc.getHeight();
         var centered = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
 
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
         dc.clear();
-        // The round screen is narrow this high up; the end of the name matters while typing.
-        var typed = TextFit.keepEnd(dc, _input.text + "_", Graphics.FONT_SMALL, (dc.getWidth() * 0.7).toNumber());
-        dc.drawText(x, height * 0.2, Graphics.FONT_SMALL, typed, centered);
-        dc.drawText(x, height * 0.54, Graphics.FONT_LARGE, keyLabel(0), centered);
+        drawTyped(dc, (width * 0.7).toNumber(), height);
+        dc.drawText(x, height * 0.6, Graphics.FONT_MEDIUM, keyLabel(0), centered);
 
         dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(x, height * 0.37, Graphics.FONT_SMALL, keyLabel(-1), centered);
-        dc.drawText(x, height * 0.71, Graphics.FONT_SMALL, keyLabel(1), centered);
+        dc.drawText(x, height * 0.45, Graphics.FONT_TINY, keyLabel(-1), centered);
+        dc.drawText(x, height * 0.75, Graphics.FONT_TINY, keyLabel(1), centered);
+    }
+
+    //! The name typed so far on up to two lines, in the largest font that fits;
+    //! a name too long even for that keeps its end, where the typing happens.
+    private function drawTyped(dc as Dc, lineWidth as Number, height as Number) as Void {
+        var smallest = Graphics.FONT_XTINY;
+        var text = TextFit.keepEnd(dc, _input.text + "_", smallest, lineWidth * 2 - dc.getTextWidthInPixels("WW", smallest));
+        var area = new WatchUi.TextArea({
+            :text => text,
+            :color => Graphics.COLOR_WHITE,
+            :font => [Graphics.FONT_SMALL, Graphics.FONT_TINY, smallest],
+            :locX => WatchUi.LAYOUT_HALIGN_CENTER,
+            :locY => (height * 0.09).toNumber(),
+            :width => lineWidth,
+            :height => (height * 0.25).toNumber(),
+            :justification => Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
+        });
+        area.draw(dc);
     }
 
     private function keyLabel(offset as Number) as String {

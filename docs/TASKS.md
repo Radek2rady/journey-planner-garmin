@@ -46,7 +46,7 @@ part of the change that affects them.
 - [ ] Confirm on the watch: the location question (native confirmation) appears before
       the first use of the position, and the origin reads "My location (not allowed)"
       until then (the English question fits in the fr955 simulator)
-- [ ] Check one device of each screen kind in the simulator: fr255s (218 px, smallest),
+- [ ] Check one device of each screen kind in the simulator (fr255s done 2026-11-21): fr255s (218 px, smallest),
       fenix7s (240 px), fr955 (260 px MIP), fr265 (416 px AMOLED), fr965 (454 px AMOLED),
       venux1 (rectangle); home screen, menus, name entry, connection detail, About,
       glance; touch-only and button-only input
@@ -182,6 +182,10 @@ part of the change that affects them.
       searched town's main station first
 - [x] Store texts in Czech and English approved by the user (informal Czech, keywords
       without third-party marks); kept locally in `store/listing.md`
+- [x] Name entry: the typed name on up to two lines in the largest font that fits (its end
+      stays visible when even that is too long); smaller letters (current one medium,
+      neighbours tiny), as the user chose after the fr255s check; names up to 24 letters
+      instead of 16 ("USTI NAD ORLICI MESTO" then finds the right station first)
 - [x] Developer key backed up outside this computer (by the user, 2026-11-21)
 - [x] Beta 0.9.0 uploaded to the store with *Beta App* checked (2026-11-21): working
       description, cover `store/cover-500.png`, three simulator screenshots in
