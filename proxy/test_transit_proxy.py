@@ -487,6 +487,18 @@ class DeparturesTest(unittest.TestCase):
         terminating = {"name": "X", "departure": "2026-11-11T15:19:00Z", "pickupType": "NOT_ALLOWED"}
         self.assertIsNone(proxy.compact_departure(stop_time(place=terminating)))
 
+    def test_copies_of_one_departure_from_two_feeds_appear_once(self):
+        lines = [
+            {"k": "train", "r": "S7", "h": "Řevnice", "d": "22:46", "s": 100},
+            {"k": "train", "r": "S7 (Os 9974)", "h": "Řevnice", "d": "22:46", "s": 100, "p": "9"},
+            {"k": "train", "r": "S7", "h": "Beroun", "d": "22:46", "s": 100},
+            {"k": "tram", "r": "9", "h": "Řevnice", "d": "22:46", "s": 100},
+            {"k": "train", "r": "S7", "h": "Řevnice", "d": "23:16", "s": 1900},
+        ]
+        result = proxy.without_copies(lines)
+        self.assertEqual([(line["r"], line["h"], line["s"]) for line in result],
+                         [("S7 (Os 9974)", "Řevnice", 100), ("S7", "Beroun", 100), ("9", "Řevnice", 100), ("S7", "Řevnice", 1900)])
+
     def test_board_of_a_stop(self):
         upstream = {"place": {"name": "Vestec,BIOCEV"}, "stopTimes": [stop_time(), stop_time(displayName="331")]}
         with mock.patch.object(proxy, "call_api", return_value=upstream) as call:

@@ -46,18 +46,12 @@ part of the change that affects them.
 - [ ] Confirm on the watch: the location question (native confirmation) appears before
       the first use of the position, and the origin reads "My location (not allowed)"
       until then (the English question fits in the fr955 simulator)
-- [ ] Check one device of each screen kind in the simulator (fr255s done 2026-11-21): fr255s (218 px, smallest),
-      fenix7s (240 px), fr955 (260 px MIP), fr265 (416 px AMOLED), fr965 (454 px AMOLED),
-      venux1 (rectangle); home screen, menus, name entry, connection detail, About,
-      glance; touch-only and button-only input
 - [ ] Finish the open "Confirm on the watch" items above, including memory use
 - [ ] Vercel WAF limit per IP only if abuse shows up (one rule on Hobby; mobile carriers
       share IPs)
 - [ ] Watch the proxy's daily `/plan` count on Vercel; tell Transitous on Matrix before it
       gets near 720 a day
 - [ ] Confirm on the watch: the new launcher icon on the fr955 (MIP colours) is readable
-- [ ] Store listing: screenshots for the public version (chosen by the user) and a public
-      contact e-mail (an alias, not the personal address)
 - [ ] Install the beta from the Connect IQ app on the phone and remove the sideloaded
       `.prg` from `GARMIN/APPS` (by the user)
 - [ ] `make store`, upload, go through the review
@@ -67,6 +61,10 @@ part of the change that affects them.
 - [ ] Look into building the watch app in CI (SDK and device files without a sign-in)
 
 ### Comfort
+
+- [ ] Stop search: Prague main station appears up to three times (feeds name it "Praha,
+      hlavni nadrazi", "Hlavní nádraží" in Praha, "Praha,Hlavní nádraží"); merge copies
+      whose names differ only by the town prefix
 
 - [ ] Name entry by letter groups (no holding of DOWN needed)
 
@@ -186,6 +184,15 @@ part of the change that affects them.
       stays visible when even that is too long); smaller letters (current one medium,
       neighbours tiny), as the user chose after the fr255s check; names up to 24 letters
       instead of 16 ("USTI NAD ORLICI MESTO" then finds the right station first)
+- [x] Departure board shows a train found in two feeds once ("S7 (Os 9974)" and "S7" at
+      the same time and direction), keeping the copy with platform or delay
+- [x] Store screenshots in Czech from the fr965 simulator, approved by the user: glance,
+      home, connection list, connection detail, full leg text (`store/screens/cz-1..5.jpg`,
+      local only); public contact e-mail entered by the user
+- [x] Version 1.0.0 for the first public release (app in `manifest.xml`, proxy `VERSION`)
+- [x] Screens checked in the simulator on 2026-11-21: fr255s (218 px), fenix7s (240 px),
+      fr265 (416 px AMOLED), fr965 (454 px AMOLED), venux1 (rectangle), fr955 on the watch;
+      glance, home, menus, name entry, stop and connection lists, detail, About all fit
 - [x] Developer key backed up outside this computer (by the user, 2026-11-21)
 - [x] Beta 0.9.0 uploaded to the store with *Beta App* checked (2026-11-21): working
       description, cover `store/cover-500.png`, three simulator screenshots in
