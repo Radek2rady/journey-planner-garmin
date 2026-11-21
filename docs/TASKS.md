@@ -40,12 +40,10 @@ part of the change that affects them.
 ### M5: Connect IQ Store
 
 - [ ] Make the repository public (by the user)
-- [ ] Privacy policy URL on the About screen (once the policy exists)
+- [ ] Privacy policy URL on the About screen and in the store listing (once the repository
+      is public)
 - [ ] Confirm on the watch: the About text fits the screen in both languages (English
       fits in the fr955 simulator)
-- [ ] Privacy policy on a public URL: what leaves the watch (position, stop names, search
-      times), where it goes (proxy on Vercel, Transitous), that nothing is stored, that
-      the data goes to the developer and not to Garmin
 - [ ] Confirm on the watch: the location question (native confirmation) appears before
       the first use of the position, and the origin reads "My location (not allowed)"
       until then (the English question fits in the fr955 simulator)
@@ -168,5 +166,11 @@ part of the change that affects them.
       to a short variant ("Connections" / "Spojení") before shortening
 - [x] Czech texts never use "spoj/spoje": "Uložená spojení", "Dřívější/Pozdější
       spojení", "Spojení, odjezdy", unknown vehicle "Linka"
+- [x] Privacy policy in `PRIVACY.md` (English and Czech), approved by the user on
+      2026-11-21; contact through GitHub issues, no e-mail for now; public once the
+      repository is public
+- [x] Position sent with three decimals (about 100 m) instead of five (about 1 m); requests
+      stay GET, so that the planned CDN cache works, and the privacy policy says Vercel
+      keeps request logs for about an hour (user's decision)
 - [x] Launcher icon chosen by the user (option C: bus and train on a navy circle) in every
       size the devices expect (`resources-icon-<size>`); lights left out at 38 and 40 px

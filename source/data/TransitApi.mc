@@ -164,8 +164,9 @@ class TransitApi {
         return new ApiError(code, serverCode);
     }
 
-    //! Five decimals are about one metre, plenty for stop search.
+    //! Three decimals are about 100 m: enough to find stops, and the exact
+    //! position never leaves the watch.
     private static function formatDegrees(value as Double) as String {
-        return value.format("%.5f");
+        return value.format("%.3f");
     }
 }
