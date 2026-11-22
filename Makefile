@@ -16,7 +16,7 @@ PROXY_KEY     ?=
 # Public key of the store build (TRANSIT_PROXY_KEY); PROXY_KEY is your private one.
 STORE_PROXY_KEY ?=
 # The beta in the store must have its own app id, fixed for all its versions.
-BETA_APP_ID   := f7ad789f-4bbd-40f7-aafe-5df207de8ae7
+BETA_APP_ID   := 3dc801b7-1954-471d-9162-e81eab9daa64
 
 OUT      := bin
 # One debug build per device, so that `make run DEVICE=...` never runs another device's build.

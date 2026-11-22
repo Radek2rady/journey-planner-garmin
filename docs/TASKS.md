@@ -52,9 +52,11 @@ part of the change that affects them.
 - [ ] Watch the proxy's daily `/plan` count on Vercel; tell Transitous on Matrix before it
       gets near 720 a day
 - [ ] Confirm on the watch: the new launcher icon on the fr955 (MIP colours) is readable
-- [ ] Install the beta from the Connect IQ app on the phone and remove the sideloaded
+- [ ] Upload the beta again with the new `BETA_APP_ID` (the first beta was deleted and
+      its id cannot be reused), install it from the Connect IQ app on the phone and remove the sideloaded
       `.prg` from `GARMIN/APPS` (by the user)
-- [ ] `make store`, upload, go through the review
+- [ ] Wait for Garmin's review of the public version 1.0.0 (submitted 2026-11-22); then
+      install it from the store, remove the beta from the watch, tag `v1.0.0`
 - [ ] Protect `main` on GitHub: changes only through pull requests with passing
       *Proxy tests* (by the user)
 - [ ] Tag the store version (`v1.0.0`) and attach the `.iq` to a GitHub release
@@ -195,6 +197,7 @@ part of the change that affects them.
       fr265 (416 px AMOLED), fr965 (454 px AMOLED), venux1 (rectangle), fr955 on the watch;
       glance, home, menus, name entry, stop and connection lists, detail, About all fit
 - [x] Developer key backed up outside this computer (by the user, 2026-11-21)
+- [x] Public version 1.0.0 submitted to the store (`make store`, 2026-11-22)
 - [x] Beta 0.9.0 uploaded to the store with *Beta App* checked (2026-11-21): working
       description, cover `store/cover-500.png`, three simulator screenshots in
       `store/screens/` (local only, ignored by git), privacy policy and source code links
