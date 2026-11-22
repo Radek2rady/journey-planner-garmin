@@ -52,7 +52,9 @@ function textsDescribeALeg(logger as Logger) as Boolean {
     Test.assertEqual(Texts.connectionSummary(connection, 1794410160 - 3 * 3600), "331");
     // 16:19 (bus, after a 3 min walk) to 16:57.
     Test.assertEqual(connection.travelMinutes(), 38);
-    Test.assertEqual(Texts.connectionLabel(connection), "16:16-16:57 0" + Texts.get(Rez.Strings.Hours) + "38");
+    // Under an hour the travel time has no "0h".
+    Test.assertEqual(Texts.connectionLabel(connection), "16:16-16:57 38 " + Texts.get(Rez.Strings.Minutes));
+    Test.assertEqual(Texts.duration(188), "3" + Texts.get(Rez.Strings.Hours) + "08");
     Test.assert(Texts.countdown(1794410160, 1794410160 - 120 * 60) == null);
     Test.assert(Texts.countdown(0, 1794410160) == null);
     logger.debug(Texts.connectionSummary(connection, 1794410160 - 7 * 60 - 30));

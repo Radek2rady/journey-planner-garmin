@@ -218,7 +218,7 @@ module Texts {
     //! the first stop. The label of a connection in the list.
     function connectionLabel(connection as Connection) as String {
         var minutes = connection.travelMinutes();
-        return connection.departure + "-" + connection.arrival + " " + (minutes / 60) + get(Rez.Strings.Hours) + (minutes % 60).format("%02d");
+        return connection.departure + "-" + connection.arrival + " " + duration(minutes);
     }
 
     function connectionTimes(connection as Connection) as String {
@@ -346,12 +346,16 @@ module Texts {
     }
 
     //! "120 m" for a nearby stop, otherwise its area; null when neither is known
+    //! "Vlak, Praha-východ", "Bus, 120 m": what stops there tells apart a station and a
+    //! bus stop of one name; then the distance of a nearby stop, otherwise its area.
     function stopDetail(stop as Stop) as String? {
         var distance = stop.distance;
-        if (distance != null) {
-            return distance + " m";
+        var place = distance != null ? distance + " m" : stop.area;
+        var kind = stop.vehicle;
+        if (kind == null) {
+            return place.equals("") ? null : place;
         }
-        return stop.area.equals("") ? null : stop.area;
+        return place.equals("") ? vehicle(kind) : vehicle(kind) + ", " + place;
     }
 
     //! "alert at 16:14" when `alert` belongs to `connection`, otherwise "off"
