@@ -72,7 +72,11 @@ make store    # bin/Transit-store.iq: app id of manifest.xml, STORE_PROXY_KEY
   phone and can replace it with new versions. Remove the sideloaded `.prg` from
   `GARMIN/APPS` then, otherwise the watch shows the app twice.
 - The beta has its own app id (`BETA_APP_ID` in the Makefile), so it never mixes with the
-  public app. Keep that id: a new id would be a new app in the store.
+  public app. Keep that id: a new id would be a new app in the store. The store never
+  gives back the id of a deleted app ("The manifest app ID is already in use"); after
+  deleting the beta, put a new UUID in `BETA_APP_ID`.
+- A new beta version goes up from the beta's page in the Developer Dashboard; the *Beta
+  App* checkbox is not offered again there, the app stays a beta.
 - Every upload of the same app must be signed with the same developer key. Keep a backup
   of `DEVELOPER_KEY` outside this computer; without it the app can never be updated.
 - Both targets build from a copy in `bin/pkg`, so `manifest.xml` itself never changes.
