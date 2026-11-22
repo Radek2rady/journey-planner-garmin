@@ -10,6 +10,11 @@ function stopSurvivesDictionaryRoundTrip(logger as Logger) as Boolean {
     Test.assertEqual(stop.id, "cz-1");
     Test.assertEqual(stop.name, "Vestec,u Klimešů");
     Test.assertEqual(stop.area, "Vestec");
+    Test.assert(stop.vehicle == null);
+
+    var station = new Stop("cz-2", "Mnichovice", "Praha-východ");
+    station.vehicle = "train";
+    Test.assertEqual(Stop.fromDictionary(station.toDictionary() as Dictionary).vehicle as String, "train");
     return true;
 }
 
@@ -21,6 +26,12 @@ function nearbyStopKeepsItsDistanceOnlyInMemory(logger as Logger) as Boolean {
     Test.assert(Stop.fromDictionary(stop.toDictionary() as Dictionary).distance == null);
     Test.assertEqual(Texts.stopDetail(new Stop("cz-1", "Opatov", "Praha")) as String, "Praha");
     Test.assert(Texts.stopDetail(new Stop("cz-1", "Opatov", "")) == null);
+
+    var station = new Stop("cz-2", "Mnichovice", "Praha-východ");
+    station.vehicle = "train";
+    Test.assertEqual(Texts.stopDetail(station) as String, Texts.vehicle("train") + ", Praha-východ");
+    station.area = "";
+    Test.assertEqual(Texts.stopDetail(station) as String, Texts.vehicle("train"));
     return true;
 }
 

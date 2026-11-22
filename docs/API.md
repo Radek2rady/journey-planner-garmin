@@ -22,10 +22,11 @@ Either `q` or a valid `lat` and `lon` is required.
 
 | Key | Meaning |
 | --- | --- |
-| `s` | Stops, best match first (Transitous order; the searched town's main station on top), at most 8; copies of one station from several feeds appear once, with the Czech id when there is one |
+| `s` | Stops, best match first (Transitous order; the searched town's main station on top), at most 8; copies of one station from several feeds appear once (also when one names it with the town and another without), with the Czech id when there is one; stops where nothing runs are left out |
 | `n` | Name |
 | `i` | Id, opaque; pass it back as `from` / `to` |
 | `a` | Where the stop is, short for a menu line: the district alone when the name holds the municipality ("Praha-východ"), else municipality and district ("Mnichovice, Praha-východ"), without "okres" and without a district named after its city; may be empty (always empty without `q`) |
+| `v` | What stops there, the most important vehicle: `train`, `metro`, `tram`, `bus`, `ferry`, `cable`, `air`; missing when unknown (only with `q`) |
 | `m` | Distance from `lat`/`lon` in metres (from the rounded position, so up to ~60 m off); only without `q`. Stops within 500 m, nearest first, one per place |
 
 ## GET /plan

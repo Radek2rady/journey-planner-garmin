@@ -3,76 +3,64 @@
 Status of the work. Milestones are described in `PLAN.md`. Move items between sections as
 part of the change that affects them.
 
-## In progress (M2: On the wrist)
+## In progress: watch test before 1.0.1
 
-- [ ] Confirm on the watch: direction in the leg detail, saved connections without the
-      phone, departure time
+Run on the fr955 with `make release` (sideloaded) while Garmin reviews 1.0.0. Tick what
+works; anything that does not becomes a fix in 1.0.1.
 
-- [ ] Measure memory use on the device (peak during the connections response)
-- [ ] Confirm on the watch: favourite trips, countdown, search again from a saved search,
-      filters, departure board
-- [ ] Confirm on the watch: short connection summary fits; full text of a leg line opens
-      with START
-- [ ] Confirm on the watch: change time and the "!" of a tight change, "If missed" search
-      from a change (needs the proxy deployed with leg keys `i` and `s`)
+Search and results
+- [ ] Origin by *My location*: the location question appears once, before the first use;
+      until then the origin reads "Moje poloha (nepovolena)"
+- [ ] *Nearby stops* in the origin chooser, with distances
+- [ ] Stop search by name: "Vlak, Praha-východ" / "Bus, Benešov" under the stops (1.0.1)
+- [ ] Connection list: label with the travel time fits one line ("23 min" under an hour)
+- [ ] Countdown to departure in the list, *Later connections*, arrive-by search and
+      *Earlier connections*, filters (transfers, vehicles), departure time
+- [ ] Connection detail: direction, platform, change time and the "!" of a tight change;
+      a leg line opens in full with START; *If missed* from a change
+- [ ] Departure board of the nearest stop and of a recent stop, *Later departures*
 
-- [ ] Confirm on the watch: *Nearby stops* in the origin chooser (needs the proxy
-      deployed)
+Kept on the watch
+- [ ] Favourite trips: add, search with one press, remove
+- [ ] Saved connections readable without the phone; *Search again*; deleting saved
+      searches and recent stops
+- [ ] Glance: the first favourite and its next departure; redrawn often enough for the
+      countdown
 
-- [ ] Confirm on the watch: deleting saved searches and recent stops
-
-- [ ] Confirm on the watch: the glance shows the first favourite and its next departure;
-      check that it is redrawn often enough for the countdown
-
-- [ ] Confirm on the watch: arrive-by search and *Earlier connections* (needs the proxy
-      deployed)
-
-- [ ] Confirm on the watch: the departure alert appears with the app closed (in the
-      simulator: *Simulation > Background Events*); also while an activity runs
-
-- [ ] Confirm on the watch: search over Wi-Fi with the phone's Bluetooth off (does sync
-      mode reach the proxy? how long does it take?); then add stop search by name and
-      the departure board over Wi-Fi
-- [ ] Confirm on the watch: the connection label with the travel time fits one line
+Background and edges
+- [ ] Departure alert with the app closed, also while an activity runs
+- [ ] Search over Wi-Fi with the phone's Bluetooth off (does sync mode reach the proxy,
+      how long does it take?)
+- [ ] *About*: text fits in both languages; *Privacy policy* opens on the phone
+- [ ] Launcher icon readable in the fr955's MIP colours
+- [ ] Memory: peak during the connections response (simulator *View > Memory* with the
+      fr955, or the watch's crash log if it runs out)
 
 ## To do
 
 ### M5: Connect IQ Store
 
-- [ ] Privacy policy URL in the store listing
-- [ ] Confirm on the watch: *About > Privacy policy* opens the page on the phone
-- [ ] Confirm on the watch: the About text fits the screen in both languages (English
-      fits in the fr955 simulator)
-- [ ] Confirm on the watch: the location question (native confirmation) appears before
-      the first use of the position, and the origin reads "My location (not allowed)"
-      until then (the English question fits in the fr955 simulator)
-- [ ] Finish the open "Confirm on the watch" items above, including memory use
-- [ ] Vercel WAF limit per IP only if abuse shows up (one rule on Hobby; mobile carriers
-      share IPs)
-- [ ] Watch the proxy's daily `/plan` count on Vercel; tell Transitous on Matrix before it
-      gets near 720 a day
-- [ ] Confirm on the watch: the new launcher icon on the fr955 (MIP colours) is readable
-- [ ] Upload the beta again with the new `BETA_APP_ID` (the first beta was deleted and
-      its id cannot be reused), install it from the Connect IQ app on the phone and remove the sideloaded
-      `.prg` from `GARMIN/APPS` (by the user)
-- [ ] Wait for Garmin's review of the public version 1.0.0 (submitted 2026-11-22); then
-      install it from the store, remove the beta from the watch, tag `v1.0.0`
+- [ ] Wait for Garmin's review of 1.0.0 (submitted 2026-11-22) and of the new beta; then
+      install 1.0.0 from the store, remove the beta and the sideloaded `.prg` from the
+      watch, tag `v1.0.0` and attach `bin/Transit-store.iq` to a GitHub release
+- [ ] 1.0.1: version in `manifest.xml`, `make store` and `make beta`, upload both
 - [ ] Protect `main` on GitHub: changes only through pull requests with passing
       *Proxy tests* (by the user)
-- [ ] Tag the store version (`v1.0.0`) and attach the `.iq` to a GitHub release
+- [ ] Watch the proxy's daily `/plan` count on Vercel; tell Transitous on Matrix before it
+      gets near 720 a day
+- [ ] Vercel WAF limit per IP only if abuse shows up (one rule on Hobby; mobile carriers
+      share IPs)
 - [ ] Look into building the watch app in CI (SDK and device files without a sign-in)
 
 ### Comfort
 
-- [ ] Next app version: the stop list says what stops there ("vlak, Praha-východ" /
-      "bus, Benešov"), so that a railway station and a bus stop of one name differ; the
-      proxy sends the stop's kind from Transitous' modes (wire format change: API.md,
-      proxy, parser, tests of both sides)
-
-- [ ] Stop search: Prague main station appears up to three times (feeds name it "Praha,
-      hlavni nadrazi", "Hlavní nádraží" in Praha, "Praha,Hlavní nádraží"); merge copies
-      whose names differ only by the town prefix
-
+- [x] Next app version: travel time under an hour without "0h" ("08:11-08:34 23 min")
+- [x] Next app version: the stop list says what stops there ("Vlak, Praha-východ" /
+      "Bus, Benešov"); `v` in `/stops` from Transitous' modes (train > metro > tram > bus),
+      kept with the recent stops
+- [x] Stop search merges parts of one station named with or without the town ("Praha,
+      hlavni nadrazi", "Hlavní nádraží", "Praha,Hlavní nádraží"; within 300 m), the merged
+      entry says the most important vehicle; stops where nothing runs are left out
 - [ ] Name entry by letter groups (no holding of DOWN needed)
 
 ### Housekeeping
@@ -206,6 +194,8 @@ part of the change that affects them.
       when the name holds the town ("Mnichovice" / "Praha-východ" vs "Benešov"),
       without "okres"; before, the district was cut off on the watch (proxy only)
 - [x] The beta also waits for Garmin's review after its first upload
+- [x] Privacy policy URL in the store listing; beta uploaded again with the new
+      `BETA_APP_ID` (2026-11-22)
 - [x] Public version 1.0.0 submitted to the store (`make store`, 2026-11-22)
 - [x] Beta 0.9.0 uploaded to the store with *Beta App* checked (2026-11-21): working
       description, cover `store/cover-500.png`, three simulator screenshots in

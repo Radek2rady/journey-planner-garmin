@@ -43,7 +43,7 @@ speaks plain HTTP) and set a position with **Settings > Set Position**.
 | Menu > Search over Wi-Fi | Without the phone, on a Wi-Fi network saved in the watch (no sign-in page): searches the planned trip; the watch closes the app, the result lands in *Saved connections* |
 | Menu > Departure board | What leaves next from the nearest stop or a recent one; *Later departures* continues |
 | Menu > Saved connections | Results of the last 10 searches, readable without the phone; *Search again* refreshes them; *Delete searches* at the end (one, or *Delete all*) |
-| Menu > Find connections | Lists connections: "15:50-20:21 4h31" with the travel time from the first ride (without the walk to it), "!" = tight change; select one to see its legs, select a leg line to read it in full |
+| Menu > Find connections | Lists connections: "15:50-20:21 4h31" (under an hour "08:11-08:34 23 min") with the travel time from the first ride (without the walk to it), "!" = tight change; select one to see its legs, select a leg line to read it in full |
 | Connection detail > *Alert before departure* | Each press: 5, 10, 15 minutes before, off; the watch shows a notification then, also with the app closed. One alert at a time |
 | Menu > About | Version and data sources; *Privacy policy* opens on the phone |
 | Connection detail > *Change N min* | Shows the time for the change; select it to see what else goes from that station (*If missed*) |

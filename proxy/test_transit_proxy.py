@@ -185,6 +185,20 @@ class SearchStopsTest(unittest.TestCase):
             result = proxy.search_stops("libeň", None, None)
         self.assertEqual(result["s"][0]["n"], "Praha-Libeň")
 
+    def test_parts_of_one_station_named_with_or_without_the_town_merge(self):
+        def at(name, stop_id, lat, lon, modes):
+            return dict(geocode_item(name, stop_id, [(4, "Praha")]), lat=lat, lon=lon, modes=modes)
+        result, _ = self.search(
+            [
+                at("Praha, hlavni nadrazi", "cz-1", 50.0830, 14.4350, ["BUS"]),
+                at("Hlavní nádraží", "cz-2", 50.0841, 14.4360, ["SUBWAY", "TRAM"]),
+                at("Praha,Hlavní nádraží", "cz-3", 50.0838, 14.4339, ["COACH", "REGIONAL_RAIL"]),
+                at("Hlavní nádraží", "cz-4", 49.1906, 16.6127, ["TRAM"]),
+            ]
+        )
+        self.assertEqual([stop["i"] for stop in result["s"]], ["cz-1", "cz-4"])
+        self.assertEqual(result["s"][0]["v"], "train")
+
     def test_equal_names_merge_further_apart_than_similar_ones(self):
         def at(name, stop_id, lat, lon):
             return dict(geocode_item(name, stop_id, [(8, "Brno")]), lat=lat, lon=lon)
@@ -197,6 +211,22 @@ class SearchStopsTest(unittest.TestCase):
             ]
         )
         self.assertEqual([stop["i"] for stop in result["s"]], ["at-1", "ee-1"])
+
+    def test_stop_says_what_stops_there(self):
+        self.assertEqual(proxy.stop_kind(["BUS", "REGIONAL_RAIL"]), "train")
+        self.assertEqual(proxy.stop_kind(["SUBWAY", "TRAM", "BUS"]), "metro")
+        self.assertEqual(proxy.stop_kind(["COACH"]), "bus")
+        self.assertIsNone(proxy.stop_kind([]))
+        result, _ = self.search([dict(geocode_item("Mnichovice", "cz-1"), modes=["REGIONAL_RAIL"]),
+                                 geocode_item("Mnichovice", "cz-2", [(5, "okres Benešov")])])
+        self.assertEqual(result["s"][0]["v"], "train")
+        self.assertNotIn("v", result["s"][1])
+
+    def test_stops_without_any_service_are_left_out(self):
+        result, _ = self.search([dict(geocode_item("Brno", "ee-1"), modes=[]),
+                                 dict(geocode_item("Brno hl.n.", "cz-1"), modes=["REGIONAL_RAIL"]),
+                                 geocode_item("Vestec", "cz-2")])
+        self.assertEqual([stop["i"] for stop in result["s"]], ["cz-1", "cz-2"])
 
     def test_result_is_capped(self):
         items = [geocode_item("Stop %d" % i, "cz-%d" % i) for i in range(30)]

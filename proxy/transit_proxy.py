@@ -52,6 +52,8 @@ MAX_DEPARTURES = 10
 STOP_RADIUS_M = 200
 # Feeds place one station up to a few hundred metres apart; equal names join within this.
 SAME_NAME_RADIUS_M = 1000
+# Parts of one station (train, metro, tram, coach) named with or without the town.
+STATION_RADIUS_M = 300
 NEARBY_RADIUS_M = 500  # how far /stops looks around a position without a name
 WALK = "walk"
 
@@ -97,6 +99,16 @@ def vehicle_code(mode: str) -> str:
     if "RAIL" in mode or mode == "SUBURBAN":
         return "train"
     return "other"
+
+
+# What a stop is called by in a list: its most important vehicle.
+STOP_KIND_ORDER = ["train", "metro", "tram", "bus", "ferry", "cable", "air"]
+
+
+def stop_kind(modes: list[str]) -> Optional[str]:
+    """"train" for a station, "bus" for a bus stop...; None when nothing is known."""
+    codes = {vehicle_code(mode) for mode in modes}
+    return next((code for code in STOP_KIND_ORDER if code in codes), None)
 
 
 def call_api(path: str, params: dict[str, str]) -> Any:
@@ -148,15 +160,32 @@ def search_stops(query: str, lat: Optional[str], lon: Optional[str]) -> Json:
     for item in call_api("/geocode", params):
         if item.get("type") != "STOP":
             continue
+        # Nothing runs there by the timetables: a feed's placeholder for a whole town
+        # (or bogus coordinates), or a station without service.
+        if "modes" in item and not item["modes"]:
+            continue
         stop = {"n": item["name"], "i": item["id"], "a": stop_area(item.get("areas", []), item["name"])}
-        place = {"n": item["name"], "lat": item["lat"], "lon": item["lon"]} if "lat" in item and "lon" in item else None
+        kind = stop_kind(item.get("modes") or [])
+        if kind:
+            stop["v"] = kind
+        place = None
+        if "lat" in item and "lon" in item:
+            by_level = {area.get("adminLevel"): area["name"] for area in item.get("areas", [])}
+            town = name_words(by_level.get(8) or by_level.get(4) or "")
+            place = {"n": item["name"], "lat": item["lat"], "lon": item["lon"], "town": town}
         copy = next((index for index, kept in enumerate(stops)
                      if (kept["n"], kept["a"]) == (stop["n"], stop["a"])
                      or (place is not None and places[index] is not None
-                         and (same_place(places[index], place) or same_named_place(places[index], place)))), None)
+                         and (same_place(places[index], place) or same_named_place(places[index], place)
+                              or same_station(places[index], place)))), None)
         if copy is not None:
+            kinds = [stops[copy].get("v"), stop.get("v")]
             if stop["i"].startswith("cz-") and not stops[copy]["i"].startswith("cz-"):
                 stops[copy], places[copy] = stop, place
+            # The merged entry says the most important vehicle of all its parts.
+            kind = next((code for code in STOP_KIND_ORDER if code in kinds), None)
+            if kind:
+                stops[copy]["v"] = kind
             continue
         stops.append(stop)
         places.append(place)
@@ -196,6 +225,15 @@ def same_named_place(a: Json, b: Json) -> bool:
     if name_words(a["n"]) != name_words(b["n"]):
         return False
     return distance_m(a["lat"], a["lon"], b["lat"], b["lon"]) <= SAME_NAME_RADIUS_M
+
+
+def same_station(a: Json, b: Json) -> bool:
+    """"Praha, hlavni nadrazi", "Hlavní nádraží" and "Praha,Hlavní nádraží": one station
+    in several feeds, named with or without its town, a few hundred metres apart."""
+    words_a, words_b = name_words(a["n"]) - a["town"], name_words(b["n"]) - b["town"]
+    if not words_a or words_a != words_b:
+        return False
+    return distance_m(a["lat"], a["lon"], b["lat"], b["lon"]) <= STATION_RADIUS_M
 
 
 def nearby_stops(lat: str, lon: str) -> Json:
