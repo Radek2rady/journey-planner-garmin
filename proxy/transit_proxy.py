@@ -114,8 +114,12 @@ def local_hhmm(text: str) -> str:
     return parse_time(text).astimezone(TIMEZONE).strftime("%H:%M")
 
 
-def stop_area(areas: list[Json]) -> str:
-    """Human-readable location of a stop, e.g. "Vestec, okres Praha-západ"."""
+def stop_area(areas: list[Json], name: str = "") -> str:
+    """Where a stop is, short enough for a watch menu line: "Vestec, Praha-západ".
+
+    The district tells apart towns of one name (Mnichovice near Prague and near
+    Benešov), so it goes first when the stop's name already holds the town.
+    """
     by_level = {area.get("adminLevel"): area["name"] for area in areas}
     # Municipality (8), else region (4, e.g. Praha); plus district (5),
     # except Prague boroughs, which only add noise.
@@ -123,6 +127,11 @@ def stop_area(areas: list[Json]) -> str:
     district = by_level.get(5, "")
     if district.startswith("obvod"):
         district = ""
+    district = district.removeprefix("okres ")
+    if town and name_words(town) <= name_words(district):
+        district = ""  # "Plzeň-město" says nothing that "Plzeň" does not
+    if district and town and name_words(town) <= name_words(name):
+        return district
     return ", ".join(part for part in dict.fromkeys([town, district]) if part)
 
 
@@ -139,7 +148,7 @@ def search_stops(query: str, lat: Optional[str], lon: Optional[str]) -> Json:
     for item in call_api("/geocode", params):
         if item.get("type") != "STOP":
             continue
-        stop = {"n": item["name"], "i": item["id"], "a": stop_area(item.get("areas", []))}
+        stop = {"n": item["name"], "i": item["id"], "a": stop_area(item.get("areas", []), item["name"])}
         place = {"n": item["name"], "lat": item["lat"], "lon": item["lon"]} if "lat" in item and "lon" in item else None
         copy = next((index for index, kept in enumerate(stops)
                      if (kept["n"], kept["a"]) == (stop["n"], stop["a"])

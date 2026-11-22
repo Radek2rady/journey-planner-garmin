@@ -25,7 +25,7 @@ Either `q` or a valid `lat` and `lon` is required.
 | `s` | Stops, best match first (Transitous order; the searched town's main station on top), at most 8; copies of one station from several feeds appear once, with the Czech id when there is one |
 | `n` | Name |
 | `i` | Id, opaque; pass it back as `from` / `to` |
-| `a` | Municipality and district; may be empty (always empty without `q`) |
+| `a` | Where the stop is, short for a menu line: the district alone when the name holds the municipality ("Praha-východ"), else municipality and district ("Mnichovice, Praha-východ"), without "okres" and without a district named after its city; may be empty (always empty without `q`) |
 | `m` | Distance from `lat`/`lon` in metres (from the rounded position, so up to ~60 m off); only without `q`. Stops within 500 m, nearest first, one per place |
 
 ## GET /plan

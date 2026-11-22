@@ -63,7 +63,19 @@ class TimeTest(unittest.TestCase):
 class StopAreaTest(unittest.TestCase):
     def test_town_and_district(self):
         areas = [{"adminLevel": 8, "name": "Vestec"}, {"adminLevel": 5, "name": "okres Praha-západ"}]
-        self.assertEqual(proxy.stop_area(areas), "Vestec, okres Praha-západ")
+        self.assertEqual(proxy.stop_area(areas), "Vestec, Praha-západ")
+
+    def test_district_alone_when_the_name_holds_the_town(self):
+        near_prague = [{"adminLevel": 8, "name": "Mnichovice"}, {"adminLevel": 5, "name": "okres Praha-východ"}]
+        near_benesov = [{"adminLevel": 8, "name": "Mnichovice"}, {"adminLevel": 5, "name": "okres Benešov"}]
+        self.assertEqual(proxy.stop_area(near_prague, "Mnichovice"), "Praha-východ")
+        self.assertEqual(proxy.stop_area(near_benesov, "Mnichovice,náves"), "Benešov")
+        self.assertEqual(proxy.stop_area(near_prague, "Myšlín"), "Mnichovice, Praha-východ")
+
+    def test_city_district_named_after_the_city_is_left_out(self):
+        areas = [{"adminLevel": 8, "name": "Plzeň"}, {"adminLevel": 5, "name": "okres Plzeň-město"}]
+        self.assertEqual(proxy.stop_area(areas, "Lhota"), "Plzeň")
+        self.assertEqual(proxy.stop_area(areas, "Plzeň hl.n."), "Plzeň")
 
     def test_prague_uses_region_and_drops_borough(self):
         areas = [{"adminLevel": 4, "name": "Praha"}, {"adminLevel": 5, "name": "obvod Praha 2"}]
