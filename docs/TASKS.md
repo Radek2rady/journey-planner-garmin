@@ -64,6 +64,11 @@ part of the change that affects them.
 
 ### Comfort
 
+- [ ] Next app version: the stop list says what stops there ("vlak, Praha-východ" /
+      "bus, Benešov"), so that a railway station and a bus stop of one name differ; the
+      proxy sends the stop's kind from Transitous' modes (wire format change: API.md,
+      proxy, parser, tests of both sides)
+
 - [ ] Stop search: Prague main station appears up to three times (feeds name it "Praha,
       hlavni nadrazi", "Hlavní nádraží" in Praha, "Praha,Hlavní nádraží"); merge copies
       whose names differ only by the town prefix
@@ -197,6 +202,10 @@ part of the change that affects them.
       fr265 (416 px AMOLED), fr965 (454 px AMOLED), venux1 (rectangle), fr955 on the watch;
       glance, home, menus, name entry, stop and connection lists, detail, About all fit
 - [x] Developer key backed up outside this computer (by the user, 2026-11-21)
+- [x] Stop search tells towns of one name apart: the area under a stop is the district
+      when the name holds the town ("Mnichovice" / "Praha-východ" vs "Benešov"),
+      without "okres"; before, the district was cut off on the watch (proxy only)
+- [x] The beta also waits for Garmin's review after its first upload
 - [x] Public version 1.0.0 submitted to the store (`make store`, 2026-11-22)
 - [x] Beta 0.9.0 uploaded to the store with *Beta App* checked (2026-11-21): working
       description, cover `store/cover-500.png`, three simulator screenshots in
