@@ -221,6 +221,25 @@ module Texts {
         return connection.departure + "-" + connection.arrival + " " + duration(minutes);
     }
 
+    //! "Náměstí Míru > Komořany": where the first ride starts and where the trip ends.
+    function connectionsTitle(connection as Connection, destinationName as String?) as String {
+        var first = null;
+        var last = null;
+        var legs = connection.legs;
+        for (var i = 0; i < legs.size(); i++) {
+            if (!legs[i].isWalk()) {
+                if (first == null) {
+                    first = legs[i];
+                }
+                last = legs[i];
+            }
+        }
+        if (first == null || last == null) {
+            return get(Rez.Strings.Connections);
+        }
+        return first.from + " > " + (destinationName != null ? destinationName : last.to);
+    }
+
     function connectionTimes(connection as Connection) as String {
         return connection.departure + " - " + connection.arrival;
     }

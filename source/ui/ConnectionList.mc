@@ -21,13 +21,25 @@ module ConnectionList {
         show(new ConnectionsPage(page.connections, null), destinationId, null, null, false);
     }
 
+    function destinationName(destinationId as String?, savedTrip as Trip?) as String? {
+        var destination = savedTrip != null ? savedTrip.destination : getServices().trip.destination;
+        if (destination == null || destinationId == null || !destination.id.equals(destinationId)) {
+            return null;
+        }
+        return destination.name;
+    }
+
     //! `byArrival`: the page is from a search by arrival, so the next page
     //! holds earlier connections.
     function show(page as ConnectionsPage, destinationId as String?, savedTrip as Trip?, onTripChanged as (Method() as Void)?, byArrival as Boolean) as Void {
         var now = Time.now().value();
-        var menu = new WatchUi.Menu2({ :title => Rez.Strings.Connections });
-        var items = [] as Array<MenuItem>;
         var connections = page.connections;
+        // Where the found connections really start shows a search from a stale position.
+        var title = connections.size() > 0
+            ? Texts.connectionsTitle(connections[0], destinationName(destinationId, savedTrip))
+            : Texts.get(Rez.Strings.Connections);
+        var menu = new WatchUi.Menu2({ :title => title });
+        var items = [] as Array<MenuItem>;
         for (var i = 0; i < connections.size(); i++) {
             var item = new WatchUi.MenuItem(Texts.connectionLabel(connections[i]), Texts.connectionSummary(connections[i], now), i, null);
             items.add(item);

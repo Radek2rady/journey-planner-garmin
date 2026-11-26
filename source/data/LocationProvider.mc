@@ -1,6 +1,7 @@
 import Toybox.Lang;
 import Toybox.Application.Storage;
 import Toybox.Position;
+import Toybox.Time;
 import Toybox.WatchUi;
 
 //! Latitude and longitude in degrees.
@@ -11,6 +12,8 @@ typedef Coordinates as [Double, Double];
 class LocationProvider {
 
     private const KEY_ALLOWED = "locationAllowed";
+    //! Older fixes no longer say where the watch is.
+    static const MAX_AGE_S = 120;
 
     var allowed as Boolean;
     private var _info as Position.Info?;
@@ -58,7 +61,9 @@ class LocationProvider {
             info = Position.getInfo();
         }
         var position = info.position;
-        if (position == null || info.accuracy == Position.QUALITY_NOT_AVAILABLE) {
+        var when = info.when;
+        var age = when != null ? Time.now().value() - when.value() : null;
+        if (position == null || !isFresh(info.accuracy, age)) {
             return null;
         }
         var degrees = position.toDegrees();
@@ -77,6 +82,15 @@ class LocationProvider {
             listener.invoke();
         }
         WatchUi.requestUpdate();
+    }
+
+    //! A fix may stand for "here" only when the watch has one now: the last known position
+    //! can be from another town and would search from there.
+    static function isFresh(accuracy as Position.Quality, ageSeconds as Number?) as Boolean {
+        if (accuracy == Position.QUALITY_NOT_AVAILABLE || accuracy == Position.QUALITY_LAST_KNOWN) {
+            return false;
+        }
+        return ageSeconds == null || ageSeconds <= MAX_AGE_S;
     }
 
     //! Devices report "no position" as out-of-range values or as 0,0.

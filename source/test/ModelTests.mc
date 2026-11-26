@@ -1,5 +1,6 @@
 import Toybox.Application.Storage;
 import Toybox.Lang;
+import Toybox.Position;
 import Toybox.Test;
 
 // Unit tests; run with `make test-watch` (needs the simulator).
@@ -138,6 +139,16 @@ function locationIsUsedOnlyAfterConsent(logger as Logger) as Boolean {
     } else {
         Storage.deleteValue("locationAllowed");
     }
+    return true;
+}
+
+(:test)
+function onlyACurrentFixCountsAsTheWatchPosition(logger as Logger) as Boolean {
+    Test.assert(LocationProvider.isFresh(Position.QUALITY_GOOD, 5));
+    Test.assert(LocationProvider.isFresh(Position.QUALITY_POOR, null));
+    Test.assert(!LocationProvider.isFresh(Position.QUALITY_LAST_KNOWN, 5));
+    Test.assert(!LocationProvider.isFresh(Position.QUALITY_NOT_AVAILABLE, null));
+    Test.assert(!LocationProvider.isFresh(Position.QUALITY_GOOD, LocationProvider.MAX_AGE_S + 1));
     return true;
 }
 

@@ -54,6 +54,11 @@ Background and edges
 
 ### Comfort
 
+- [x] 1.0.1: the connection list shows the trip it found ("Náměstí Míru > Komořany", from
+      the first ride's stop), so a search from a wrong position is visible
+- [x] 1.0.1: *My location* uses only a current fix (not the watch's last known position,
+      not older than 2 min); until then the app waits for GPS
+
 - [x] Next app version: travel time under an hour without "0h" ("08:11-08:34 23 min")
 - [x] Next app version: the stop list says what stops there ("Vlak, Praha-východ" /
       "Bus, Benešov"); `v` in `/stops` from Transitous' modes (train > metro > tram > bus),
