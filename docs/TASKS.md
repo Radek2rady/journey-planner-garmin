@@ -5,8 +5,8 @@ part of the change that affects them.
 
 ## In progress: watch test before 1.0.1
 
-Run on the fr955 with `make release` (sideloaded) while Garmin reviews 1.0.0. Tick what
-works; anything that does not becomes a fix in 1.0.1.
+Run on the fr955 with `make release` (sideloaded; *About* shows 1.0.1).
+Tick what works; anything that does not becomes a fix in 1.0.1.
 
 Search and results
 - [ ] Origin by *My location*: the location question appears once, before the first use;
@@ -43,7 +43,8 @@ Background and edges
 - [ ] Wait for Garmin's review of 1.0.0 (submitted 2026-11-22) and of the new beta; then
       install 1.0.0 from the store, remove the beta and the sideloaded `.prg` from the
       watch, tag `v1.0.0` and attach `bin/Transit-store.iq` to a GitHub release
-- [ ] 1.0.1: version in `manifest.xml`, `make store` and `make beta`, upload both
+- [x] 1.0.1: version in `manifest.xml` and proxy `VERSION`
+- [ ] 1.0.1: after the watch test, `make store` and `make beta`, upload both; tag `v1.0.1`
 - [ ] Protect `main` on GitHub: changes only through pull requests with passing
       *Proxy tests* (by the user)
 - [ ] Watch the proxy's daily `/plan` count on Vercel; tell Transitous on Matrix before it

@@ -40,7 +40,7 @@ from zoneinfo import ZoneInfo
 
 API = "https://api.transitous.org/api/v1"
 # Transitous asks every client for its name, version and a contact.
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 USER_AGENT = f"journey-planner-garmin/{VERSION} (+https://github.com/Radek2rady/journey-planner-garmin)"
 TIMEZONE = ZoneInfo("Europe/Prague")
 UPSTREAM_TIMEOUT_S = 25
